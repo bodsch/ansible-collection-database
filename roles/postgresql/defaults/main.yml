@@ -1,0 +1,239 @@
+---
+
+# RHEL/CentOS only. Set a repository to use for PostgreSQL installation.
+postgresql_enablerepo: ""
+
+# Set postgresql state when configuration changes are made. Recommended values:
+# `restarted` or `reloaded`
+postgresql_restarted_state: "restarted"
+
+postgresql_python_library: python-psycopg2
+postgresql_user: postgres
+postgresql_group: postgres
+
+# `md5` or `scram-sha-256` (https://www.postgresql.org/docs/10/auth-methods.html)
+# postgresql_auth_method: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"
+
+# postgresql_unix_socket_directories:
+  # - /var/run/postgresql
+
+postgresql_service:
+  state: started
+  enabled: true
+
+postgresql_config_connections:
+  listen_addresses: []
+  port: ""
+  max_connections: ""
+  reserved_connections: ""
+  superuser_reserved_connections: ""
+  unix:
+    socket:
+      directories:
+        - /run/postgresql
+        - /run/postgre
+      group: ""
+      permissions: "0755"
+  bonjour:
+    enabled: false
+    name: ""
+  tcp:
+    keepalives:
+      idle: ""
+      interval: ""
+      count: ""
+    user:
+      timeout: ""
+  client_connection_check_interval: ""
+
+postgresql_config_authentication:
+  authentication_timeout: 1min          # 1s-600s
+  password_encryption: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
+  scram_iterations: 4096
+  # GSSAPI using Kerberos
+  krb:
+    server_keyfile: 'FILE:${sysconfdir}/krb5.keytab'
+    caseins_users: false
+  gss:
+    accept_delegation: false
+  # - SSL -
+  ssl:
+    enabled: false
+    ca_file: ''
+    cert_file: 'server.crt'
+    crl_file: ''
+    crl_dir: ''
+    key_file: 'server.key'
+    ciphers:
+      - HIGH
+      - MEDIUM
+      - "+3DES"
+      - "!aNULL"       # allowed SSL ciphers
+    prefer_server_ciphers: true
+    ecdh_curve: 'prime256v1'
+    min_protocol_version: 'TLSv1.2'
+    max_protocol_version: ''
+    dh_params_file: ''
+    passphrase_command: ''
+    passphrase_command_supports_reload: false
+
+postgresql_config_memory:
+  shared_buffers: 128MB                  # min 128kB
+                                          # (change requires restart)
+  huge_pages: try                       # on, off, or try
+                                          # (change requires restart)
+  huge_page_size: 0                     # zero for system default
+                                          # (change requires restart)
+  temp_buffers: 8MB                     # min 800kB
+  max_prepared_transactions: 0          # zero disables the feature
+                                          # (change requires restart)
+  # Caution: it is not advisable to set max_prepared_transactions nonzero unless
+  # you actively intend to use prepared transactions.
+  work_mem: 4MB                         # min 64kB
+  hash_mem_multiplier: 2.0              # 1-1000.0 multiplier on hash table work_mem
+  maintenance_work_mem: 64MB            # min 64kB
+  autovacuum_work_mem: -1               # min 64kB, or -1 to use maintenance_work_mem
+  logical_decoding_work_mem: 64MB       # min 64kB
+  max_stack_depth: 2MB                  # min 100kB
+  shared_memory_type: mmap              # the default is the first option
+                                          # supported by the operating system:
+                                          #   mmap
+                                          #   sysv
+                                          #   windows
+                                          # (change requires restart)
+  dynamic_shared_memory_type: posix      # the default is usually the first option
+                                          # supported by the operating system:
+                                          #   posix
+                                          #   sysv
+                                          #   windows
+                                          #   mmap
+                                          # (change requires restart)
+  min_dynamic_shared_memory: 0MB        # (change requires restart)
+  vacuum_buffer_usage_limit: 2MB        # size of vacuum and analyze buffer access strategy ring;
+                                          # 0 to disable vacuum buffer access strategy;
+                                          # range 128kB to 16GB
+
+  # SLRU buffers (change requires restart)
+  commit_timestamp_buffers: 0           # memory for pg_commit_ts (0: auto)
+  multixact_offset_buffers: 16          # memory for pg_multixact/offsets
+  multixact_member_buffers: 32          # memory for pg_multixact/members
+  notify_buffers: 16                    # memory for pg_notify
+  serializable_buffers: 32              # memory for pg_serial
+  subtransaction_buffers: 0             # memory for pg_subtrans (0: auto)
+  transaction_buffers: 0                # memory for pg_xact (0: auto)
+
+postgresql_config_disk:
+  temp_file_limit: -1                   # limits per-process temp file space
+                                           # in kilobytes, or -1 for no limit
+  max_notify_queue_pages: 1048576       # limits the number of SLRU pages allocated
+                                        # for NOTIFY / LISTEN queue
+postgresql_config_kernel:
+  max_files_per_process: 1000           # min 64
+
+postgresql_config_vacuum:
+  vacuum_cost_delay: 0                  # 0-100 milliseconds (0 disables)
+  vacuum_cost_page_hit: 1               # 0-10000 credits
+  vacuum_cost_page_miss: 2              # 0-10000 credits
+  vacuum_cost_page_dirty: 20            # 0-10000 credits
+  vacuum_cost_limit: 200                # 1-10000 credits
+
+postgresql_config_bgwriter:
+  bgwriter_delay: 200ms                 # 10-10000ms between rounds
+  bgwriter_lru_maxpages: 100            # max buffers written/round, 0 disables
+  bgwriter_lru_multiplier: 2.0          # 0-10.0 multiplier on buffers scanned/round
+  bgwriter_flush_after: 512kB           # measured in pages, 0 disables
+
+postgresql_config_async_behavior:
+  backend_flush_after: 0                # measured in pages, 0 disables
+  effective_io_concurrency: 1           # 1-1000; 0 disables prefetching
+  maintenance_io_concurrency: 10        # 1-1000; 0 disables prefetching
+  io_combine_limit: 128kB               # usually 1-32 blocks (depends on OS)
+  max_worker_processes: 8               # (change requires restart)
+  max_parallel_workers_per_gather: 2    # limited by max_parallel_workers
+  max_parallel_maintenance_workers: 2   # limited by max_parallel_workers
+  max_parallel_workers: 8               # number of max_worker_processes that
+                                         # can be used in parallel operations
+  parallel_leader_participation: on
+
+
+
+
+
+
+
+
+
+
+postgresql_config_wal: {}
+
+
+
+
+
+
+
+# Global configuration options that will be set in postgresql.conf.
+postgresql_global_config_options:
+  - option: unix_socket_directories
+    value: '{{ postgresql_unix_socket_directories | join(",") }}'
+  - option: log_directory
+    value: 'log'
+
+# Host based authentication (hba) entries to be added to the pg_hba.conf. This
+# variable's defaults reflect the defaults that come with a fresh installation.
+postgresql_hba_entries:
+  - type: local
+    database: all
+    user: postgres
+    auth_method: peer
+  - type: local
+    database: all
+    user: all
+    auth_method: peer
+  - type: host
+    database: all
+    user: all
+    address: '127.0.0.1/32'
+    auth_method: "{{ postgresql_config_authentication.password_encryption }}"
+  - type: host
+    database: all
+    user: all
+    address: '::1/128'
+    auth_method: "{{ postgresql_config_authentication.password_encryption }}"
+
+# Debian only. Used to generate the locales used by PostgreSQL databases.
+postgresql_locales:
+  - 'en_US.UTF-8'
+
+# Databases to ensure exist.
+postgresql_databases: []
+# - name: exampledb # required; the rest are optional
+#   lc_collate: # defaults to 'en_US.UTF-8'
+#   lc_ctype: # defaults to 'en_US.UTF-8'
+#   encoding: # defaults to 'UTF-8'
+#   template: # defaults to 'template0'
+#   login_host: # defaults to 'localhost'
+#   login_password: # defaults to not set
+#   login_user: # defaults to '{{ postgresql_user }}'
+#   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
+#   port: # defaults to not set
+#   owner: # defaults to postgresql_user
+#   state: # defaults to 'present'
+
+# Users to ensure exist.
+postgresql_users: []
+# - name: jdoe #required; the rest are optional
+#   password: # defaults to not set
+#   encrypted: # defaults to not set
+#   priv: # defaults to not set
+#   role_attr_flags: # defaults to not set
+#   db: # defaults to not set
+#   login_host: # defaults to 'localhost'
+#   login_password: # defaults to not set
+#   login_user: # defaults to '{{ postgresql_user }}'
+#   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
+#   port: # defaults to not set
+#   state: # defaults to 'present'
+
+# Whether to output user data when managing users.
+postgres_users_no_log: true

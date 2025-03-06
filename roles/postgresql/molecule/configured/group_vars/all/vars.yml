@@ -1,0 +1,42 @@
+---
+
+postgresql_use_external_repo: true
+postgresql_version: 10.4
+
+postgresql_system_users:
+  - username: root
+    password: ""
+    home: /root
+    update: true
+    ignore: true
+
+postgresql_databases:
+  - name: molecule
+    collation: utf8mb4_bin
+    encoding: utf8mb4
+  - name: test
+    state: absent
+    collation: utf8mb4_bin
+    encoding: utf8mb4
+
+postgresql_users:
+  - name: molecule
+    host: '%'
+    password: molecule
+    priv: "molecule.*:ALL"
+    encrypted: false
+  - name: test
+    state: absent
+    host: '%'
+    password: test
+    priv: "test.*:ALL"
+    encrypted: false
+
+postgresql_config_mysqld:
+  bind_address: 127.0.0.1
+  socket: "{{ postgresql_socket }}"
+  skip_external_locking:
+  skip_name_resolve: 1
+  performance_schema: 1
+  expire_logs_days: 2
+  max_connections: 20
