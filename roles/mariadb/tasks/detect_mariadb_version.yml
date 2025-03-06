@@ -1,0 +1,38 @@
+---
+
+- name: detect available mariadb version
+  bodsch.core.package_version:
+    state: available
+    package_name: "{{ mariadb_server }}"
+    repository: "{{ 'MariaDB' if ansible_os_family | lower == 'redhat' and mariadb_use_external_repo else '' }}"
+  register: package_version
+
+- name: define mariadb version
+  ansible.builtin.set_fact:
+    mariadb_version: "{{ package_version.available.full_version }}"
+  when:
+    - package_version is defined
+    - package_version.available is defined
+    - package_version.available.full_version is defined
+
+- name: define mariadb short version
+  ansible.builtin.set_fact:
+    mariadb_short_version: "{{ package_version.available.platform_version }}"
+  when:
+    - package_version is defined
+    - package_version.available is defined
+    - package_version.available.platform_version is defined
+
+- name: assert missing mariadb_version
+  ansible.builtin.assert:
+    that:
+      - mariadb_version | default("") | string | length != 0
+    msg: mariadb_version is missing
+    quiet: true
+
+- name: mariadb version
+  ansible.builtin.debug:
+    msg:
+      - "mariadb version: {{ mariadb_short_version }} - {{ mariadb_version }}"
+
+...

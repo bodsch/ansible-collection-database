@@ -1,0 +1,124 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. artixlinux
+        - "{{ ansible_distribution | lower | replace(' ', '') }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yml
+      skip: true
+
+- name: validate mariadb users
+  ansible.builtin.fail:
+    msg: "your users definition is not valid!\n
+          The following parameters are required:\n
+          - name\n
+          - password"
+  when:
+    - mariadb_users is defined
+    - mariadb_users | count > 0
+    - (not item.name is defined or item.name | length == 0) or
+      (not item.password is defined or item.password | length == 0)
+  run_once: true
+  loop: "{{ mariadb_users }}"
+  loop_control:
+    label: "{{ item.name | default('undefined') }}"
+
+- name: install dependecies
+  ansible.builtin.package:
+    name: "{{ mariadb_dependencies }}"
+    state: present
+
+- name: repositories
+  ansible.builtin.include_tasks: repositories.yml
+  when:
+    - ansible_os_family | lower == 'debian'
+
+- name: update facts to get latest information
+  ansible.builtin.setup:
+
+- name: merge mariadb configuration segment for server between defaults and custom
+  ansible.builtin.set_fact:
+    mariadb_config_server: "{{ mariadb_config_defaults_server | combine(mariadb_config_server, recursive=True) }}"
+    mariadb_config_client: "{{ mariadb_config_defaults_client | combine(mariadb_config_client, recursive=True) }}"
+    mariadb_config_mysql: "{{ mariadb_config_defaults_mysql | combine(mariadb_config_mysql, recursive=True) }}"
+    mariadb_config_mysqld: "{{ mariadb_config_defaults_mysqld | combine(mariadb_config_mysqld, recursive=True) }}"
+    mariadb_config_mysqld_safe: "{{ mariadb_config_defaults_mysqld_safe | combine(mariadb_config_mysqld_safe, recursive=True) }}"
+    mariadb_config_mysqldump: "{{ mariadb_config_defaults_mysqldump | combine(mariadb_config_mysqldump, recursive=True) }}"
+    mariadb_config_galera: "{{ mariadb_config_defaults_galera | combine(mariadb_config_galera, recursive=True) }}"
+    mariadb_config_embedded: "{{ mariadb_config_defaults_embedded | combine(mariadb_config_embedded, recursive=True) }}"
+    mariadb_config_custom: "{{ mariadb_config_defaults_custom | combine(mariadb_config_custom, recursive=True) }}"
+    mariadb_replication: "{{ mariadb_defaults_replication | combine(mariadb_replication, recursive=True) }}"
+    mariadb_galera: "{{ mariadb_defaults_galera | combine(mariadb_galera, recursive=True) }}"
+    mariadb_tls_certificate: "{{ mariadb_defaults_tls_certificate | combine(mariadb_tls_certificate, recursive=True) }}"
+
+- name: detect if mariadb installed
+  ansible.builtin.stat:
+    path: /usr/bin/mariadbd-safe
+    get_checksum: false
+    get_mime: false
+  register: mysqld_binary_file
+
+- name: define mariadb_installed if mariadb installed
+  ansible.builtin.set_fact:
+    mariadb_installed: "{{ mysqld_binary_file.stat.exists }}"
+  when:
+    - mysqld_binary_file is defined
+    - mysqld_binary_file.stat is defined
+
+- name: detect galera cluster
+  ansible.builtin.set_fact:
+    _mariadb_galera_cluster: "{{ mariadb_config_galera | bodsch.database.detect_galera(hostvars) }}"
+  run_once: true
+  when:
+    - mariadb_config_galera is defined
+    - mariadb_config_galera | bodsch.core.type == 'dict'
+    - mariadb_galera.node_addresses is defined
+    - mariadb_galera.node_addresses | bodsch.core.type == 'list'
+    - mariadb_galera.node_addresses | count > 0
+
+- name: d
+  debug:
+    msg:
+      - "{{ _mariadb_galera_cluster }}"
+      - "{{ hostname | default('') }}"
+      - "{{ ansible_hostname | default('') }}"
+
+- name: define root system userdata
+  ansible.builtin.set_fact:
+    _mariadb_root_system_user: "{{ mariadb_system_users | bodsch.database.system_user('root') }}"
+
+- name: define mariadb_galera and mariadb_galera_cluster
+  ansible.builtin.set_fact:
+    mariadb_galera_cluster: "{{ _mariadb_galera_cluster.galera }}"
+    # mariadb_galera_primary: "{{ _mariadb_galera_cluster.primary }}"
+    mariadb_galera_primary_node: "{{ _mariadb_galera_cluster.cluster_primary_node }}"
+    mariadb_galera_replica_nodes: "{{ _mariadb_galera_cluster.cluster_replica_nodes }}"
+
+- name: galera packages
+  when:
+    - mariadb_galera_cluster
+    - ansible_distribution | lower == 'archlinux'
+  ansible.builtin.set_fact:
+    mariadb_packages: "{{ mariadb_packages + ['galera'] }}"
+
+- name: update facts to get latest information
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!any'
+      - facter
+
+...

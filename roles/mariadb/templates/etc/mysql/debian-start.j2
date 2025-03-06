@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# This script is executed by both SysV init /etc/init.d/mariadb and
+# systemd mariadb.service on every (re)start.
+#
+# Changes to this file will be preserved when updating the Debian package.
+#
+
+source /usr/share/mysql/debian-start.inc.sh
+
+# Read default/mysql first and then default/mariadb just like the init.d file does
+if [ -f /etc/default/mysql ]; then
+  . /etc/default/mysql
+fi
+
+DEFAULTS_FILE=/etc/mysql/debian.cnf
+
+if [ -e /root/.my.cnf ]
+then
+  DEFAULTS_FILE=/root/.my.cnf
+fi
+
+# detect mariadb binary
+MARIADB_BIN=$(command -v mariadb)
+
+if [ -n "${MARIADB_BIN}" ]
+then
+  MYSQL_BIN="${MARIADB_BIN}"
+  MYSQLADMIN_BIN="$(command -v mariadb-admin)"
+  MYSQLUPGRADE_BIN="$(command -v mariadb-upgrade)"
+  MYSQLCHECK_BIN="$(command -v mariadb-check)"
+  MYSQLDUMP_BIN="$(command -v mariadb-dump)"
+  MYSQLSHOW_BIN="$(command -v mariadb-show)"
+else
+  MYSQL_BIN="$(command -v mysql)"
+  MYSQLADMIN_BIN="$(command -v mysqladmin)"
+  MYSQLUPGRADE_BIN="$(command -v mysql_upgrade)"
+  MYSQLCHECK_BIN="$(command -v mysqlcheck)"
+  MYSQLDUMP_BIN="$(command -v mysqldump)"
+  MYSQLSHOW_BIN="$(command -v mysqlshow)"
+fi
+
+MYSQL="${MYSQL_BIN} --defaults-file=${DEFAULTS_FILE}"
+MYADMIN="${MYSQLADMIN_BIN} --defaults-file=${DEFAULTS_FILE}"
+# Don't run full mysql_upgrade on every server restart, use --version-check to do it only once
+MYUPGRADE="${MYSQLUPGRADE_BIN} --defaults-extra-file=${DEFAULTS_FILE} --version-check"
+MYCHECK="${MYSQLCHECK_BIN} --defaults-file=${DEFAULTS_FILE}"
+MYCHECK_SUBJECT="WARNING: mysqlcheck has found corrupt tables"
+MYCHECK_PARAMS="--all-databases --fast --silent"
+MYCHECK_RCPT="${MYCHECK_RCPT:-root}"
+
+## Checking for corrupt, not cleanly closed (only for MyISAM and Aria engines) and upgrade needing tables.
+
+# The following commands should be run when the server is up but in background
+# where they do not block the server start and in one shell instance so that
+# they run sequentially. They are supposed not to echo anything to stdout.
+# If you want to disable the check for crashed tables comment
+# "check_for_crashed_tables" out.
+# (There may be no output to stdout inside the background process!)
+
+# Need to ignore SIGHUP, as otherwise a SIGHUP can sometimes abort the upgrade
+# process in the middle.
+trap "" SIGHUP
+(
+  upgrade_system_tables_if_necessary;
+  check_root_accounts;
+  check_for_crashed_tables;
+) >&2 &
+
+exit 0

@@ -1,0 +1,17 @@
+{%- macro print_segment(v) -%}
+  {% if v | bodsch.core.type == "dict" %}
+    {% for key, value in v.items() %}
+{{ print_key_value(key, value) -}}
+    {% endfor %}
+  {% else %}
+{{ v -}}
+  {% endif %}
+{%- endmacro -%}
+
+{%- macro print_key_value(key, value) -%}
+  {% if value %}
+{{ key.ljust(35) | replace('_', '-') }} = {{ value -}}
+  {% else %}
+{{ key | replace('_', '-') -}}
+  {% endif %}
+{%- endmacro -%}

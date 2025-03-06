@@ -1,0 +1,90 @@
+---
+
+# mariadb_use_external_repo: false
+
+mariadb_system_users:
+  - username: root
+    password: Y5FZfKXzCeOWGf4kBOiFSp6Il
+    home: /root
+    update: true
+    ignore: true
+
+# mariadb_root_password:
+
+mariadb_instances: "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
+mariadb_hostnames: "{{ groups['mariadb'] | map('extract', hostname) | list }}"
+
+mariadb_databases:
+  - name: molecule
+    collation: utf8mb4_bin
+    encoding: utf8mb4
+
+mariadb_users:
+  - name: molecule
+    host: '%'
+    password: molecule
+    priv: "molecule.*:ALL"
+    encrypted: false
+
+mariadb_config_mysqld:
+  # bind-address: "{{ ansible_default_ipv4.address }}"
+  socket: "{{ mariadb_socket }}"
+  skip-external-locking:
+  # Skip reverse DNS lookup of clients
+  skip-name-resolve: 1
+  # enable performance schema
+  performance_schema: 1
+  # datadir: /opt/mariadb/data
+  # tmpdir: /opt/mariadb/tmp
+  # log_error: /opt/mariadb/log/error.log
+  # slow_query_log_file: /opt/mariadb/log/mysql-slow.log
+  expire_logs_days: 2
+  max_connections: 20
+  # replication
+  server-id: "{{ mariadb_server_id }}"
+  relay_log: "{{ ansible_hostname }}-relay-bin"
+  relay_log_index: "{{ ansible_hostname }}-relay-bin.index"
+  max_binlog_size: 100M
+  # ----------------------------------------------------
+  # required for Wsrep GTID Mode
+  log_slave_updates: true
+  # timeouts
+  wait_timeout: 28800
+  interactive_timeout: 28800
+  # ----------------------------------------------------
+  general_log_file: /var/log/mysql/general.log
+  general_log: 1
+
+mariadb_config_custom:
+  mariadb:
+    proxy_protocol_networks: "{{ mariadb.proxy_protocol_networks | join(',') }}"
+
+mariadb_config_galera:
+  wsrep_on: "ON"
+  wsrep_notify_cmd: "/bin/wsrep_notify.sh"
+  wsrep_cluster_name: "{{ mariadb_galera.cluster_name }}"
+  wsrep_provider: "/usr/lib/libgalera_smm.so"
+  wsrep_cluster_address: "gcomm://{{ mariadb_galera.node_addresses | bodsch.database.wsrep_cluster_address() }}"
+  binlog_format: "row"
+  default_storage_engine: "InnoDB"
+  innodb_autoinc_lock_mode: "2"
+  bind-address: "{{ ansible_default_ipv4.address }}"
+  # Galera Sync Mode
+  wsrep_sst_method: "{{ mariadb_galera.sst.method }}"
+  wsrep_sst_auth: "{{ mariadb_galera.sst.auth.username }}:{{ mariadb_galera.sst.auth.password }}"
+  # galera node settings
+  wsrep_node_address: "{{ mariadb_galera.node.address }}"
+  wsrep_node_name: "{{ mariadb_galera.node.name }}"
+  # GTID Mode
+  wsrep_gtid_mode: "ON"
+  wsrep_gtid_domain_id: "1337"
+  gtid_domain_id: "1"
+  gtid_strict_mode: "1"
+  # Tuning:
+  wsrep_slave_threads: 8
+  wsrep_log_conflicts:
+  innodb_flush_log_at_trx_commit: "0"
+  innodb_doublewrite: "1"
+  innodb_buffer_pool_size: "512M"
+
+...

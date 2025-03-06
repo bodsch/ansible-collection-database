@@ -1,0 +1,114 @@
+---
+
+- name: define network adresses for replicas
+  delegate_to: localhost
+  run_once: true
+  ansible.builtin.set_fact:
+    list_of_ips: "{{ mariadb_instances }}"
+  when:
+    - mariadb_replication.role == 'primary'
+
+- name: flush handlers at this point to avoid double restart
+  ansible.builtin.meta: flush_handlers
+
+- name: ensure replication user exists
+  delegate_to: "{{ mariadb_replication.primary }}"
+  community.mysql.mysql_user:
+    name: "{{ mariadb_replication.user.name }}"
+    host: "{{ item | default('%') }}"
+    password: "{{ mariadb_replication.user.password }}"
+    priv: "{{ mariadb_replication.user.priv | default('*.*:REPLICATION SLAVE,REPLICATION CLIENT') }}"
+    encrypted: "{{ mariadb_replication.user.encrypted | default('true') }}"
+    update_password: always
+    state: present
+    login_user:  "{{ _mariadb_root_system_user.username }}"
+    login_password: "{{ _mariadb_root_system_user.password }}"
+    login_unix_socket: "{{ mariadb_socket | default(omit) }}"
+    config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+  run_once: true
+  register: create_replication_user
+  loop:
+    "{{ list_of_ips }}"
+  loop_control:
+    label: "{{ mariadb_replication.user.name }}@{{ item | default('%') }},
+        password encypted: {{ mariadb_replication.user.encrypted | default('true') }}"
+  # no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
+  when:
+    - mariadb_replication.role == 'primary'
+    - mariadb_replication.primary is defined
+    - mariadb_replication.primary | length != 0
+    - mariadb_replication.user is defined
+    - mariadb_replication.user.name is defined
+    - mariadb_replication.user.password is defined
+    - mariadb_replication.user.name | length > 0
+    - mariadb_replication.user.password | length > 0
+
+- name: check replica replication status
+  bodsch.database.mariadb_replication:
+    mode: get_replica
+    login_user:  "{{ _mariadb_root_system_user.username }}"
+    login_password: "{{ _mariadb_root_system_user.password }}"
+    login_unix_socket: "{{ mariadb_socket | default(omit) }}"
+    config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+  ignore_errors: true
+  register: state_of_replica
+  # no_log: true
+  when:
+    - mariadb_replication.role == 'replica'
+
+- name: check primary replication status
+  delegate_to: "{{ mariadb_replication.primary }}"
+  bodsch.database.mariadb_replication:
+    mode: get_primary
+    login_user:  "{{ _mariadb_root_system_user.username }}"
+    login_password: "{{ _mariadb_root_system_user.password }}"
+    login_unix_socket: "{{ mariadb_socket | default(omit) }}"
+    config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+  register: state_of_primary
+  when:
+    - mariadb_replication.role == 'replica'
+    - (mariadb_replication.primary is defined and mariadb_replication.primary | length > 0)
+
+- name: configure replication on the replica
+  bodsch.database.mariadb_replication:
+    mode: change_primary
+    primary_host: "{{ mariadb_replication.primary }}"
+    primary_user: "{{ mariadb_replication.user.name }}"
+    primary_password: "{{ mariadb_replication.user.password }}"
+    primary_log_file: "{{ state_of_primary.File }}"
+    primary_log_pos: "{{ state_of_primary.Position }}"
+    login_user:  "{{ _mariadb_root_system_user.username }}"
+    login_password: "{{ _mariadb_root_system_user.password }}"
+    login_unix_socket: "{{ mariadb_socket | default(omit) }}"
+    config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+  # failed_when: true
+  no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
+  register: configure_replication_on_replica
+  when:
+    - (state_of_replica.Is_Replica is defined and not state_of_replica.Is_Replica) or
+      (state_of_replica.Is_Replica is not defined and state_of_replica is failed)
+    - mariadb_replication.role == 'replica'
+    - mariadb_replication.primary is defined
+    - mariadb_replication.primary | length != 0
+    - mariadb_replication.user is defined
+    - mariadb_replication.user.name is defined
+    - mariadb_replication.user.password is defined
+    - mariadb_replication.user.name | length > 0
+    - mariadb_replication.user.password | length > 0
+
+- name: start replication
+  bodsch.database.mariadb_replication:
+    mode: start_replica
+    login_user:  "{{ _mariadb_root_system_user.username }}"
+    login_password: "{{ _mariadb_root_system_user.password }}"
+    login_unix_socket: "{{ mariadb_socket | default(omit) }}"
+    config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+  register: start_replication
+  when:
+    - (state_of_replica.Is_Replica is defined and not state_of_replica.Is_Replica) or
+      (state_of_replica.Is_Replica is not defined and state_of_replica is failed)
+    - mariadb_replication.role == 'replica'
+    - mariadb_replication.primary is defined
+    - mariadb_replication.primary | length > 0
+
+...

@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+[Service]
+TimeoutStartSec = 320
+TimeoutStopSec  = 320
+
+ExecStartPre    = /usr/bin/install --verbose --mode 755 --owner mysql --group root --directory {{ mariadb_run_directory }}
