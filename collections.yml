@@ -1,0 +1,8 @@
+---
+
+collections:
+  - name: bodsch.core
+    version: "=>2.2.1"
+  # - name: community.crypto
+  - name: community.mysql
+  - name: community.general
