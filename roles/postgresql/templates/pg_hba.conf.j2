@@ -2,12 +2,29 @@
 # {{ ansible_managed }}
 #
 # See: https://www.postgresql.org/docs/current/static/auth-pg-hba-conf.html
+# -------------------------------------------------------------------------------
+# TYPE         DATABASE       USER           ADDRESS                       METHOD
 
 {% for client in postgresql_hba_entries %}
-{{ client.type }} {{ client.database }} {{ client.user }} {{ client.address|default('') }} {{ client.ip_address|default('') }} {{ client.ip_mask|default('') }} {{ client.auth_method }} {{ client.auth_options|default("") }}
-{% endfor %}
 {#
-
+{% if client.type | bodsch.database.pg_validate_connection_type %}
+{% endif %}
+#}
+{{ (client.type | string).ljust(15) }}
+{{- (client.database | string).ljust(15) }}
+{{- (client.user | string).ljust(15) }}
+{%- if client.address | default('') | string | length > 0 -%}
+{{- (client.address | default('') | string).ljust(15) }}
+{%- else -%}
+{{- (client.ip_address | default('') | string).ljust(15) }}
+{{- (client.ip_mask | default('') | string).ljust(15) }}
+{%- endif -%}
+{{- (client.auth_method | string).rjust(4).ljust(15) }}
+{{- (client.auth_options | default("")) }}
+{% endfor %}
+#
+# -------------------------------------------------------------------------------
+{#
 # ----------------------
 # Authentication Records
 # ----------------------

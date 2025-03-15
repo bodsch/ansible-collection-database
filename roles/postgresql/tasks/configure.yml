@@ -1,4 +1,50 @@
 ---
+
+- name: ensure configuration sub directory exists.
+  ansible.builtin.file:
+    state: directory
+    path: "{{ postgresql_config_path }}/postgresql.conf.d"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0700"
+
+- name: configure host based authentication (if entries are configured)
+  ansible.builtin.template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_config_path }}/pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0600"
+    backup: true
+  notify: restart postgresql
+  when:
+    - postgresql_hba_entries | length > 0
+
+- name: create postgres splitted config files
+  ansible.builtin.template:
+    src: "postgresql.conf.d/pg_{{ item }}.conf.j2"
+    dest: "{{ postgresql_config_path }}/postgresql.conf.d/pg_{{ item }}.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0644"
+    backup: true
+  loop:
+    - autovacuum
+    - client_connections
+    - compatibility
+    - connections
+    - error_handling
+    - file_locations
+    - lock_management
+    - query_tuning
+    - replication
+    - reporting
+    - ressources
+    - statistics
+    - write_ahead
+  notify:
+    - restart postgresql
+
 - name: configure global settings
   ansible.builtin.template:
     src: "postgresql.conf.j2"
@@ -8,32 +54,23 @@
   notify:
     - restart postgresql
 
-# - name: configure global settings
-#   lineinfile:
-#     dest: "{{ postgresql_config_path }}/postgresql.conf"
-#     regexp: "^#?{{ item.option }}.+$"
-#     line: "{{ item.option }} = '{{ item.value }}'"
-#     state: "{{ item.state | default('present') }}"
-#     mode: 0644
-#   with_items: "{{ postgresql_global_config_options }}"
-#   notify: restart postgresql
-
-- name: configure host based authentication (if entries are configured)
-  template:
-    src: "pg_hba.conf.j2"
-    dest: "{{ postgresql_config_path }}/pg_hba.conf"
-    owner: "{{ postgresql_user }}"
-    group: "{{ postgresql_group }}"
-    mode: 0600
-  notify: restart postgresql
-  when:
-    - postgresql_hba_entries | length > 0
-
-- name: ensure postgresql unix socket dirs exist
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ postgresql_user }}"
-    group: "{{ postgresql_group }}"
-    mode: "{{ postgresql_config_connections.unix.socket.permissions }}"
-  loop: "{{ postgresql_config_connections.unix.socket.directories }}"
+# # - name: configure global settings
+# #   lineinfile:
+# #     dest: "{{ postgresql_config_path }}/postgresql.conf"
+# #     regexp: "^#?{{ item.option }}.+$"
+# #     line: "{{ item.option }} = '{{ item.value }}'"
+# #     state: "{{ item.state | default('present') }}"
+# #     mode: 0644
+# #   with_items: "{{ postgresql_global_config_options }}"
+# #   notify: restart postgresql
+#
+#
+# - name: ensure postgresql unix socket dirs exist
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     state: directory
+#     owner: "{{ postgresql_user }}"
+#     group: "{{ postgresql_group }}"
+#     mode: "{{ postgresql_config_connections.unix.socket.permissions }}"
+#   loop: "{{ postgresql_config_connections.unix.socket.directories }}"
+#

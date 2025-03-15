@@ -1,0 +1,42 @@
+---
+
+namespace: bodsch
+name: database
+
+version: 0.0.1
+
+readme: README.md
+
+authors:
+  - Bodo Schulz <bodo@boone-schulz.de>
+
+description: A collection of Ansible roles to manage databases
+
+license:
+  - Apache-2.0
+
+license_file: ''
+
+tags:
+  - linux
+  - databases
+
+dependencies:
+  bodsch.core: ">=2.6.0"
+  bodsch.scm: "*"
+
+repository: https://github.com/bodsch/ansible-collection-cloud
+documentation: https://github.com/bodsch/ansible-collection-cloud/README.md
+homepage: https://github.com/bodsch/ansible-collection-cloud
+issues: https://github.com/bodsch/ansible-collection-cloud/issues
+
+build_ignore:
+  - "galaxy.yml"
+  - "*.pyc"
+  - "*.retry"
+  - ".ansible-lint"
+  - ".editorconfig"
+  - ".flake8"
+  - ".gitignore"
+  - ".yamllint"
+  - ".github"
