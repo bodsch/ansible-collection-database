@@ -29,9 +29,9 @@ postgresql_config_connections:
   superuser_reserved_connections: ""
   unix:
     socket:
-      directories:
-        - /run/postgresql
-        - /run/postgre
+      directories: []
+        # - /run/postgresql
+        # - /run/postgre
       group: ""
       permissions: "0755"
   bonjour:
@@ -130,6 +130,127 @@ postgresql_config_disk:
 postgresql_config_kernel:
   max_files_per_process: 1000           # min 64
 
+# config
+postgresql_config_autovacuum:
+  enabled: true                         # Enable autovacuum subprocess?  'on'
+                                        # requires track_counts to also be on.
+  max_workers: 3                        # max number of autovacuum subprocesses
+                                        # (change requires restart)
+  naptime: 1min                         # time between autovacuum runs
+  vacuum_threshold: 50                  # min number of row updates before
+                                        # vacuum
+  vacuum_insert_threshold: 1000         # min number of row inserts
+                                        # before vacuum; -1 disables insert
+                                        # vacuums
+  analyze_threshold: 50                 # min number of row updates before
+                                        # analyze
+  vacuum_scale_factor: 0.2              # fraction of table size before vacuum
+  vacuum_insert_scale_factor: 0.2       # fraction of inserts over table
+                                        # size before insert vacuum
+  analyze_scale_factor: 0.1             # fraction of table size before analyze
+  freeze_max_age: 200000000             # maximum XID age before forced vacuum
+                                        # (change requires restart)
+  multixact_freeze_max_age: 400000000   # maximum multixact age
+                                        # before forced vacuum
+                                        # (change requires restart)
+  vacuum_cost_delay: 2ms                # default vacuum cost delay for
+                                        # autovacuum, in milliseconds;
+                                        # -1 means use vacuum_cost_delay
+  vacuum_cost_limit: -1                 # default vacuum cost limit for
+                                        # autovacuum, -1 means use
+                                        # vacuum_cost_limit
+
+postgresql_config_client_connection:
+  statement_behavior:
+    client_min_messages: notice                   # error, warning, notice, log, debug1, ... , debug5
+    check_function_bodies: true
+    default:
+      table_access_method: 'heap'
+      tablespace: ''                        # a tablespace name, '' uses the default
+      toast_compression: 'pglz'             # 'pglz' or 'lz4'
+      transaction:
+        isolation: 'read committed'
+        read_only: false
+        deferrable: false
+    lock_timeout: 0                               # in milliseconds, 0 is disabled
+    idle:
+      in_transaction_session_timeout: 0        # in milliseconds, 0 is disabled
+      session_timeout: 0                       # in milliseconds, 0 is disabled
+    vacuum:
+      freeze:
+        table_age: 150000000
+        min_age: 50000000
+      failsafe_age: 1600000000
+    multixact:
+      freeze:
+        table_age: 150000000
+        min_age: 5000000
+      failsafe_age: 1600000000
+    bytea_output: 'hex'                   # hex, escape
+    xmlbinary: 'base64'
+    xmloption: 'content'
+    gin_pending_list_limit: 4MB
+    createrole_self_grant: ''             # set and/or inherit
+    event_triggers: true
+    row_security: true
+    session_replication_role: 'origin'
+    statement_timeout: 0                          # in milliseconds, 0 is disabled
+    search_path:                                  # schema names
+      - '"$user"'                                 #
+      -  'public'                                 #
+    temp_tablespaces: ''                          # a list of tablespace names, '' uses
+                                                  # only default tablespace
+    transaction_timeout: 0                        # in milliseconds, 0 is disabled
+  locale_and_formatting:
+    datestyle:
+      - iso
+      - mdy
+    intervalstyle: 'postgres'
+    timezone: UTC
+    timezone_abbreviations: 'Default'       # Select the set of available time zone
+                                            # abbreviations.  Currently, there are
+                                            #   Default
+                                            #   Australia (historical usage)
+                                            #   India
+                                            # You can create your own file in
+                                            # share/timezonesets/.
+    extra_float_digits: 1                   # min -15, max 3; any value >0 actually
+                                            # selects precise output mode
+    client_encoding: sql_ascii              # actually, defaults to database
+                                            # encoding
+
+    # These settings are initialized by initdb, but they can be changed.
+    lc_messages: 'C.UTF-8'                  # locale for system error message
+                                            # strings
+    lc_monetary: 'C.UTF-8'                  # locale for monetary formatting
+    lc_numeric: 'C.UTF-8'                   # locale for number formatting
+    lc_time: 'C.UTF-8'                      # locale for time formatting
+
+    icu_validation_level: warning           # report ICU locale validation
+                                            # errors at the given level
+    # default configuration for text search
+    default_text_search_config: 'pg_catalog.english'
+  preloading:
+    local_preload_libraries: ''
+    session_preload_libraries: ''
+    shared_preload_libraries: ''            # (change requires restart)
+    jit_provider: 'llvmjit'                 # JIT library to use
+    dynamic_library_path: '$libdir'
+    gin_fuzzy_search_limit: 0
+
+postgresql_config_compatibility: {}
+postgresql_config_connections: {}
+postgresql_config_error_handling: {}
+postgresql_config_file_locations: {}
+postgresql_config_lock_management: {}
+postgresql_config_query_tuning: {}
+postgresql_config_replication: {}
+postgresql_config_reporting: {}
+postgresql_config_ressources: {}
+postgresql_config_statistics: {}
+postgresql_config_write_ahead: {}
+
+
 postgresql_config_vacuum:
   vacuum_cost_delay: 0                  # 0-100 milliseconds (0 disables)
   vacuum_cost_page_hit: 1               # 0-10000 credits
@@ -153,24 +274,9 @@ postgresql_config_async_behavior:
   max_parallel_maintenance_workers: 2   # limited by max_parallel_workers
   max_parallel_workers: 8               # number of max_worker_processes that
                                          # can be used in parallel operations
-  parallel_leader_participation: on
-
-
-
-
-
-
-
-
-
+  parallel_leader_participation: true
 
 postgresql_config_wal: {}
-
-
-
-
-
-
 
 # Global configuration options that will be set in postgresql.conf.
 postgresql_global_config_options:

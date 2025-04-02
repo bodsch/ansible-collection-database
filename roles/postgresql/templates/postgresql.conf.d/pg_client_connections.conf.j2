@@ -1,11 +1,244 @@
-
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
 
 #------------------------------------------------------------------------------
 # CLIENT CONNECTION DEFAULTS
 #------------------------------------------------------------------------------
 
+{% if postgresql_config_client_connection | bodsch.core.type == "dict" %}
+  {% if postgresql_config_client_connection.statement_behavior | bodsch.core.type == "dict" %}
+    {% set statement_behavior = postgresql_config_client_connection.statement_behavior %}
 # - Statement Behavior -
+      {% if statement_behavior.client_min_messages is defined and
+            statement_behavior.client_min_messages | string | length > 0 and
+            statement_behavior.client_min_messages in ["error", "warning", "notice", "notice", "debug1", "debug2", "debug3", "debug4", "debug5"] %}
+client_min_messages                 = {{ statement_behavior.client_min_messages }}
+      {% endif %}
+      {% if statement_behavior.check_function_bodies is defined and
+            statement_behavior.check_function_bodies | string | length > 0 %}
+check_function_bodies               = {{ statement_behavior.check_function_bodies | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+      {% if statement_behavior.default is defined and
+            statement_behavior.default | bodsch.core.type == "dict" %}
+        {% if statement_behavior.default.table_access_method and
+              statement_behavior.default.table_access_method | string | length > 0 %}
+default_table_access_method         = {{ statement_behavior.default.table_access_method }}
+        {% endif %}
+        {% if statement_behavior.default.tablespace and
+              statement_behavior.default.tablespace | string | length > 0 %}
+default_tablespace                  = {{ statement_behavior.default.tablespace }}
+        {% endif %}
+        {% if statement_behavior.default.toast_compression and
+              statement_behavior.default.toast_compression | string | length > 0 and
+              statement_behavior.default.toast_compression in ["pglz", "lz4"] %}
+default_toast_compression           = {{ statement_behavior.default.toast_compression }}
+        {% endif %}
+        {% if statement_behavior.default.transaction.isolation and
+              statement_behavior.default.transaction.isolation | string | length > 0 %}
+default_transaction_isolation       = '{{ statement_behavior.default.transaction.isolation }}'
+        {% endif %}
+        {% if statement_behavior.default.transaction.read_only and
+              statement_behavior.default.transaction.read_only | string | length > 0 %}
+default_transaction_read_only       = {{ statement_behavior.default.transaction.read_only | bodsch.core.config_bool(true_as="on", false_as="off") }}
+        {% endif %}
+        {% if statement_behavior.default.transaction.deferrable and
+              statement_behavior.default.transaction.deferrable | string | length > 0 %}
+default_transaction_deferrable      = {{ statement_behavior.default.transaction.deferrable | bodsch.core.config_bool(true_as="on", false_as="off") }}
+        {% endif %}
+      {% endif %}
+      {% if statement_behavior.lock_timeout is defined and
+            statement_behavior.lock_timeout | string | length > 0 %}
+lock_timeout                        = {{ statement_behavior.lock_timeout }}
+      {% endif %}
+      {% if statement_behavior.idle is defined and
+            statement_behavior.idle | bodsch.core.type == "dict" %}
+        {% if statement_behavior.idle.in_transaction_session_timeout is defined and
+              statement_behavior.idle.in_transaction_session_timeout | string | length > 0 %}
+idle_in_transaction_session_timeout = {{ statement_behavior.idle.in_transaction_session_timeout }}
+        {% endif %}
+        {% if statement_behavior.idle.session_timeout is defined and
+              statement_behavior.idle.session_timeout | string | length > 0 %}
+idle_session_timeout                = {{ statement_behavior.idle.session_timeout }}
+        {% endif %}
+      {% endif %}
+      {% if statement_behavior.vacuum is defined and
+            statement_behavior.vacuum | bodsch.core.type == "dict" %}
+        {% if statement_behavior.vacuum.freeze.table_age is defined and
+              statement_behavior.vacuum.freeze.table_age | string | length > 0 %}
+vacuum_freeze_table_age             = {{ statement_behavior.vacuum.freeze.table_age }}
+        {% endif %}
+        {% if statement_behavior.vacuum.freeze.min_age is defined and
+              statement_behavior.vacuum.freeze.min_age | string | length > 0 %}
+vacuum_freeze_min_age               = {{ statement_behavior.vacuum.freeze.min_age }}
+        {% endif %}
+        {% if statement_behavior.vacuum.failsafe_age is defined and
+              statement_behavior.vacuum.failsafe_age | string | length > 0 %}
+vacuum_failsafe_age                 = {{ statement_behavior.vacuum.failsafe_age }}
+        {% endif %}
+        {% if statement_behavior.multixact.freeze.table_age is defined and
+              statement_behavior.multixact.freeze.table_age | string | length > 0 %}
+vacuum_multixact_freeze_table_age   = {{ statement_behavior.multixact.freeze.table_age }}
+        {% endif %}
+        {% if statement_behavior.multixact.freeze.min_age is defined and
+              statement_behavior.multixact.freeze.min_age | string | length > 0 %}
+vacuum_multixact_freeze_min_age     = {{ statement_behavior.multixact.freeze.min_age }}
+        {% endif %}
+        {% if statement_behavior.multixact.failsafe_age is defined and
+              statement_behavior.multixact.failsafe_age | string | length > 0 %}
+vacuum_multixact_failsafe_age       = {{ statement_behavior.multixact.failsafe_age }}
+        {% endif %}
+      {% endif %}
+      {% if statement_behavior.search_path is defined %}
+        {% if statement_behavior.search_path | bodsch.core.type == "str" and
+              statement_behavior.search_path | string | length > 0 %}
+search_path                         = '{{ statement_behavior.search_path }}'
+        {% elif statement_behavior.search_path | bodsch.core.type == "list" and
+                statement_behavior.search_path | count > 0 %}
+search_path                         = '{{ statement_behavior.search_path | join(", ") }}'
+        {% endif %}
+      {% endif %}
+      {% if statement_behavior.row_security is defined and
+            statement_behavior.row_security | string | length > 0 %}
+row_security                        = {{ statement_behavior.row_security | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+      {% if statement_behavior.temp_tablespaces is defined %}
+        {% if statement_behavior.temp_tablespaces | bodsch.core.type == "str" and
+              statement_behavior.temp_tablespaces | string | length > 0 %}
+        {% elif statement_behavior.temp_tablespaces | bodsch.core.type == "list" and
+                statement_behavior.temp_tablespaces | count > 0 %}
+temp_tablespaces                    = {{ statement_behavior.temp_tablespaces | join(', ') }}
+        {% elif statement_behavior.temp_tablespaces | bodsch.core.type == "list" and
+                statement_behavior.temp_tablespaces | count > 0 %}
+temp_tablespaces                    = {{ statement_behavior.temp_tablespaces | join(', ') }}
+        {% endif %}
+      {% endif %}
+      {% if statement_behavior.session_replication_role is defined and
+            statement_behavior.session_replication_role | string | length > 0 %}
+session_replication_role            = {{ statement_behavior.session_replication_role | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+      {% if statement_behavior.statement_timeout is defined and
+            statement_behavior.statement_timeout | string | length > 0 %}
+statement_timeout                   = {{ statement_behavior.statement_timeout }}
+      {% endif %}
+      {% if statement_behavior.transaction_timeout is defined and
+            statement_behavior.transaction_timeout | string | length > 0 %}
+transaction_timeout                 = {{ statement_behavior.transaction_timeout }}
+      {% endif %}
+      {% if statement_behavior.bytea_output is defined and
+            statement_behavior.bytea_output | string | length > 0 %}
+bytea_output                        = {{ statement_behavior.bytea_output }}
+      {% endif %}
+      {% if statement_behavior.xmlbinary is defined and
+            statement_behavior.xmlbinary | string | length > 0 %}
+xmlbinary                           = {{ statement_behavior.xmlbinary }}
+      {% endif %}
+      {% if statement_behavior.xmloption is defined and
+            statement_behavior.xmloption | string | length > 0 %}
+xmloption                           = {{ statement_behavior.xmloption }}
+      {% endif %}
+      {% if statement_behavior.gin_pending_list_limit is defined and
+            statement_behavior.gin_pending_list_limit | string | length > 0 %}
+gin_pending_list_limit              = {{ statement_behavior.gin_pending_list_limit }}
+      {% endif %}
+      {% if statement_behavior.createrole_self_grant is defined and
+            statement_behavior.createrole_self_grant | string | length > 0 %}
+createrole_self_grant               = {{ statement_behavior.createrole_self_grant }}
+      {% endif %}
+      {% if statement_behavior.event_triggers is defined and
+            statement_behavior.event_triggers | string | length > 0 %}
+event_triggers                      = {{ statement_behavior.event_triggers | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+  {% endif %}
+  {% if postgresql_config_client_connection.locale_and_formatting | bodsch.core.type == "dict" %}
+    {% set locale_and_formatting = postgresql_config_client_connection.locale_and_formatting %}
 
+# - Locale and Formatting -
+    {% if locale_and_formatting.datestyle is defined %}
+      {% if locale_and_formatting.datestyle | bodsch.core.type == "str" and
+              locale_and_formatting.datestyle | string | length > 0 %}
+datestyle                           = '{{ locale_and_formatting.datestyle }}'
+      {% elif locale_and_formatting.datestyle | bodsch.core.type == "list" and
+              locale_and_formatting.datestyle | count > 0 %}
+datestyle                           = '{{ locale_and_formatting.datestyle | join(", ") }}'
+      {% endif %}
+    {% endif %}
+    {% if locale_and_formatting.intervalstyle is defined and
+          locale_and_formatting.intervalstyle | string | length > 0 %}
+intervalstyle                       = '{{ locale_and_formatting.intervalstyle }}'
+    {% endif %}
+    {% if locale_and_formatting.timezone is defined and
+          locale_and_formatting.timezone | string | length > 0 %}
+timezone                            = {{ locale_and_formatting.timezone }}
+    {% endif %}
+    {% if locale_and_formatting.timezone_abbreviations is defined and
+          locale_and_formatting.timezone_abbreviations | string | length > 0 %}
+timezone_abbreviations              = '{{ locale_and_formatting.timezone_abbreviations }}'
+    {% endif %}
+    {% if locale_and_formatting.extra_float_digits is defined and
+          locale_and_formatting.extra_float_digits | string | length > 0 %}
+extra_float_digits                  = {{ locale_and_formatting.extra_float_digits }}
+    {% endif %}
+    {% if locale_and_formatting.client_encoding is defined and
+          locale_and_formatting.client_encoding | string | length > 0 %}
+client_encoding                     = {{ locale_and_formatting.client_encoding }}
+    {% endif %}
+    {% if locale_and_formatting.lc_messages is defined and
+          locale_and_formatting.lc_messages | string | length > 0 %}
+lc_messages                         = '{{ locale_and_formatting.lc_messages }}'
+    {% endif %}
+    {% if locale_and_formatting.lc_monetary is defined and
+          locale_and_formatting.lc_monetary | string | length > 0 %}
+lc_monetary                         = '{{ locale_and_formatting.lc_monetary }}'
+    {% endif %}
+    {% if locale_and_formatting.lc_numeric is defined and
+          locale_and_formatting.lc_numeric | string | length > 0 %}
+lc_numeric                          = '{{ locale_and_formatting.lc_numeric }}'
+    {% endif %}
+    {% if locale_and_formatting.lc_time is defined and
+          locale_and_formatting.lc_time | string | length > 0 %}
+lc_time                             = '{{ locale_and_formatting.lc_time }}'
+    {% endif %}
+    {% if locale_and_formatting.icu_validation_level is defined and
+          locale_and_formatting.icu_validation_level | string | length > 0  and
+          locale_and_formatting.icu_validation_level in ["error", "warning", "notice", "notice", "debug1", "debug2", "debug3", "debug4", "debug5"] %}
+icu_validation_level                = {{ locale_and_formatting.icu_validation_level }}
+    {% endif %}
+    {% if locale_and_formatting.default_text_search_config is defined and
+          locale_and_formatting.default_text_search_config | string | length > 0 %}
+default_text_search_config          = '{{ locale_and_formatting.default_text_search_config }}'
+    {% endif %}
+  {% endif %}
+  {% if postgresql_config_client_connection.preloading | bodsch.core.type == "dict" %}
+    {% set preloading = postgresql_config_client_connection.preloading %}
+
+# - Shared Library Preloading -
+    {% if preloading.local_preload_libraries is defined and
+          preloading.local_preload_libraries | string | length > 0 %}
+local_preload_libraries             = '{{ preloading.local_preload_libraries }}'
+    {% endif %}
+    {% if preloading.session_preload_libraries is defined and
+          preloading.session_preload_libraries | string | length > 0 %}
+session_preload_libraries           = '{{ preloading.session_preload_libraries }}'
+    {% endif %}
+    {% if preloading.shared_preload_libraries is defined and
+          preloading.shared_preload_libraries | string | length > 0 %}
+shared_preload_libraries            = '{{ preloading.shared_preload_libraries }}'
+    {% endif %}
+    {% if preloading.jit_provider is defined and
+          preloading.jit_provider | string | length > 0 %}
+jit_provider                        = '{{ preloading.jit_provider }}'
+    {% endif %}
+    {% if preloading.dynamic_library_path is defined and
+          preloading.dynamic_library_path | string | length > 0 %}
+dynamic_library_path                = '{{ preloading.dynamic_library_path }}'
+    {% endif %}
+    {% if preloading.gin_fuzzy_search_limit is defined and
+          preloading.gin_fuzzy_search_limit | string | length > 0 %}
+gin_fuzzy_search_limit              = {{ preloading.gin_fuzzy_search_limit }}
+    {% endif %}
+  {% endif %}
+{% endif %}
+{#
 #client_min_messages = notice           # values in order of decreasing detail:
                                         #   debug5
                                         #   debug4
@@ -87,3 +320,4 @@ default_text_search_config = 'pg_catalog.english'
 
 #dynamic_library_path = '$libdir'
 #gin_fuzzy_search_limit = 0
+#}

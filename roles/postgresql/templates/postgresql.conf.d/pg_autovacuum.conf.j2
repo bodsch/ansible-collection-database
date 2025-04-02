@@ -1,8 +1,65 @@
-
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
 
 #------------------------------------------------------------------------------
 # AUTOVACUUM
 #------------------------------------------------------------------------------
+
+{% if postgresql_config_autovacuum | bodsch.core.type == "dict" %}
+  {% if postgresql_config_autovacuum.enabled is defined and
+        postgresql_config_autovacuum.enabled | string | length > 0 %}
+autovacuum                      = {{ postgresql_config_autovacuum.enabled | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% if postgresql_config_autovacuum.max_workers is defined and
+          postgresql_config_autovacuum.max_workers | string | length > 0 %}
+autovacuum_max_workers          = {{ postgresql_config_autovacuum.max_workers }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.naptime is defined and
+          postgresql_config_autovacuum.naptime | string | length > 0 %}
+autovacuum_naptime              = {{ postgresql_config_autovacuum.naptime }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_threshold is defined and
+          postgresql_config_autovacuum.vacuum_threshold | string | length > 0 %}
+autovacuum_vacuum_threshold     = {{ postgresql_config_autovacuum.vacuum_threshold }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_insert_threshold is defined and
+          postgresql_config_autovacuum.vacuum_insert_threshold | string | length > 0 %}
+autovacuum_vacuum_insert_threshold = {{ postgresql_config_autovacuum.vacuum_insert_threshold }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.analyze_threshold is defined and
+          postgresql_config_autovacuum.analyze_threshold | string | length > 0 %}
+autovacuum_analyze_threshold    = {{ postgresql_config_autovacuum.analyze_threshold }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_scale_factor is defined and
+          postgresql_config_autovacuum.vacuum_scale_factor | string | length > 0 %}
+autovacuum_vacuum_scale_factor  = {{ postgresql_config_autovacuum.vacuum_scale_factor }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_insert_scale_factor is defined and
+          postgresql_config_autovacuum.vacuum_insert_scale_factor | string | length > 0 %}
+autovacuum_vacuum_insert_scale_factor = {{ postgresql_config_autovacuum.vacuum_insert_scale_factor }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.analyze_scale_factor is defined and
+          postgresql_config_autovacuum.analyze_scale_factor | string | length > 0 %}
+autovacuum_analyze_scale_factor = {{ postgresql_config_autovacuum.analyze_scale_factor }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.freeze_max_age is defined and
+          postgresql_config_autovacuum.freeze_max_age | string | length > 0 %}
+autovacuum_freeze_max_age       = {{ postgresql_config_autovacuum.freeze_max_age }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.multixact_freeze_max_age is defined and
+          postgresql_config_autovacuum.multixact_freeze_max_age | string | length > 0 %}
+autovacuum_multixact_freeze_max_age = {{ postgresql_config_autovacuum.multixact_freeze_max_age }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_cost_delay is defined and
+          postgresql_config_autovacuum.vacuum_cost_delay | string | length > 0 %}
+autovacuum_vacuum_cost_delay    = {{ postgresql_config_autovacuum.vacuum_cost_delay }}
+    {% endif %}
+    {% if postgresql_config_autovacuum.vacuum_cost_limit is defined and
+          postgresql_config_autovacuum.vacuum_cost_limit | string | length > 0 %}
+autovacuum_vacuum_cost_limit    = {{ postgresql_config_autovacuum.vacuum_cost_limit }}
+    {% endif %}
+  {% endif %}
+{% endif %}
+{#
 
 #autovacuum = on                        # Enable autovacuum subprocess?  'on'
                                         # requires track_counts to also be on.
@@ -31,3 +88,5 @@
 #autovacuum_vacuum_cost_limit = -1      # default vacuum cost limit for
                                         # autovacuum, -1 means use
                                         # vacuum_cost_limit
+
+#}
