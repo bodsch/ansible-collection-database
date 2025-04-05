@@ -5,208 +5,212 @@
 # RESOURCE USAGE (except WAL)
 #------------------------------------------------------------------------------
 
-{% if postgresql_config_memory | bodsch.core.type == "dict" %}
+{% if postgresql_config_ressources | bodsch.core.type == "dict" %}
+  {% set ressources = postgresql_config_ressources %}
+  {% if ressources.memory | bodsch.core.type == "dict" %}
 # - Memory -
-  {% if postgresql_config_memory.shared_buffers is defined and
-        postgresql_config_memory.shared_buffers | string | length > 0 %}
-shared_buffers                  = {{ postgresql_config_memory.shared_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.huge_pages is defined and
-        postgresql_config_memory.huge_pages | string | length > 0 %}
-    {% if postgresql_config_memory.huge_pages | bodsch.core.type == "bool" %}
-huge_pages                      = {{ postgresql_config_memory.huge_pages | bodsch.core.config_bool(true_as="on", false_as="off") }}
-    {% elif postgresql_config_memory.huge_pages | bodsch.core.type == "string" and
-            postgresql_config_memory.huge_pages and in ['on', 'off', 'try'] %}
-huge_pages                      = {{ postgresql_config_memory.huge_pages }}
+    {% set memory = ressources.memory %}
+    {% if memory.shared_buffers is defined and
+          memory.shared_buffers | string | length > 0 %}
+shared_buffers                      = {{ memory.shared_buffers }}
+    {% endif %}
+    {% if memory.huge_pages is defined and
+          memory.huge_pages | string | length > 0 %}
+      {% if memory.huge_pages | bodsch.core.type == "bool" %}
+huge_pages                          = {{ memory.huge_pages | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% elif memory.huge_pages | bodsch.core.type == "string" and
+              memory.huge_pages and in ['on', 'off', 'try'] %}
+huge_pages                          = {{ memory.huge_pages }}
+      {% endif %}
+    {% endif %}
+    {% if memory.huge_page_size is defined and
+          memory.huge_page_size | string | length > 0 %}
+huge_page_size                      = {{ memory.huge_page_size | int }}
+    {% endif %}
+    {% if memory.temp_buffers is defined and
+          memory.temp_buffers | string | length > 0 %}
+temp_buffers                        = {{ memory.temp_buffers }}
+    {% endif %}
+    {% if memory.max_prepared_transactions is defined and
+          memory.max_prepared_transactions | string | length > 0 %}
+max_prepared_transactions           = {{ memory.max_prepared_transactions }}
+    {% endif %}
+    {% if memory.work_mem is defined and
+          memory.work_mem | string | length > 0 %}
+work_mem                            = {{ memory.work_mem }}
+    {% endif %}
+    {% if memory.hash_mem_multiplier is defined and
+          memory.hash_mem_multiplier | string | length > 0 %}
+hash_mem_multiplier                 = {{ memory.hash_mem_multiplier }}
+    {% endif %}
+    {% if memory.maintenance_work_mem is defined and
+          memory.maintenance_work_mem | string | length > 0 %}
+maintenance_work_mem                = {{ memory.maintenance_work_mem }}
+    {% endif %}
+    {% if memory.autovacuum_work_mem is defined and
+          memory.autovacuum_work_mem | string | length > 0 %}
+autovacuum_work_mem                 = {{ memory.autovacuum_work_mem }}
+    {% endif %}
+    {% if memory.logical_decoding_work_mem is defined and
+          memory.logical_decoding_work_mem | string | length > 0 %}
+logical_decoding_work_mem           = {{ memory.logical_decoding_work_mem }}
+    {% endif %}
+    {% if memory.max_stack_depth is defined and
+          memory.max_stack_depth | string | length > 0 %}
+max_stack_depth                     = {{ memory.max_stack_depth }}
+    {% endif %}
+    {% if memory.shared_memory_type is defined and
+          memory.shared_memory_type | string | length > 0 %}
+shared_memory_type                  = {{ memory.shared_memory_type }}
+    {% endif %}
+    {% if memory.dynamic_shared_memory_type is defined and
+          memory.dynamic_shared_memory_type | string | length > 0 %}
+dynamic_shared_memory_type          = {{ memory.dynamic_shared_memory_type }}
+    {% endif %}
+    {% if memory.min_dynamic_shared_memory is defined and
+          memory.min_dynamic_shared_memory | string | length > 0 %}
+min_dynamic_shared_memory           = {{ memory.min_dynamic_shared_memory }}
+    {% endif %}
+    {% if memory.vacuum_buffer_usage_limit is defined and
+          memory.vacuum_buffer_usage_limit | string | length > 0 %}
+vacuum_buffer_usage_limit           = {{ memory.vacuum_buffer_usage_limit }}
+    {% endif %}
+    {% if memory.commit_timestamp_buffers is defined and
+          memory.commit_timestamp_buffers | string | length > 0 %}
+commit_timestamp_buffers            = {{ memory.commit_timestamp_buffers }}
+    {% endif %}
+    {% if memory.multixact_offset_buffers is defined and
+          memory.multixact_offset_buffers | string | length > 0 %}
+multixact_offset_buffers            = {{ memory.multixact_offset_buffers }}
+    {% endif %}
+    {% if memory.multixact_member_buffers is defined and
+          memory.multixact_member_buffers | string | length > 0 %}
+multixact_member_buffers            = {{ memory.multixact_member_buffers }}
+    {% endif %}
+    {% if memory.notify_buffers is defined and
+          memory.notify_buffers | string | length > 0 %}
+notify_buffers                      = {{ memory.notify_buffers }}
+    {% endif %}
+    {% if memory.serializable_buffers is defined and
+          memory.serializable_buffers | string | length > 0 %}
+serializable_buffers                = {{ memory.serializable_buffers }}
+    {% endif %}
+    {% if memory.subtransaction_buffers is defined and
+          memory.subtransaction_buffers | string | length > 0 %}
+subtransaction_buffers              = {{ memory.subtransaction_buffers }}
+    {% endif %}
+    {% if memory.transaction_buffers is defined and
+          memory.transaction_buffers | string | length > 0 %}
+transaction_buffers                 = {{ memory.transaction_buffers }}
     {% endif %}
   {% endif %}
 
-  {% if postgresql_config_memory.huge_page_size is defined and
-        postgresql_config_memory.huge_page_size | string | length > 0 %}
-huge_page_size                  = {{ postgresql_config_memory.huge_page_size | int }}
-  {% endif %}
-  {% if postgresql_config_memory.temp_buffers is defined and
-        postgresql_config_memory.temp_buffers | string | length > 0 %}
-temp_buffers                    = {{ postgresql_config_memory.temp_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.max_prepared_transactions is defined and
-        postgresql_config_memory.max_prepared_transactions | string | length > 0 %}
-max_prepared_transactions       = {{ postgresql_config_memory.max_prepared_transactions }}
-  {% endif %}
-# Caution: it is not advisable to set max_prepared_transactions nonzero unless
-# you actively intend to use prepared transactions.
-  {% if postgresql_config_memory.work_mem is defined and
-        postgresql_config_memory.work_mem | string | length > 0 %}
-work_mem                        = {{ postgresql_config_memory.work_mem }}
-  {% endif %}
-  {% if postgresql_config_memory.hash_mem_multiplier is defined and
-        postgresql_config_memory.hash_mem_multiplier | string | length > 0 %}
-hash_mem_multiplier             = {{ postgresql_config_memory.hash_mem_multiplier }}
-  {% endif %}
-  {% if postgresql_config_memory.maintenance_work_mem is defined and
-        postgresql_config_memory.maintenance_work_mem | string | length > 0 %}
-maintenance_work_mem            = {{ postgresql_config_memory.maintenance_work_mem }}
-  {% endif %}
-  {% if postgresql_config_memory.autovacuum_work_mem is defined and
-        postgresql_config_memory.autovacuum_work_mem | string | length > 0 %}
-autovacuum_work_mem             = {{ postgresql_config_memory.autovacuum_work_mem }}
-  {% endif %}
-  {% if postgresql_config_memory.logical_decoding_work_mem is defined and
-        postgresql_config_memory.logical_decoding_work_mem | string | length > 0 %}
-logical_decoding_work_mem       = {{ postgresql_config_memory.logical_decoding_work_mem }}
-  {% endif %}
-  {% if postgresql_config_memory.max_stack_depth is defined and
-        postgresql_config_memory.max_stack_depth | string | length > 0 %}
-max_stack_depth                 = {{ postgresql_config_memory.max_stack_depth }}
-  {% endif %}
-  {% if postgresql_config_memory.shared_memory_type is defined and
-        postgresql_config_memory.shared_memory_type | string | length > 0 %}
-shared_memory_type              = {{ postgresql_config_memory.shared_memory_type }}
-  {% endif %}
-  {% if postgresql_config_memory.dynamic_shared_memory_type is defined and
-        postgresql_config_memory.dynamic_shared_memory_type | string | length > 0 %}
-dynamic_shared_memory_type      = {{ postgresql_config_memory.dynamic_shared_memory_type }}
-  {% endif %}
-  {% if postgresql_config_memory.min_dynamic_shared_memory is defined and
-        postgresql_config_memory.min_dynamic_shared_memory | string | length > 0 %}
-min_dynamic_shared_memory       = {{ postgresql_config_memory.min_dynamic_shared_memory }}
-  {% endif %}
-  {% if postgresql_config_memory.vacuum_buffer_usage_limit is defined and
-        postgresql_config_memory.vacuum_buffer_usage_limit | string | length > 0 %}
-vacuum_buffer_usage_limit       = {{ postgresql_config_memory.vacuum_buffer_usage_limit }}
-  {% endif %}
-  {% if postgresql_config_memory.commit_timestamp_buffers is defined and
-        postgresql_config_memory.commit_timestamp_buffers | string | length > 0 %}
-# SLRU buffers (change requires restart)
-commit_timestamp_buffers        = {{ postgresql_config_memory.commit_timestamp_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.multixact_offset_buffers is defined and
-        postgresql_config_memory.multixact_offset_buffers | string | length > 0 %}
-multixact_offset_buffers        = {{ postgresql_config_memory.multixact_offset_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.multixact_member_buffers is defined and
-        postgresql_config_memory.multixact_member_buffers | string | length > 0 %}
-multixact_member_buffers        = {{ postgresql_config_memory.multixact_member_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.notify_buffers is defined and
-        postgresql_config_memory.notify_buffers | string | length > 0 %}
-notify_buffers                  = {{ postgresql_config_memory.notify_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.serializable_buffers is defined and
-        postgresql_config_memory.serializable_buffers | string | length > 0 %}
-serializable_buffers            = {{ postgresql_config_memory.serializable_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.subtransaction_buffers is defined and
-        postgresql_config_memory.subtransaction_buffers | string | length > 0 %}
-subtransaction_buffers          = {{ postgresql_config_memory.subtransaction_buffers }}
-  {% endif %}
-  {% if postgresql_config_memory.transaction_buffers is defined and
-        postgresql_config_memory.transaction_buffers | string | length > 0 %}
-transaction_buffers             = {{ postgresql_config_memory.transaction_buffers }}
-  {% endif %}
-
-{% endif %}
-{% if postgresql_config_disk | bodsch.core.type == "dict" %}
+  {% if ressources.disk | bodsch.core.type == "dict" %}
 # - Disk -
-  {% if postgresql_config_disk.temp_file_limit is defined and
-        postgresql_config_disk.temp_file_limit | string | length > 0 %}
-temp_file_limit                 = {{ postgresql_config_disk.temp_file_limit }}
-  {% endif %}
-  {% if postgresql_config_disk.max_notify_queue_pages is defined and
-        postgresql_config_disk.max_notify_queue_pages | string | length > 0 %}
-max_notify_queue_pages          = {{ postgresql_config_disk.max_notify_queue_pages }}
+    {% set disk = ressources.disk %}
+    {% if disk.temp_file_limit is defined and
+          disk.temp_file_limit | string | length > 0 %}
+temp_file_limit                     = {{ disk.temp_file_limit }}
+    {% endif %}
+    {% if disk.max_notify_queue_pages is defined and
+          disk.max_notify_queue_pages | string | length > 0 %}
+max_notify_queue_pages              = {{ disk.max_notify_queue_pages }}
+    {% endif %}
   {% endif %}
 
-{% endif %}
-{% if postgresql_config_kernel | bodsch.core.type == "dict" %}
+  {% if ressources.kernel | bodsch.core.type == "dict" %}
 # - Kernel Resources -
-  {% if postgresql_config_kernel.max_files_per_process is defined and
-        postgresql_config_kernel.max_files_per_process | string | length > 0 %}
-max_files_per_process           = {{ postgresql_config_kernel.max_files_per_process }}
+    {% set kernel = ressources.kernel %}
+    {% if kernel.max_files_per_process is defined and
+          kernel.max_files_per_process | string | length > 0 %}
+max_files_per_process               = {{ kernel.max_files_per_process }}
+    {% endif %}
   {% endif %}
 
-{% endif %}
-{% if postgresql_config_vacuum | bodsch.core.type == "dict" %}
+  {% if ressources.vacuum | bodsch.core.type == "dict" %}
 # - Cost-Based Vacuum Delay -
-  {% if postgresql_config_vacuum.vacuum_cost_delay is defined and
-        postgresql_config_vacuum.vacuum_cost_delay | string | length > 0 %}
-vacuum_cost_delay               = {{ postgresql_config_vacuum.vacuum_cost_delay }}
-  {% endif %}
-  {% if postgresql_config_vacuum.vacuum_cost_page_hit is defined and
-        postgresql_config_vacuum.vacuum_cost_page_hit | string | length > 0 %}
-vacuum_cost_page_hit            = {{ postgresql_config_vacuum.vacuum_cost_page_hit }}
-  {% endif %}
-  {% if postgresql_config_vacuum.vacuum_cost_page_miss is defined and
-        postgresql_config_vacuum.vacuum_cost_page_miss | string | length > 0 %}
-vacuum_cost_page_miss           = {{ postgresql_config_vacuum.vacuum_cost_page_miss }}
-  {% endif %}
-  {% if postgresql_config_vacuum.vacuum_cost_page_dirty is defined and
-        postgresql_config_vacuum.vacuum_cost_page_dirty | string | length > 0 %}
-vacuum_cost_page_dirty          = {{ postgresql_config_vacuum.vacuum_cost_page_dirty }}
-  {% endif %}
-  {% if postgresql_config_vacuum.vacuum_cost_limit is defined and
-        postgresql_config_vacuum.vacuum_cost_limit | string | length > 0 %}
-vacuum_cost_limit               = {{ postgresql_config_vacuum.vacuum_cost_limit }}
+    {% set vacuum = ressources.vacuum %}
+    {% if vacuum.vacuum_cost_delay is defined and
+          vacuum.vacuum_cost_delay | string | length > 0 %}
+vacuum_cost_delay                   = {{ vacuum.vacuum_cost_delay }}
+    {% endif %}
+    {% if vacuum.vacuum_cost_page_hit is defined and
+          vacuum.vacuum_cost_page_hit | string | length > 0 %}
+vacuum_cost_page_hit                = {{ vacuum.vacuum_cost_page_hit }}
+    {% endif %}
+    {% if vacuum.vacuum_cost_page_miss is defined and
+          vacuum.vacuum_cost_page_miss | string | length > 0 %}
+vacuum_cost_page_miss               = {{ vacuum.vacuum_cost_page_miss }}
+    {% endif %}
+    {% if vacuum.vacuum_cost_page_dirty is defined and
+          vacuum.vacuum_cost_page_dirty | string | length > 0 %}
+vacuum_cost_page_dirty              = {{ vacuum.vacuum_cost_page_dirty }}
+    {% endif %}
+    {% if vacuum.vacuum_cost_limit is defined and
+          vacuum.vacuum_cost_limit | string | length > 0 %}
+vacuum_cost_limit                   = {{ vacuum.vacuum_cost_limit }}
+    {% endif %}
   {% endif %}
 
-{% endif %}
-{% if postgresql_config_bgwriter | bodsch.core.type == "dict" %}
+  {% if ressources.bgwriter | bodsch.core.type == "dict" %}
 # - Background Writer -
-  {% if postgresql_config_bgwriter.bgwriter_delay is defined and
-        postgresql_config_bgwriter.bgwriter_delay | string | length > 0 %}
-bgwriter_delay                  = {{ postgresql_config_bgwriter.bgwriter_delay }}
-  {% endif %}
-  {% if postgresql_config_bgwriter.bgwriter_lru_maxpages is defined and
-        postgresql_config_bgwriter.bgwriter_lru_maxpages | string | length > 0 %}
-bgwriter_lru_maxpages           = {{ postgresql_config_bgwriter.bgwriter_lru_maxpages }}
-  {% endif %}
-  {% if postgresql_config_bgwriter.bgwriter_lru_multiplier is defined and
-        postgresql_config_bgwriter.bgwriter_lru_multiplier | string | length > 0 %}
-bgwriter_lru_multiplier         = {{ postgresql_config_bgwriter.bgwriter_lru_multiplier }}
-  {% endif %}
-  {% if postgresql_config_bgwriter.bgwriter_flush_after is defined and
-        postgresql_config_bgwriter.bgwriter_flush_after | string | length > 0 %}
-bgwriter_flush_after            = {{ postgresql_config_bgwriter.bgwriter_flush_after }}
+    {% set bgwriter = ressources.bgwriter %}
+    {% if bgwriter.bgwriter_delay is defined and
+          bgwriter.bgwriter_delay | string | length > 0 %}
+bgwriter_delay                      = {{ bgwriter.bgwriter_delay }}
+    {% endif %}
+    {% if bgwriter.bgwriter_lru_maxpages is defined and
+          bgwriter.bgwriter_lru_maxpages | string | length > 0 %}
+bgwriter_lru_maxpages               = {{ bgwriter.bgwriter_lru_maxpages }}
+    {% endif %}
+    {% if bgwriter.bgwriter_lru_multiplier is defined and
+          bgwriter.bgwriter_lru_multiplier | string | length > 0 %}
+bgwriter_lru_multiplier             = {{ bgwriter.bgwriter_lru_multiplier }}
+    {% endif %}
+    {% if bgwriter.bgwriter_flush_after is defined and
+          bgwriter.bgwriter_flush_after | string | length > 0 %}
+bgwriter_flush_after                = {{ bgwriter.bgwriter_flush_after }}
+    {% endif %}
   {% endif %}
 
-{% endif %}
-{% if postgresql_config_async_behavior | bodsch.core.type == "dict" %}
+  {% if ressources.async_behavior | bodsch.core.type == "dict" %}
 # - Asynchronous Behavior -
-  {% if postgresql_config_async_behavior.backend_flush_after is defined and
-        postgresql_config_async_behavior.backend_flush_after | string | length > 0 %}
-backend_flush_after             = {{ postgresql_config_async_behavior.backend_flush_after }}
+    {% set async_behavior = ressources.async_behavior %}
+    {% if async_behavior.backend_flush_after is defined and
+          async_behavior.backend_flush_after | string | length > 0 %}
+backend_flush_after                 = {{ async_behavior.backend_flush_after }}
+    {% endif %}
+    {% if async_behavior.effective_io_concurrency is defined and
+          async_behavior.effective_io_concurrency | string | length > 0 %}
+effective_io_concurrency            = {{ async_behavior.effective_io_concurrency }}
+    {% endif %}
+    {% if async_behavior.maintenance_io_concurrency is defined and
+          async_behavior.maintenance_io_concurrency | string | length > 0 %}
+maintenance_io_concurrency          = {{ async_behavior.maintenance_io_concurrency }}
+    {% endif %}
+    {% if async_behavior.io_combine_limit is defined and
+          async_behavior.io_combine_limit | string | length > 0 %}
+io_combine_limit                    = {{ async_behavior.io_combine_limit }}
+    {% endif %}
+    {% if async_behavior.max_worker_processes is defined and
+          async_behavior.max_worker_processes | string | length > 0 %}
+max_worker_processes                = {{ async_behavior.max_worker_processes }}
+    {% endif %}
+    {% if async_behavior.max_parallel_workers_per_gather is defined and
+          async_behavior.max_parallel_workers_per_gather | string | length > 0 %}
+max_parallel_workers_per_gather     = {{ async_behavior.max_parallel_workers_per_gather }}
+    {% endif %}
+    {% if async_behavior.max_parallel_maintenance_workers is defined and
+          async_behavior.max_parallel_maintenance_workers | string | length > 0 %}
+max_parallel_maintenance_workers    = {{ async_behavior.max_parallel_maintenance_workers }}
+    {% endif %}
+    {% if async_behavior.max_parallel_workers is defined and
+          async_behavior.max_parallel_workers | string | length > 0 %}
+max_parallel_workers                = {{ async_behavior.max_parallel_workers }}
+    {% endif %}
+    {% if async_behavior.parallel_leader_participation is defined and
+          async_behavior.parallel_leader_participation | string | length > 0 %}
+parallel_leader_participation       = {{ async_behavior.parallel_leader_participation | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
   {% endif %}
-  {% if postgresql_config_async_behavior.effective_io_concurrency is defined and
-        postgresql_config_async_behavior.effective_io_concurrency | string | length > 0 %}
-effective_io_concurrency        = {{ postgresql_config_async_behavior.effective_io_concurrency }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.maintenance_io_concurrency is defined and
-        postgresql_config_async_behavior.maintenance_io_concurrency | string | length > 0 %}
-maintenance_io_concurrency      = {{ postgresql_config_async_behavior.maintenance_io_concurrency }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.io_combine_limit is defined and
-        postgresql_config_async_behavior.io_combine_limit | string | length > 0 %}
-io_combine_limit                = {{ postgresql_config_async_behavior.io_combine_limit }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.max_worker_processes is defined and
-        postgresql_config_async_behavior.max_worker_processes | string | length > 0 %}
-max_worker_processes            = {{ postgresql_config_async_behavior.max_worker_processes }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.max_parallel_workers_per_gather is defined and
-        postgresql_config_async_behavior.max_parallel_workers_per_gather | string | length > 0 %}
-max_parallel_workers_per_gather = {{ postgresql_config_async_behavior.max_parallel_workers_per_gather }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.max_parallel_maintenance_workers is defined and
-        postgresql_config_async_behavior.max_parallel_maintenance_workers | string | length > 0 %}
-max_parallel_maintenance_workers = {{ postgresql_config_async_behavior.max_parallel_maintenance_workers }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.max_parallel_workers is defined and
-        postgresql_config_async_behavior.max_parallel_workers | string | length > 0 %}
-max_parallel_workers            = {{ postgresql_config_async_behavior.max_parallel_workers }}
-  {% endif %}
-  {% if postgresql_config_async_behavior.parallel_leader_participation is defined and
-        postgresql_config_async_behavior.parallel_leader_participation | string | length > 0 %}
-parallel_leader_participation   = {{ postgresql_config_async_behavior.parallel_leader_participation | bodsch.core.config_bool(true_as="on", false_as="off") }}
-  {% endif %}
-
 {% endif %}

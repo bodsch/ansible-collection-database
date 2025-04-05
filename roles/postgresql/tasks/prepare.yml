@@ -64,21 +64,7 @@
 # - name: update facts to get latest information
 #   ansible.builtin.setup:
 #
-# - name: merge postgresql configuration segment for server between defaults and custom
-#   ansible.builtin.set_fact:
-#     postgresql_config_server: "{{ postgresql_config_defaults_server | combine(postgresql_config_server, recursive=True) }}"
-#     postgresql_config_client: "{{ postgresql_config_defaults_client | combine(postgresql_config_client, recursive=True) }}"
-#     postgresql_config_mysql: "{{ postgresql_config_defaults_mysql | combine(postgresql_config_mysql, recursive=True) }}"
-#     postgresql_config_mysqld: "{{ postgresql_config_defaults_mysqld | combine(postgresql_config_mysqld, recursive=True) }}"
-#     postgresql_config_mysqld_safe: "{{ postgresql_config_defaults_mysqld_safe | combine(postgresql_config_mysqld_safe, recursive=True) }}"
-#     postgresql_config_mysqldump: "{{ postgresql_config_defaults_mysqldump | combine(postgresql_config_mysqldump, recursive=True) }}"
-#     postgresql_config_galera: "{{ postgresql_config_defaults_galera | combine(postgresql_config_galera, recursive=True) }}"
-#     postgresql_config_embedded: "{{ postgresql_config_defaults_embedded | combine(postgresql_config_embedded, recursive=True) }}"
-#     postgresql_config_custom: "{{ postgresql_config_defaults_custom | combine(postgresql_config_custom, recursive=True) }}"
-#     postgresql_replication: "{{ postgresql_defaults_replication | combine(postgresql_replication, recursive=True) }}"
-#     postgresql_galera: "{{ postgresql_defaults_galera | combine(postgresql_galera, recursive=True) }}"
-#     postgresql_tls_certificate: "{{ postgresql_defaults_tls_certificate | combine(postgresql_tls_certificate, recursive=True) }}"
-#
+
 # - name: detect if postgresql installed
 #   ansible.builtin.stat:
 #     path: /usr/bin/postgresqld-safe
