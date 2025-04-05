@@ -5,6 +5,60 @@
 # STATISTICS
 #------------------------------------------------------------------------------
 
+{% if postgresql_config_statistics | bodsch.core.type == "dict" %}
+  {% set statistics = postgresql_config_statistics %}
+  {% if statistics.track_activities is defined and
+        statistics.track_activities | string | length > 0 %}
+track_activities                    = {{ statistics.track_activities | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.track_activity_query_size is defined and
+        statistics.track_activity_query_size | string | length > 0 %}
+track_activity_query_size           = {{ statistics.track_activity_query_size }}
+  {% endif %}
+  {% if statistics.track_counts is defined and
+        statistics.track_counts | string | length > 0 %}
+track_counts                        = {{ statistics.track_counts | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.track_io_timing is defined and
+        statistics.track_io_timing | string | length > 0 %}
+track_io_timing                     = {{ statistics.track_io_timing | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.track_wal_io_timing is defined and
+        statistics.track_wal_io_timing | string | length > 0 %}
+track_wal_io_timing                 = {{ statistics.track_wal_io_timing | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.track_functions is defined and
+        statistics.track_functions | string | length > 0 and
+        statistics.track_functions in ["none", "pl", "all"] %}
+track_functions                     = {{ statistics.track_functions }}
+  {% endif %}
+  {% if statistics.stats_fetch_consistency is defined and
+        statistics.stats_fetch_consistency | string | length > 0 and
+        statistics.stats_fetch_consistency in ["cache", "none", "snapshot"] %}
+stats_fetch_consistency             = {{ statistics.stats_fetch_consistency }}
+  {% endif %}
+  {% if statistics.compute_query_id is defined and
+        statistics.compute_query_id | string | length > 0 %}
+compute_query_id                    = {{ statistics.compute_query_id }}
+  {% endif %}
+  {% if statistics.log_statement_stats is defined and
+        statistics.log_statement_stats | string | length > 0 %}
+log_statement_stats                 = {{ statistics.log_statement_stats | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.log_parser_stats is defined and
+        statistics.log_parser_stats | string | length > 0 %}
+log_parser_stats                    = {{ statistics.log_parser_stats | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.log_planner_stats is defined and
+        statistics.log_planner_stats | string | length > 0 %}
+log_planner_stats                   = {{ statistics.log_planner_stats | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if statistics.log_executor_stats is defined and
+        statistics.log_executor_stats | string | length > 0 %}
+log_executor_stats                  = {{ statistics.log_executor_stats | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+{% endif %}
+{#
 # - Cumulative Query and Index Statistics -
 
 #track_activities = on
@@ -23,3 +77,4 @@
 #log_parser_stats = off
 #log_planner_stats = off
 #log_executor_stats = off
+#}

@@ -1,12 +1,210 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
+{% if postgresql_config_reporting | bodsch.core.type == "dict" %}
+  {% set reporting = postgresql_config_reporting %}
+  {% set log_destination = "stderr" %}
+  {% set logging_collector = True %}
+  {% if reporting.log_destination is defined and
+        reporting.log_destination | string | length > 0 and
+        reporting.log_destination in ["stderr", "csvlog", "jsonlog", "syslog", "eventlog"] %}
+    {% set log_destination = reporting.log_destination %}
+  {% endif %}
+  {% if reporting.logging_collector is defined and
+        reporting.logging_collector | string | length > 0 %}
+    {% set logging_collector = reporting.logging_collector | bool %}
+    {% if log_destination == "stderr" %}
+      {% set logging_collector = False %}
+    {% endif %}
+    {% if log_destination in ["csvlog", "jsonlog"] %}
+      {% set logging_collector = True %}
+    {% endif %}
+  {% endif %}
 #------------------------------------------------------------------------------
 # REPORTING AND LOGGING
 #------------------------------------------------------------------------------
 
-# - Where to Log -
+log_destination                     = '{{ log_destination }}'
+logging_collector                   = {{ logging_collector | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% if logging_collector | bool %}
+    {% if reporting.log_directory is defined and
+          reporting.log_directory | string | length > 0 %}
+log_directory                       = '{{ reporting.log_directory }}'
+    {% endif %}
+    {% if reporting.log_filename is defined and
+          reporting.log_filename | string | length > 0 %}
+log_filename                        = '{{ reporting.log_filename }}'
+    {% endif %}
+    {% if reporting.log_file_mode is defined and
+          reporting.log_file_mode | string | length > 0 %}
+log_file_mode                       = {{ reporting.log_file_mode }}
+    {% endif %}
+    {% if reporting.log_rotation_age is defined and
+          reporting.log_rotation_age | string | length > 0 %}
+log_rotation_age                    = {{ reporting.log_rotation_age }}
+    {% endif %}
+    {% if reporting.log_rotation_size is defined and
+          reporting.log_rotation_size | string | length > 0 %}
+log_rotation_size                   = {{ reporting.log_rotation_size }}
+    {% endif %}
+    {% if reporting.log_truncate_on_rotation is defined and
+          reporting.log_truncate_on_rotation | string | length > 0 %}
+log_truncate_on_rotation            = {{ reporting.log_truncate_on_rotation | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+  {% endif %}
+  {% if postgresql_config_reporting.syslog | bodsch.core.type == "dict" %}
+    {% set syslog = postgresql_config_reporting.syslog %}
+    {% if syslog.facility is defined and
+          syslog.facility | string | length > 0 %}
+syslog_facility                     = '{{ syslog.facility }}'
+    {% endif %}
+    {% if syslog.ident is defined and
+          syslog.ident | string | length > 0 %}
+syslog_ident                        = '{{ syslog.ident }}'
+    {% endif %}
+    {% if syslog.sequence_numbers is defined and
+          syslog.sequence_numbers | string | length > 0 %}
+syslog_sequence_numbers             = {{ syslog.sequence_numbers | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if syslog.split_messages is defined and
+          syslog.split_messages | string | length > 0 %}
+syslog_split_messages               = {{ syslog.split_messages | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+  {% endif %}
 
+  {% if postgresql_config_reporting.windows | bodsch.core.type == "dict" %}
+    {% set windows = postgresql_config_reporting.windows %}
+    {% if windows.event_source is defined and
+          windows.event_source | string | length > 0 %}
+event_source                        = '{{ windows.event_source }}'
+    {% endif %}
+  {% endif %}
+  {% set _valid_log_level = ["panic", "fatal", "log", "error", "warning", "notice", "info", "debug1", "debug2", "debug3", "debug4", "debug5"] %}
+# - When to Log -
+  {% if postgresql_config_reporting.log_min_messages is defined and
+        postgresql_config_reporting.log_min_messages | string | length > 0 and
+        postgresql_config_reporting.log_min_messages in _valid_log_level %}
+log_min_messages                    = {{ postgresql_config_reporting.log_min_messages }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_min_error_statement is defined and
+        postgresql_config_reporting.log_min_error_statement | string | length > 0 and
+        postgresql_config_reporting.log_min_error_statement in _valid_log_level %}
+log_min_error_statement             = {{ postgresql_config_reporting.log_min_error_statement }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_min_duration_statement is defined and
+        postgresql_config_reporting.log_min_duration_statement | string | length > 0 %}
+log_min_duration_statement          = {{ postgresql_config_reporting.log_min_duration_statement | int }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_min_duration_sample is defined and
+        postgresql_config_reporting.log_min_duration_sample | string | length > 0 %}
+log_min_duration_sample             = {{ postgresql_config_reporting.log_min_duration_sample | int }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_statement_sample_rate is defined and
+        postgresql_config_reporting.log_statement_sample_rate | string | length > 0 %}
+log_statement_sample_rate           = {{ postgresql_config_reporting.log_statement_sample_rate }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_transaction_sample_rate is defined and
+        postgresql_config_reporting.log_transaction_sample_rate | string | length > 0 %}
+log_transaction_sample_rate         = {{ postgresql_config_reporting.log_transaction_sample_rate }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_startup_progress_interval is defined and
+        postgresql_config_reporting.log_startup_progress_interval | string | length > 0 %}
+log_startup_progress_interval       = {{ postgresql_config_reporting.log_startup_progress_interval }}
+  {% endif %}
+# - What to Log -
+  {% if postgresql_config_reporting.debug_print_parse is defined and
+        postgresql_config_reporting.debug_print_parse | string | length > 0 %}
+debug_print_parse                   = {{ postgresql_config_reporting.debug_print_parse | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.debug_print_rewritten is defined and
+        postgresql_config_reporting.debug_print_rewritten | string | length > 0 %}
+debug_print_rewritten               = {{ postgresql_config_reporting.debug_print_rewritten | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.debug_print_plan is defined and
+        postgresql_config_reporting.debug_print_plan | string | length > 0 %}
+debug_print_plan                    = {{ postgresql_config_reporting.debug_print_plan | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.debug_pretty_print is defined and
+        postgresql_config_reporting.debug_pretty_print | string | length > 0 %}
+debug_pretty_print                  = {{ postgresql_config_reporting.debug_pretty_print | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_autovacuum_min_duration is defined and
+        postgresql_config_reporting.log_autovacuum_min_duration | string | length > 0 %}
+log_autovacuum_min_duration         = {{ postgresql_config_reporting.log_autovacuum_min_duration }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_checkpoints is defined and
+        postgresql_config_reporting.log_checkpoints | string | length > 0 %}
+log_checkpoints                     = {{ postgresql_config_reporting.log_checkpoints | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_connections is defined and
+        postgresql_config_reporting.log_connections | string | length > 0 %}
+log_connections                     = {{ postgresql_config_reporting.log_connections | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_disconnections is defined and
+        postgresql_config_reporting.log_disconnections | string | length > 0 %}
+log_disconnections                  = {{ postgresql_config_reporting.log_disconnections | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_duration is defined and
+        postgresql_config_reporting.log_duration | string | length > 0 %}
+log_duration                        = {{ postgresql_config_reporting.log_duration | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_error_verbosity is defined and
+        postgresql_config_reporting.log_error_verbosity | string | length > 0 and
+        postgresql_config_reporting.log_error_verbosity in ["terse", "default", "verbose"] %}
+log_error_verbosity                 = {{ postgresql_config_reporting.log_error_verbosity }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_hostname is defined and
+        postgresql_config_reporting.log_hostname | string | length > 0 %}
+log_hostname                        = {{ postgresql_config_reporting.log_hostname | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_line_prefix is defined and
+        postgresql_config_reporting.log_line_prefix | string | length > 0 %}
+log_line_prefix                     = '{{ postgresql_config_reporting.log_line_prefix }} '
+  {% endif %}
+  {% if postgresql_config_reporting.log_lock_waits is defined and
+        postgresql_config_reporting.log_lock_waits | string | length > 0 %}
+log_lock_waits                      = {{ postgresql_config_reporting.log_lock_waits | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_recovery_conflict_waits is defined and
+        postgresql_config_reporting.log_recovery_conflict_waits | string | length > 0 %}
+log_recovery_conflict_waits         = {{ postgresql_config_reporting.log_recovery_conflict_waits | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_parameter_max_length is defined and
+        postgresql_config_reporting.log_parameter_max_length | string | length > 0 %}
+log_parameter_max_length            = {{ postgresql_config_reporting.log_parameter_max_length }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_parameter_max_length_on_error is defined and
+        postgresql_config_reporting.log_parameter_max_length_on_error | string | length > 0 %}
+log_parameter_max_length_on_error   = {{ postgresql_config_reporting.log_parameter_max_length_on_error }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_statement is defined and
+        postgresql_config_reporting.log_statement | string | length > 0 and
+        postgresql_config_reporting.log_statement in ["none", "ddl", "mod", "all"] %}
+log_statement                       = '{{ postgresql_config_reporting.log_statement }}'
+  {% endif %}
+  {% if postgresql_config_reporting.log_replication_commands is defined and
+        postgresql_config_reporting.log_replication_commands | string | length > 0 %}
+log_replication_commands            = {{ postgresql_config_reporting.log_replication_commands | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_temp_files is defined and
+        postgresql_config_reporting.log_temp_files | string | length > 0 %}
+log_temp_files                      = {{ postgresql_config_reporting.log_temp_files }}
+  {% endif %}
+  {% if postgresql_config_reporting.log_timezone is defined and
+        postgresql_config_reporting.log_timezone | string | length > 0 %}
+log_timezone                        = {{ postgresql_config_reporting.log_timezone }}
+  {% endif %}
+# - Process Title -
+  {% if postgresql_config_reporting.cluster_name is defined and
+        postgresql_config_reporting.cluster_name | string | length > 0 %}
+cluster_name                        = '{{ postgresql_config_reporting.cluster_name }}'
+  {% endif %}
+  {% if postgresql_config_reporting.update_process_title is defined and
+        postgresql_config_reporting.update_process_title | string | length > 0 %}
+update_process_title                = {{ postgresql_config_reporting.update_process_title | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+{% endif %}
+{#
 log_destination = 'jsonlog'             # Valid values are combinations of
                                         # stderr, csvlog, jsonlog, syslog, and
                                         # eventlog, depending on platform.
@@ -167,3 +365,6 @@ log_timezone = UTC
 #cluster_name = ''                      # added to process titles if nonempty
                                         # (change requires restart)
 update_process_title = on
+
+#}
+

@@ -5,6 +5,121 @@
 # REPLICATION
 #------------------------------------------------------------------------------
 
+{% if postgresql_config_replication | bodsch.core.type == "dict" %}
+  {% set replication = postgresql_config_replication %}
+  {% if replication.sender | bodsch.core.type == "dict" %}
+    {% set sender = replication.sender %}
+
+    {% if sender.max_replication_slots is defined and
+          sender.max_replication_slots | string | length > 0 %}
+max_replication_slots               = {{ sender.max_replication_slots }}
+    {% endif %}
+    {% if sender.max_slot_wal_keep_size is defined and
+          sender.max_slot_wal_keep_size | string | length > 0 %}
+max_slot_wal_keep_size              = {{ sender.max_slot_wal_keep_size }}
+    {% endif %}
+    {% if sender.max_wal_senders is defined and
+          sender.max_wal_senders | string | length > 0 %}
+max_wal_senders                     = {{ sender.max_wal_senders }}
+    {% endif %}
+    {% if sender.wal_keep_size is defined and
+          sender.wal_keep_size | string | length > 0 %}
+wal_keep_size                       = {{ sender.wal_keep_size }}
+    {% endif %}
+    {% if sender.wal_sender_timeout is defined and
+          sender.wal_sender_timeout | string | length > 0 %}
+wal_sender_timeout                  = {{ sender.wal_sender_timeout }}
+    {% endif %}
+    {% if sender.track_commit_timestamp is defined and
+          sender.track_commit_timestamp | string | length > 0 %}
+track_commit_timestamp              = {{ sender.track_commit_timestamp | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+  {% endif %}
+  {% if replication.primary | bodsch.core.type == "dict" %}
+    {% set primary = replication.primary %}
+
+    {% if primary.synchronous_standby_names is defined and
+          primary.synchronous_standby_names | bodsch.core.type == "list" and
+          primary.synchronous_standby_names | count > 0 %}
+synchronous_standby_names           = '{{ primary.synchronous_standby_names | join("','") }}'
+    {% endif %}
+    {% if primary.synchronized_standby_slots is defined and
+          primary.synchronized_standby_slots | bodsch.core.type == "list" and
+          primary.synchronized_standby_slots | count > 0 %}
+synchronized_standby_slots          = '{{ primary.synchronized_standby_slots | join("','") }}'
+    {% endif %}
+  {% endif %}
+  {% if replication.standby | bodsch.core.type == "dict" %}
+    {% set standby = replication.standby %}
+
+    {% if standby.primary_conninfo is defined and
+          standby.primary_conninfo | string | length > 0 %}
+primary_conninfo                    = '{{ standby.primary_conninfo }}'
+    {% endif %}
+    {% if standby.primary_slot_name is defined and
+          standby.primary_slot_name | string | length > 0 %}
+primary_slot_name                   = '{{ standby.primary_slot_name }}'
+    {% endif %}
+    {% if standby.hot_standby is defined and
+          standby.hot_standby | string | length > 0 %}
+hot_standby                         = {{ standby.hot_standby | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if standby.hot_standby_feedback is defined and
+          standby.hot_standby_feedback | string | length > 0 %}
+hot_standby_feedback                = {{ standby.hot_standby_feedback | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if standby.max_standby_archive_delay is defined and
+          standby.max_standby_archive_delay | string | length > 0 %}
+max_standby_archive_delay           = {{ standby.max_standby_archive_delay }}
+    {% endif %}
+    {% if standby.max_standby_streaming_delay is defined and
+          standby.max_standby_streaming_delay | string | length > 0 %}
+max_standby_streaming_delay         = {{ standby.max_standby_streaming_delay }}
+    {% endif %}
+    {% if standby.wal_receiver_create_temp_slot is defined and
+          standby.wal_receiver_create_temp_slot | string | length > 0 %}
+wal_receiver_create_temp_slot       = {{ standby.wal_receiver_create_temp_slot | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if standby.wal_receiver_status_interval is defined and
+          standby.wal_receiver_status_interval | string | length > 0 %}
+wal_receiver_status_interval        = {{ standby.wal_receiver_status_interval }}
+    {% endif %}
+    {% if standby.wal_receiver_timeout is defined and
+          standby.wal_receiver_timeout | string | length > 0 %}
+wal_receiver_timeout                = {{ standby.wal_receiver_timeout }}
+    {% endif %}
+    {% if standby.wal_retrieve_retry_interval is defined and
+          standby.wal_retrieve_retry_interval | string | length > 0 %}
+wal_retrieve_retry_interval         = {{ standby.wal_retrieve_retry_interval }}
+    {% endif %}
+    {% if standby.recovery_min_apply_delay is defined and
+          standby.recovery_min_apply_delay | string | length > 0 %}
+recovery_min_apply_delay            = {{ standby.recovery_min_apply_delay }}
+    {% endif %}
+    {% if standby.sync_replication_slots is defined and
+          standby.sync_replication_slots | string | length > 0 %}
+sync_replication_slots              = {{ standby.sync_replication_slots | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+  {% endif %}
+  {% if replication.subscribers | bodsch.core.type == "dict" %}
+    {% set subscribers = replication.subscribers %}
+
+    {% if subscribers.max_logical_replication_workers is defined and
+          subscribers.max_logical_replication_workers | string | length > 0 %}
+max_logical_replication_workers     = {{ subscribers.max_logical_replication_workers }}
+    {% endif %}
+    {% if subscribers.max_sync_workers_per_subscription is defined and
+          subscribers.max_sync_workers_per_subscription | string | length > 0 %}
+max_sync_workers_per_subscription   = {{ subscribers.max_sync_workers_per_subscription }}
+    {% endif %}
+    {% if subscribers.max_parallel_apply_workers_per_subscription is defined and
+          subscribers.max_parallel_apply_workers_per_subscription | string | length > 0 %}
+max_parallel_apply_workers_per_subscription = {{ subscribers.max_parallel_apply_workers_per_subscription }}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{#
 # - Sending Servers -
 
 # Set these on the primary and on any standby that will send replication data.
@@ -66,3 +181,4 @@
                                         # (change requires restart)
 #max_sync_workers_per_subscription = 2  # taken from max_logical_replication_workers
 #max_parallel_apply_workers_per_subscription = 2        # taken from max_logical_replication_workers
+#}
