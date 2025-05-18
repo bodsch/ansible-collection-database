@@ -1,0 +1,25 @@
+---
+
+postgresql_server: postgresql
+
+postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_version }}/main"
+
+postgresql_bin_path: "/usr/lib/postgresql/{{ postgresql_version }}/bin"
+postgresql_config_path: "/etc/postgresql/{{ postgresql_version }}/main"
+postgresql_daemon: "postgresql@{{ postgresql_version }}-main"
+
+postgresql_dependencies: []
+
+postgresql_packages:
+  - postgresql
+  - postgresql-contrib
+  - libpq-dev
+
+postgresql_python_library:
+  - python3-psycopg2
+
+postgresql_installed: false
+
+systemd_lib_directory: /lib/systemd/system  # noqa var-naming[no-role-prefix]
+
+...

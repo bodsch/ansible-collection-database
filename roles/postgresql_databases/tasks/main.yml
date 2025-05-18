@@ -1,0 +1,17 @@
+---
+
+- name: prepare
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: detect postgres version
+  ansible.builtin.include_tasks: detect_postgres_version.yml
+
+# Configure PostgreSQL.
+- name: service
+  ansible.builtin.include_tasks: users.yml
+
+- name: service
+  ansible.builtin.import_tasks: databases.yml
+
+- name: service
+  ansible.builtin.import_tasks: users_props.yml
