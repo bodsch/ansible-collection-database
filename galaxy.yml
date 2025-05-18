@@ -1,5 +1,4 @@
 ---
-
 namespace: bodsch
 name: database
 
@@ -27,10 +26,10 @@ dependencies:
   community.postgresql: ">=4.0"
   community.mysql: "*"
 
-repository: https://github.com/bodsch/ansible-collection-cloud
-documentation: https://github.com/bodsch/ansible-collection-cloud/README.md
-homepage: https://github.com/bodsch/ansible-collection-cloud
-issues: https://github.com/bodsch/ansible-collection-cloud/issues
+repository: https://github.com/bodsch/ansible-collection-database
+documentation: https://github.com/bodsch/ansible-collection-database/README.md
+homepage: https://github.com/bodsch/ansible-collection-database
+issues: https://github.com/bodsch/ansible-collection-database/issues
 
 build_ignore:
   - "galaxy.yml"
