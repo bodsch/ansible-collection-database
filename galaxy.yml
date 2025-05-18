@@ -24,6 +24,8 @@ tags:
 dependencies:
   bodsch.core: ">=2.6.0"
   bodsch.scm: "*"
+  community.postgresql: ">=4.0"
+  community.mysql: "*"
 
 repository: https://github.com/bodsch/ansible-collection-cloud
 documentation: https://github.com/bodsch/ansible-collection-cloud/README.md

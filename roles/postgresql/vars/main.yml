@@ -142,7 +142,7 @@ postgresql_defaults_config_client_connection:
     statement_timeout: 0                          # in milliseconds, 0 is disabled
     search_path:                                  # schema names
       - '"$user"'                                 #
-      -  'public'                                 #
+      - 'public'                                  #
     temp_tablespaces: ''                          # a list of tablespace names, '' uses
                                                   # only default tablespace
     transaction_timeout: 0                        # in milliseconds, 0 is disabled
@@ -707,6 +707,6 @@ postgresql_defaults_config_wal: {}
 
 postgresql_installed: false
 
-systemd_lib_directory: /lib/systemd/system
+systemd_lib_directory: /lib/systemd/system  # noqa var-naming[no-role-prefix]
 
 ...

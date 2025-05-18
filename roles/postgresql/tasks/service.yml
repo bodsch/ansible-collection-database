@@ -1,0 +1,7 @@
+---
+
+- name: Ensure PostgreSQL is started and enabled on boot.
+  ansible.builtin.service:
+    name: "{{ postgresql_daemon }}"
+    state: "{{ postgresql_service.state }}"
+    enabled: "{{ postgresql_service.enabled }}"

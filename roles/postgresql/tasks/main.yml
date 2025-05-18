@@ -12,26 +12,15 @@
 - name: configure
   ansible.builtin.include_tasks: configure.yml
 
-# # Setup/install tasks.
-# - ansible.builtin.include_tasks: setup-Archlinux.yml
-#   when: ansible_os_family == 'Archlinux'
-#
-# - ansible.builtin.include_tasks: setup-Debian.yml
-#   when: ansible_os_family == 'Debian'
-#
-# - ansible.builtin.include_tasks: setup-RedHat.yml
-#   when: ansible_os_family == 'RedHat'
-#
-# - ansible.builtin.include_tasks: initialize.yml
-# - ansible.builtin.include_tasks: configure.yml
-#
-# - name: Ensure PostgreSQL is started and enabled on boot.
-#   service:
-#     name: "{{ postgresql_daemon }}"
-#     state: "{{ postgresql_service.state }}"
-#     enabled: "{{ postgresql_service.enabled }}"
-#
+- name: service
+  ansible.builtin.include_tasks: service.yml
+
 # # Configure PostgreSQL.
-# - ansible.builtin.import_tasks: users.yml
-# - ansible.builtin.import_tasks: databases.yml
-# - ansible.builtin.import_tasks: users_props.yml
+# - name: service
+#   ansible.builtin.include_tasks: users.yml
+#
+# - name: service
+#   ansible.builtin.import_tasks: databases.yml
+#
+# - name: service
+#   ansible.builtin.import_tasks: users_props.yml
