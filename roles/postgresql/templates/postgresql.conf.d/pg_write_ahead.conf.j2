@@ -1,0 +1,314 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# WRITE-AHEAD LOG
+#------------------------------------------------------------------------------
+
+{% if postgresql_config_write_ahead | bodsch.core.type == "dict" %}
+  {% set write_ahead = postgresql_config_write_ahead %}
+  {% if write_ahead.settings | bodsch.core.type == "dict" %}
+    {% set settings = write_ahead.settings %}
+    {% if settings.wal_level is defined and
+          settings.wal_level | string | length > 0 and
+          settings.wal_level in ["minimal", "replica", "logical"] %}
+wal_level                           = {{ settings.wal_level }}
+    {% endif %}
+    {% if settings.wal_sync_method is defined and
+          settings.wal_sync_method | string | length > 0 and
+          settings.wal_sync_method in ["open_datasync", "fdatasync", "fsync", "fsync_writethrough", "open_sync"] %}
+wal_sync_method                     = {{ settings.wal_sync_method }}
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_log_hints                       = {{ settings.wal_log_hints | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if settings.wal_compression is defined and
+          settings.wal_compression | string | length > 0 %}
+      {% if settings.wal_compression | bodsch.core.type == "str" and
+            settings.wal_compression in ["pglz", "lz4", "zstd"] %}
+wal_compression                     = {{ settings.wal_compression }}
+      {% elif settings.wal_compression | bodsch.core.type == "bool" %}
+wal_compression                     = {{ settings.wal_compression | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_init_zero                       = on
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_recycle                         = on
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_buffers                         = -1
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_writer_delay                    = 200ms
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_writer_flush_after              = 1MB
+    {% endif %}
+    {% if settings.wal_log_hints is defined and
+          settings.wal_log_hints | string | length > 0 %}
+wal_skip_threshold                  = 2MB
+    {% endif %}
+    {% if settings.fsync is defined and
+          settings.fsync | string | length > 0 %}
+fsync                               = {{ settings.fsync | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if settings.synchronous_commit is defined and
+          settings.synchronous_commit | string | length > 0 %}
+      {% if settings.synchronous_commit | bodsch.core.type == "str" and
+            settings.synchronous_commit in ["local", "remote_write", "remote_apply"] %}
+synchronous_commit                  = {{ settings.synchronous_commit }}
+      {% elif settings.synchronous_commit | bodsch.core.type == "bool" %}
+synchronous_commit                  = {{ settings.synchronous_commit | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+    {% endif %}
+    {% if settings.full_page_writes is defined and
+          settings.full_page_writes | string | length > 0 %}
+full_page_writes                    = {{ settings.full_page_writes | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if settings.commit_delay is defined and
+          settings.commit_delay | string | length > 0 %}
+commit_delay                        = {{ settings.commit_delay }}
+    {% endif %}
+    {% if settings.commit_siblings is defined and
+          settings.commit_siblings | string | length > 0 %}
+commit_siblings                     = {{ settings.commit_siblings }}
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.checkpoint | bodsch.core.type == "dict" %}
+    {% set checkpoint = write_ahead.checkpoint %}
+    {% if checkpoint.timeout is defined and
+          checkpoint.timeout | string | length > 0 %}
+checkpoint_timeout                  = {{ checkpoint.timeout }}
+    {% endif %}
+    {% if checkpoint.completion_target is defined and
+          checkpoint.completion_target | string | length > 0 %}
+checkpoint_completion_target        = {{ checkpoint.completion_target }}
+    {% endif %}
+    {% if checkpoint.flush_after is defined and
+          checkpoint.flush_after | string | length > 0 %}
+checkpoint_flush_after              = {{ checkpoint.flush_after }}
+    {% endif %}
+    {% if checkpoint.warning is defined and
+          checkpoint.warning | string | length > 0 %}
+checkpoint_warning                  = {{ checkpoint.warning }}
+    {% endif %}
+    {% if checkpoint.wal_size.max is defined and
+          checkpoint.wal_size.max | string | length > 0 %}
+max_wal_size                        = {{ checkpoint.wal_size.max }}
+    {% endif %}
+    {% if checkpoint.wal_size.min is defined and
+          checkpoint.wal_size.min | string | length > 0 %}
+min_wal_size                        = {{ checkpoint.wal_size.min }}
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.prefetch | bodsch.core.type == "dict" %}
+    {% set prefetch = write_ahead.prefetch %}
+    {% if prefetch.recovery_prefetch is defined and
+          prefetch.recovery_prefetch | string | length > 0 %}
+recovery_prefetch                   = {{ prefetch.recovery_prefetch }}
+    {% endif %}
+    {% if prefetch.wal_decode_buffer_size is defined and
+          prefetch.wal_decode_buffer_size | string | length > 0 %}
+wal_decode_buffer_size              = {{ prefetch.wal_decode_buffer_size }}
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.archive | bodsch.core.type == "dict" %}
+    {% set archive = write_ahead.archive %}
+    {% if archive.archive_mode is defined and
+          archive.archive_mode | string | length > 0 %}
+archive_mode                        = {{ archive.archive_mode | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if archive.archive_library is defined and
+          archive.archive_library | string | length > 0 %}
+archive_library                     = '{{ archive.archive_library }}'
+    {% endif %}
+    {% if archive.archive_command is defined and
+          archive.archive_command | string | length > 0 %}
+archive_command                     = '{{ archive.archive_command }}'
+    {% endif %}
+    {% if archive.archive_timeout is defined and
+          archive.archive_timeout | string | length > 0 %}
+archive_timeout                     = {{ archive.archive_timeout }}
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.archive_recovery | bodsch.core.type == "dict" %}
+    {% set archive_recovery = write_ahead.archive_recovery %}
+    {% if archive_recovery.restore_command is defined and
+          archive_recovery.restore_command | string | length > 0 %}
+restore_command                     = '{{ archive_recovery.restore_command }}'
+    {% endif %}
+    {% if archive_recovery.archive_cleanup_command is defined and
+          archive_recovery.archive_cleanup_command | string | length > 0 %}
+archive_cleanup_command             = '{{ archive_recovery.archive_cleanup_command }}'
+    {% endif %}
+    {% if archive_recovery.recovery_end_command is defined and
+          archive_recovery.recovery_end_command | string | length > 0 %}
+recovery_end_command                = '{{ archive_recovery.recovery_end_command }}'
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.recovery_target | bodsch.core.type == "dict" %}
+    {% set recovery_target = write_ahead.recovery_target %}
+    {% if recovery_target.recovery_target is defined and
+          recovery_target.recovery_target | string | length > 0 %}
+recovery_target                     = '{{ recovery_target.recovery_target }}'
+    {% endif %}
+    {% if recovery_target.recovery_target_name is defined and
+          recovery_target.recovery_target_name | string | length > 0 %}
+recovery_target_name                = '{{ recovery_target.recovery_target_name }}'
+    {% endif %}
+    {% if recovery_target.recovery_target_time is defined and
+          recovery_target.recovery_target_time | string | length > 0 %}
+recovery_target_time                = '{{ recovery_target.recovery_target_time }}'
+    {% endif %}
+    {% if recovery_target.recovery_target_xid is defined and
+          recovery_target.recovery_target_xid | string | length > 0 %}
+recovery_target_xid                 = '{{ recovery_target.recovery_target_xid }}'
+    {% endif %}
+    {% if recovery_target.recovery_target_lsn is defined and
+          recovery_target.recovery_target_lsn | string | length > 0 %}
+recovery_target_lsn                 = '{{ recovery_target.recovery_target_lsn }}'
+    {% endif %}
+    {% if recovery_target.recovery_target_inclusive is defined and
+          recovery_target.recovery_target_inclusive | string | length > 0 %}
+recovery_target_inclusive           = {{ recovery_target.recovery_target_inclusive | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if recovery_target.recovery_target is defined and
+          recovery_target.recovery_target | string | length > 0 %}
+      {% if recovery_target.recovery_target in ["current", "latest"] %}
+recovery_target_timeline            = '{{ recovery_target.recovery_target }}'
+      {% elif recovery_target.recovery_target | bodsch.core.type == "int" %}
+recovery_target_timeline            = '{{ recovery_target.recovery_target }}'
+      {% endif %}
+    {% endif %}
+    {% if recovery_target.recovery_target is defined and
+          recovery_target.recovery_target | string | length > 0 and
+          recovery_target.recovery_target in ["pause", "promote", "shutdown"] %}
+recovery_target_action              = '{{ recovery_target.recovery_target }}'
+    {% endif %}
+  {% endif %}
+  {% if write_ahead.summarize | bodsch.core.type == "dict" %}
+    {% set summarize = write_ahead.summarize %}
+    {% if summarize.summarize_wal is defined and
+          summarize.summarize_wal | string | length > 0 %}
+summarize_wal                       = {{ summarize.summarize_wal | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+    {% if summarize.wal_summary_keep_time is defined and
+          summarize.wal_summary_keep_time | string | length > 0 %}
+wal_summary_keep_time               = '{{ summarize.wal_summary_keep_time }}'
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{#
+
+# - Settings -
+
+#wal_level = replica                    # minimal, replica, or logical
+                                        # (change requires restart)
+#fsync = on                             # flush data to disk for crash safety
+                                        # (turning this off can cause
+                                        # unrecoverable data corruption)
+#synchronous_commit = on                # synchronization level;
+                                        # off, local, remote_write, remote_apply, or on
+#wal_sync_method = fsync                # the default is the first option
+                                        # supported by the operating system:
+                                        #   open_datasync
+                                        #   fdatasync (default on Linux and FreeBSD)
+                                        #   fsync
+                                        #   fsync_writethrough
+                                        #   open_sync
+#full_page_writes = on                  # recover from partial page writes
+#wal_log_hints = off                    # also do full page writes of non-critical updates
+                                        # (change requires restart)
+#wal_compression = off                  # enables compression of full-page writes;
+                                        # off, pglz, lz4, zstd, or on
+#wal_init_zero = on                     # zero-fill new WAL files
+#wal_recycle = on                       # recycle WAL files
+#wal_buffers = -1                       # min 32kB, -1 sets based on shared_buffers
+                                        # (change requires restart)
+#wal_writer_delay = 200ms               # 1-10000 milliseconds
+#wal_writer_flush_after = 1MB           # measured in pages, 0 disables
+#wal_skip_threshold = 2MB
+
+#commit_delay = 0                       # range 0-100000, in microseconds
+#commit_siblings = 5                    # range 1-1000
+
+# - Checkpoints -
+
+#checkpoint_timeout = 5min              # range 30s-1d
+#checkpoint_completion_target = 0.9     # checkpoint target duration, 0.0 - 1.0
+#checkpoint_flush_after = 256kB         # measured in pages, 0 disables
+#checkpoint_warning = 30s               # 0 disables
+max_wal_size = 1GB
+min_wal_size = 80MB
+
+# - Prefetching during recovery -
+
+#recovery_prefetch = try        # prefetch pages referenced in the WAL?
+#wal_decode_buffer_size = 512kB # lookahead window used for prefetching
+                                # (change requires restart)
+
+# - Archiving -
+
+#archive_mode = off             # enables archiving; off, on, or always
+                                # (change requires restart)
+#archive_library = ''           # library to use to archive a WAL file
+                                # (empty string indicates archive_command should
+                                # be used)
+#archive_command = ''           # command to use to archive a WAL file
+                                # placeholders: %p = path of file to archive
+                                #               %f = file name only
+                                # e.g. 'test ! -f /mnt/server/archivedir/%f && cp %p /mnt/server/archivedir/%f'
+#archive_timeout = 0            # force a WAL file switch after this
+                                # number of seconds; 0 disables
+
+# - Archive Recovery -
+
+# These are only used in recovery mode.
+
+#restore_command = ''           # command to use to restore an archived WAL file
+                                # placeholders: %p = path of file to restore
+                                #               %f = file name only
+                                # e.g. 'cp /mnt/server/archivedir/%f %p'
+#archive_cleanup_command = ''   # command to execute at every restartpoint
+#recovery_end_command = ''      # command to execute at completion of recovery
+
+# - Recovery Target -
+
+# Set these only when performing a targeted recovery.
+
+#recovery_target = ''           # 'immediate' to end recovery as soon as a
+                                # consistent state is reached
+                                # (change requires restart)
+#recovery_target_name = ''      # the named restore point to which recovery will proceed
+                                # (change requires restart)
+#recovery_target_time = ''      # the time stamp up to which recovery will proceed
+                                # (change requires restart)
+#recovery_target_xid = ''       # the transaction ID up to which recovery will proceed
+                                # (change requires restart)
+#recovery_target_lsn = ''       # the WAL LSN up to which recovery will proceed
+                                # (change requires restart)
+#recovery_target_inclusive = on # Specifies whether to stop:
+                                # just after the specified recovery target (on)
+                                # just before the recovery target (off)
+                                # (change requires restart)
+#recovery_target_timeline = 'latest'    # 'current', 'latest', or timeline ID
+                                        # (change requires restart)
+#recovery_target_action = 'pause'       # 'pause', 'promote', 'shutdown'
+                                        # (change requires restart)
+
+# - WAL Summarization -
+
+#summarize_wal = off            # run WAL summarizer process?
+#wal_summary_keep_time = '10d'  # when to remove old summary files, 0 = never
+
+
+#}

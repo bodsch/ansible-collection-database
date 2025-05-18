@@ -1,0 +1,166 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+{% if postgresql_config_connections | bodsch.core.type == "dict" %}
+# - Connection Settings -
+  {% if postgresql_config_connections.listen_addresses is defined and
+        postgresql_config_connections.listen_addresses | bodsch.core.type == "list" and
+        postgresql_config_connections.listen_addresses | count > 0 %}
+listen_addresses                    = {{ postgresql_config_connections.listen_addresses | join(',') }}
+  {% endif %}
+  {% if postgresql_config_connections.port is defined and
+        postgresql_config_connections.port | string | length > 0 %}
+port                                = {{ postgresql_config_connections.port }}
+  {% endif %}
+  {% if postgresql_config_connections.max_connections is defined and
+        postgresql_config_connections.max_connections | string | length > 0 %}
+max_connections                     = {{ postgresql_config_connections.max_connections }}
+  {% endif %}
+  {% if postgresql_config_connections.max_connections is defined and
+        postgresql_config_connections.max_connections | string | length > 0 %}
+reserved_connections                =  {{ postgresql_config_connections.max_connections }}
+  {% endif %}
+  {% if postgresql_config_connections.superuser_reserved_connections is defined and
+        postgresql_config_connections.superuser_reserved_connections | string | length > 0 %}
+superuser_reserved_connections      = {{ postgresql_config_connections.superuser_reserved_connections }}
+  {% endif %}
+  {% if postgresql_config_connections.unix.socket.directories is defined and
+        postgresql_config_connections.unix.socket.directories | bodsch.core.type == "list" and
+        postgresql_config_connections.unix.socket.directories | count > 0 %}
+unix_socket_directories             = '{{ postgresql_config_connections.unix.socket.directories | join(",") }}'
+  {% endif %}
+  {% if postgresql_config_connections.unix.socket.group is defined and
+        postgresql_config_connections.unix.socket.group | string | length > 0 %}
+unix_socket_group                   = '{{ postgresql_config_connections.unix.socket.group }}'
+  {% endif %}
+  {% if postgresql_config_connections.unix.socket.permissions is defined and
+        postgresql_config_connections.unix.socket.permissions | string | length > 0 %}
+unix_socket_permissions             = {{ postgresql_config_connections.unix.socket.permissions }}
+  {% endif %}
+  {% if postgresql_config_connections.bonjour.enabled is defined and
+        postgresql_config_connections.bonjour.enabled | string | length > 0 %}
+bonjour                             = {{ postgresql_config_connections.bonjour.enabled | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_connections.bonjour.name is defined and
+        postgresql_config_connections.bonjour.name | string | length > 0 %}
+bonjour_name                        = {{ postgresql_config_connections.bonjour.name }}
+  {% endif %}
+  {% if postgresql_config_connections.tcp.keepalives.idle is defined and
+        postgresql_config_connections.tcp.keepalives.idle | string | length > 0 %}
+# - TCP settings -
+# see "man tcp" for details
+tcp_keepalives_idle                 = {{ postgresql_config_connections.tcp.keepalives.idle }}
+  {% endif %}
+  {% if postgresql_config_connections.tcp.keepalives.interval is defined and
+        postgresql_config_connections.tcp.keepalives.interval | string | length > 0 %}
+tcp_keepalives_interval             = {{ postgresql_config_connections.tcp.keepalives.interval }}
+  {% endif %}
+  {% if postgresql_config_connections.tcp.keepalives.count is defined and
+        postgresql_config_connections.tcp.keepalives.count | string | length > 0 %}
+tcp_keepalives_count                = {{ postgresql_config_connections.tcp.keepalives.count }}
+  {% endif %}
+  {% if postgresql_config_connections.tcp_user_timeout is defined and
+        postgresql_config_connections.tcp_user_timeout | string | length > 0 %}
+tcp_user_timeout                    = {{ postgresql_config_connections.tcp_user_timeout }}
+  {% endif %}
+  {% if postgresql_config_connections.client_connection_check_interval is defined and
+        postgresql_config_connections.client_connection_check_interval | string | length > 0 %}
+client_connection_check_interval    = {{ postgresql_config_connections.client_connection_check_interval }}
+  {% endif %}
+
+{% endif %}
+{% if postgresql_config_authentication | bodsch.core.type == "dict" %}
+# - Authentication -
+  {% if postgresql_config_authentication.authentication_timeout is defined and
+        postgresql_config_authentication.authentication_timeout | string | length > 0 %}
+  {# 1s-600s #}
+authentication_timeout               = {{ postgresql_config_authentication.authentication_timeout }}
+  {% endif %}
+  {% if postgresql_config_authentication.password_encryption is defined and
+        postgresql_config_authentication.password_encryption | string | length > 0 %}
+  {# scram-sha-256 or md5 #}
+password_encryption                 = {{ postgresql_config_authentication.password_encryption }}
+  {% endif %}
+  {% if postgresql_config_authentication.scram_iterations is defined and
+        postgresql_config_authentication.scram_iterations | string | length > 0 %}
+  {# 4096 #}
+scram_iterations                    = {{ postgresql_config_authentication.scram_iterations }}
+  {% endif %}
+  {% if postgresql_config_authentication.krb.server.keyfile is defined and
+        postgresql_config_authentication.krb.server.keyfile | string | length > 0 %}
+# GSSAPI using Kerberos
+krb_server_keyfile                  = '{{ postgresql_config_authentication.krb.server.keyfile }}'
+  {% endif %}
+  {% if postgresql_config_authentication.krb.caseins_users is defined and
+        postgresql_config_authentication.krb.caseins_users | string | length > 0 %}
+krb_caseins_users                   = {{ postgresql_config_authentication.krb.caseins_users | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if postgresql_config_authentication.gss.accept_delegation is defined and
+        postgresql_config_authentication.gss.accept_delegation | string | length > 0 %}
+gss_accept_delegation               = {{ postgresql_config_authentication.gss.accept_delegation | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+# - SSL -
+  {% if postgresql_config_authentication.ssl | bodsch.core.type == "dict" %}
+    {% if postgresql_config_authentication.ssl.enabled is defined and
+          postgresql_config_authentication.ssl.enabled | string | length > 0 %}
+ssl                                 = {{ postgresql_config_authentication.ssl.enabled | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% if postgresql_config_authentication.ssl.ca_file is defined and
+            postgresql_config_authentication.ssl.ca_file | string | length > 0 %}
+ssl_ca_file                         = '{{ postgresql_config_authentication.ssl.ca_file }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.cert_file is defined and
+            postgresql_config_authentication.ssl.cert_file | string | length > 0 %}
+ssl_cert_file                       = '{{ postgresql_config_authentication.ssl.cert_file }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.crl_file is defined and
+            postgresql_config_authentication.ssl.crl_file | string | length > 0 %}
+ssl_crl_file                        = '{{ postgresql_config_authentication.ssl.crl_file }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.crl_dir is defined and
+            postgresql_config_authentication.ssl.crl_dir | string | length > 0 %}
+ssl_crl_dir                         = '{{ postgresql_config_authentication.ssl.crl_dir }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.key_file is defined and
+            postgresql_config_authentication.ssl.key_file | string | length > 0 %}
+ssl_key_file                        = '{{ postgresql_config_authentication.ssl.key_file }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.ciphers is defined and
+            postgresql_config_authentication.ssl.ciphers | bodsch.core.type == "list" and
+            postgresql_config_authentication.ssl.ciphers | count > 0 %}
+ssl_ciphers                         = '{{ postgresql_config_authentication.ssl.ciphers | join(':') }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.prefer_server_ciphers is defined and
+            postgresql_config_authentication.ssl.prefer_server_ciphers | string | length > 0 %}
+ssl_prefer_server_ciphers           = {{ postgresql_config_authentication.ssl.prefer_server_ciphers | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.ecdh_curve is defined and
+            postgresql_config_authentication.ssl.ecdh_curve | string | length > 0 %}
+ssl_ecdh_curve                      = '{{ postgresql_config_authentication.ssl.ecdh_curve }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.min_protocol_version is defined and
+            postgresql_config_authentication.ssl.min_protocol_version | string | length > 0 %}
+ssl_min_protocol_version            = '{{ postgresql_config_authentication.ssl.min_protocol_version }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.max_protocol_version is defined and
+            postgresql_config_authentication.ssl.max_protocol_version | string | length > 0 %}
+ssl_max_protocol_version            = '{{ postgresql_config_authentication.ssl.max_protocol_version }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.dh_params_file is defined and
+            postgresql_config_authentication.ssl.dh_params_file | string | length > 0 %}
+ssl_dh_params_file                  = '{{ postgresql_config_authentication.ssl.dh_params_file }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.passphrase_command is defined and
+            postgresql_config_authentication.ssl.passphrase_command | string | length > 0 %}
+ssl_passphrase_command              = '{{ postgresql_config_authentication.ssl.passphrase_command }}'
+      {% endif %}
+      {% if postgresql_config_authentication.ssl.passphrase_command_supports_reload is defined and
+            postgresql_config_authentication.ssl.passphrase_command_supports_reload | string | length > 0 %}
+ssl_passphrase_command_supports_reload = {{ postgresql_config_authentication.ssl.passphrase_command_supports_reload | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %}

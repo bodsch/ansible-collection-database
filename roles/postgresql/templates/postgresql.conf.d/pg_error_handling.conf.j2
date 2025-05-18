@@ -1,0 +1,36 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+{% if postgresql_config_error_handling | bodsch.core.type == "dict" %}
+  {% set error_handling = postgresql_config_error_handling %}
+  {% if error_handling.exit_on_error is defined and
+        error_handling.exit_on_error | string | length > 0 %}
+exit_on_error                       = {{ error_handling.exit_on_error | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if error_handling.restart_after_crash is defined and
+        error_handling.restart_after_crash | string | length > 0 %}
+restart_after_crash                 = {{ error_handling.restart_after_crash | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if error_handling.data_sync_retry is defined and
+        error_handling.data_sync_retry | string | length > 0 %}
+data_sync_retry                     = {{ error_handling.data_sync_retry | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if error_handling.recovery_init_sync_method is defined and
+        error_handling.recovery_init_sync_method | string | length > 0 and
+        error_handling.recovery_init_sync_method in ["fsync", "syncfs"] %}
+recovery_init_sync_method           = {{ error_handling.recovery_init_sync_method }}
+  {% endif %}
+{% endif %}
+
+{#
+#exit_on_error = off                    # terminate session on any error?
+#restart_after_crash = on               # reinitialize after backend crash?
+#data_sync_retry = off                  # retry or panic on failure to fsync
+                                        # data?
+                                        # (change requires restart)
+#recovery_init_sync_method = fsync      # fsync, syncfs (Linux 5.8+)
+#}

@@ -1,0 +1,52 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# VERSION AND PLATFORM COMPATIBILITY
+#------------------------------------------------------------------------------
+
+{% if postgresql_config_compatibility | bodsch.core.type == "dict" %}
+  {% set compatibility = postgresql_config_compatibility %}
+  {% if compatibility.array_nulls is defined and
+        compatibility.array_nulls | string | length > 0 %}
+array_nulls                         = {{ compatibility.array_nulls | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.backslash_quote is defined and
+        compatibility.backslash_quote | string | length > 0 %}
+    {% if compatibility.backslash_quote | bodsch.core.type == "str" and
+          compatibility.backslash_quote == "safe_encoding" %}
+backslash_quote                     = safe_encoding
+    {% elif compatibility.backslash_quote | bodsch.core.type == "bool" %}
+backslash_quote                     = {{ compatibility.backslash_quote | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
+  {% endif %}
+  {% if compatibility.escape_string_warning is defined and
+        compatibility.escape_string_warning | string | length > 0 %}
+escape_string_warning               = {{ compatibility.escape_string_warning | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.lo_compat_privileges is defined and
+        compatibility.lo_compat_privileges | string | length > 0 %}
+lo_compat_privileges                = {{ compatibility.lo_compat_privileges | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.quote_all_identifiers is defined and
+        compatibility.quote_all_identifiers | string | length > 0 %}
+quote_all_identifiers               = {{ compatibility.quote_all_identifiers | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.standard_conforming_strings is defined and
+        compatibility.standard_conforming_strings | string | length > 0 %}
+standard_conforming_strings         = {{ compatibility.standard_conforming_strings | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.synchronize_seqscans is defined and
+        compatibility.backslash_quote | string | length > 0 %}
+synchronize_seqscans                = {{ compatibility.synchronize_seqscans | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+
+  {% if compatibility.transform_null_equals is defined and
+        compatibility.transform_null_equals | string | length > 0 %}
+transform_null_equals               = {{ compatibility.transform_null_equals | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+  {% if compatibility.allow_alter_system is defined and
+        compatibility.allow_alter_system | string | length > 0 %}
+allow_alter_system                  = {{ compatibility.allow_alter_system | bodsch.core.config_bool(true_as="on", false_as="off") }}
+  {% endif %}
+{% endif %}

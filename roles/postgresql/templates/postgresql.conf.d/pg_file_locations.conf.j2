@@ -1,0 +1,42 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# FILE LOCATIONS
+#------------------------------------------------------------------------------
+
+{% if postgresql_config_file_locations | bodsch.core.type == "dict" %}
+  {% set file_locations = postgresql_config_file_locations %}
+  {% if file_locations.data_directory is defined and
+        file_locations.data_directory | string | length > 0 %}
+data_directory                      = '{{ file_locations.data_directory }}'
+  {% endif %}
+  {% if file_locations.hba_file is defined and
+        file_locations.hba_file | string | length > 0 %}
+hba_file                            = '{{ file_locations.hba_file }}'
+  {% endif %}
+  {% if file_locations.ident_file is defined and
+        file_locations.ident_file | string | length > 0 %}
+ident_file                          = '{{ file_locations.ident_file }}'
+  {% endif %}
+  {% if file_locations.external_pid_file is defined and
+        file_locations.external_pid_file | string | length > 0 %}
+external_pid_file                   = '{{ file_locations.external_pid_file }}'
+  {% endif %}
+{% endif %}
+
+{#
+# The default values of these variables are driven from the -D command-line
+# option or PGDATA environment variable, represented here as ConfigDir.
+
+#data_directory = 'ConfigDir'           # use data in another directory
+                                        # (change requires restart)
+#hba_file = 'ConfigDir/pg_hba.conf'     # host-based authentication file
+                                        # (change requires restart)
+#ident_file = 'ConfigDir/pg_ident.conf' # ident configuration file
+                                        # (change requires restart)
+
+# If external_pid_file is not explicitly set, no extra PID file is written.
+#external_pid_file = ''                 # write an extra PID file
+                                        # (change requires restart)
+#}

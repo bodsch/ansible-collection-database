@@ -1,0 +1,6 @@
+---
+
+collections:
+  - name: bodsch.core
+  - name: community.postgresql
+    version: ">=4.0.1"

@@ -1,0 +1,38 @@
+---
+
+galaxy_info:
+  role_name: postgresql
+
+  author: Bodo Schulz
+
+  description: PostgreSQL Server for debian (Ubuntu) and Arch Linux.
+
+  license: Apache
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: ArchLinux
+      versions:
+        - all
+    - name: Debian
+      versions:
+        # 11
+        - bullseye
+        # 12
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 22.04 LTS (Jammy Jellyfish)
+        - jammy
+        # 22.10 (Kinetic Kudu)
+        # - kinetic
+
+  galaxy_tags:
+    - database
+    - postgresql
+    - postgres
+    - rdbms
+
+dependencies: []
+
+...

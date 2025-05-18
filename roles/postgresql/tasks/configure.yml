@@ -1,0 +1,86 @@
+---
+
+- name: merge postgresql configuration segment for server between defaults and custom
+  ansible.builtin.set_fact:
+    postgresql_config_connections: "{{ postgresql_defaults_config_connections | combine(postgresql_config_connections, recursive=True) }}"
+    postgresql_config_authentication: "{{ postgresql_defaults_config_authentication | combine(postgresql_config_authentication, recursive=True) }}"
+    postgresql_config_autovacuum: "{{ postgresql_defaults_config_autovacuum | combine(postgresql_config_autovacuum, recursive=True) }}"
+    postgresql_config_client_connection: "{{ postgresql_defaults_config_client_connection | combine(postgresql_config_client_connection, recursive=True) }}"
+    postgresql_config_compatibility: "{{ postgresql_defaults_config_compatibility | combine(postgresql_config_compatibility, recursive=True) }}"
+    postgresql_config_error_handling: "{{ postgresql_defaults_config_error_handling | combine(postgresql_config_error_handling, recursive=True) }}"
+    postgresql_config_file_locations: "{{ postgresql_defaults_config_file_locations | combine(postgresql_config_file_locations, recursive=True) }}"
+    postgresql_config_lock_management: "{{ postgresql_defaults_config_lock_management | combine(postgresql_config_lock_management, recursive=True) }}"
+    postgresql_config_query_tuning: "{{ postgresql_defaults_config_query_tuning | combine(postgresql_config_query_tuning, recursive=True) }}"
+    postgresql_config_replication: "{{ postgresql_defaults_config_replication | combine(postgresql_config_replication, recursive=True) }}"
+    postgresql_config_reporting: "{{ postgresql_defaults_config_reporting | combine(postgresql_config_reporting, recursive=True) }}"
+    postgresql_config_ressources: "{{ postgresql_defaults_config_ressources | combine(postgresql_config_ressources, recursive=True) }}"
+    postgresql_config_statistics: "{{ postgresql_defaults_config_statistics | combine(postgresql_config_statistics, recursive=True) }}"
+    postgresql_config_write_ahead: "{{ postgresql_defaults_config_write_ahead | combine(postgresql_config_write_ahead, recursive=True) }}"
+
+- name: ensure configuration sub directory exists.
+  ansible.builtin.file:
+    state: directory
+    path: "{{ postgresql_config_path }}/postgresql.conf.d"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0700"
+
+- name: configure host based authentication (if entries are configured)
+  ansible.builtin.template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_config_path }}/pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0600"
+    backup: true
+  notify: restart postgresql
+  when:
+    - postgresql_hba_entries | length > 0
+
+- name: ensure postgresql unix socket dirs exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "{{ postgresql_config_connections.unix.socket.permissions }}"
+  loop: "{{ postgresql_config_connections.unix.socket.directories }}"
+
+- name: create postgres splitted config files
+  ansible.builtin.template:
+    src: "postgresql.conf.d/pg_{{ item }}.conf.j2"
+    dest: "{{ postgresql_config_path }}/postgresql.conf.d/pg_{{ item }}.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "0644"
+    backup: true
+  loop:
+    - autovacuum
+    - client_connections
+    - compatibility
+    - connections
+    - error_handling
+    - file_locations
+    - lock_management
+    - query_tuning
+    - replication
+    - reporting
+    - ressources
+    - statistics
+    - write_ahead
+  notify:
+    - restart postgresql
+
+- name: remove older ansible backup files
+  bodsch.core.remove_ansible_backups:
+    path: "{{ postgresql_config_path }}/postgresql.conf.d"
+    hold: 2
+
+- name: configure global settings
+  ansible.builtin.template:
+    src: "postgresql.conf.j2"
+    dest: "{{ postgresql_config_path }}/postgresql.conf"
+    mode: "0644"
+    backup: true
+  notify:
+    - restart postgresql

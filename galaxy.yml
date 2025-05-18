@@ -2,25 +2,29 @@
 namespace: bodsch
 name: database
 
-version: 2.5.0
+version: 0.0.1
 
 readme: README.md
 
 authors:
   - Bodo Schulz <bodo@boone-schulz.de>
 
-description: collection of database modules
+description: A collection of Ansible roles to manage databases
 
 license:
   - Apache-2.0
 
 license_file: ''
 
-tags: []
+tags:
+  - linux
+  - databases
 
 dependencies:
- community.crypto: "*"
- ansible.utils: "*"
+  bodsch.core: ">=2.6.0"
+  bodsch.scm: "*"
+  community.postgresql: ">=4.0"
+  community.mysql: "*"
 
 repository: https://github.com/bodsch/ansible-collection-database
 documentation: https://github.com/bodsch/ansible-collection-database/README.md
