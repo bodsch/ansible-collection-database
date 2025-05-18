@@ -6,3 +6,5 @@ collections:
   # - name: community.crypto
   - name: community.mysql
   - name: community.general
+  - name: community.postgresql
+    version: ">=4.0.1"
