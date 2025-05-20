@@ -1,0 +1,30 @@
+---
+
+galaxy_info:
+  role_name: mariadb_backup
+  namespace: bodsch
+
+  author: Bodo Schulz
+  description: ansible role to install and configure mariadb_backup
+  license: Apache
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: ArchLinux
+    - name: Debian
+      versions:
+        # 11
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        # 20.04
+        - focal
+
+  galaxy_tags:
+    - "system"
+    - "backup"
+    - "mysql"
+    - "mariadb"
+
+dependencies: []

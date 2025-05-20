@@ -1,0 +1,31 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+[Unit]
+Description             = Mysql/MariaDB database backup job
+
+[Service]
+Type                    = oneshot
+ExecStart               = /usr/local/bin/mariadb_backup.py --directory {{ mariadb_backup_backup_directory }} --config /etc/mariadb_backup/mariadb_backup.yml --log-level {{ mariadb_backup_loglevel | default('INFO') }}
+
+WorkingDirectory        = /tmp
+User                    = root
+KillMode                = process
+
+PrivateTmp              = yes
+UMask                   = 077
+NoNewPrivileges         = yes
+PrivateMounts           = yes
+ProtectControlGroups    = yes
+ProtectKernelTunables   = yes
+ProtectHome             = true
+ProtectSystem           = full
+RestrictAddressFamilies = AF_UNIX AF_INET AF_INET6
+RestrictNamespaces      = true
+RestrictRealtime        = true
+SystemCallArchitectures = native
+
+SyslogIdentifier        = mariadb-backup
+
+[Install]
+WantedBy                = multi-user.target

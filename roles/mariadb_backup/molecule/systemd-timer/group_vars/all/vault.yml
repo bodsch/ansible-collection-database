@@ -1,0 +1,7 @@
+---
+
+vault__database:
+  passwords:
+    demo: Y5FZfKXzCeOWGf4kBOiFSp6Il
+    root: aU1YHTrXTpZKS9HwyyQtQxIAXosufBpCJmsc6WQBvy
+    backup: aU1YHTrXTpZKY5FZfKXzCeOWGf4kBOiFSp6Il

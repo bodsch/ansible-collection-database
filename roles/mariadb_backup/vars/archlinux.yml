@@ -1,0 +1,4 @@
+---
+
+mariadb_backup_client_package:
+  - python-mysqlclient

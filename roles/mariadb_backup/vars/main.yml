@@ -1,0 +1,71 @@
+---
+
+mariadb_backup_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/mariadb_backup', true) }}/{{ mariadb_backup_version }}"
+
+mariadb_backup_client_package:
+  - python3-mysqldb
+  - mariadb-client
+
+mariadb_backup_defaults_connection:
+  encrypted_login: false
+  username: ''
+  password: ''
+  host: ''
+  port: ''
+  socket: ""                                 # /run/mysqld/mysqld.sock
+  commpress_communication: true
+  login_cnf_file: ''
+  use_ssl: false
+  max_allowed_packet: ''
+  single_transaction: true
+
+# notifications
+mariadb_backup_defaults_notification:
+  enabled: false
+  smtp:
+    server_name: ""             # smtp.example.com
+    port: ""                    # 587
+    tls: false
+    auth:
+      username: ""
+      password: ""
+  sender: ""                    # backup@example.com
+  recipient: ""                 # admin@foo.bar
+
+mariadb_backup_defaults_stoarge:
+  destination: "/srv/backup"
+  rotation:
+    # Set rotation of daily backups. VALUE*24hours
+    # If you want to keep only today's backups, you could choose 1,
+    # i.e. everything older than 24hours will be removed.
+    daily: 2
+    weekly: 2
+
+mariadb_backup_defaults_exclude:
+  databases:
+    - performance_schema
+    - information_schema
+  tables: []
+
+mariadb_backup_defaults_include:
+  databases: []
+  tables: []
+
+mariadb_backup_defaults_cron:
+  type: cron          # alternative: systemd
+  daemon: ""          # "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
+  enabled: true       # [true, false]
+  minute: "58"        # 58
+  hour: "2"           # 2
+  weekday: ""         # *
+
+mariadb_backup_download: false
+mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
+
+mariadb_backup_defaults_directory: /etc/default
+
+systemd_lib_directory: /lib/systemd/system
+
+...
