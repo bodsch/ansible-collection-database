@@ -99,8 +99,7 @@ class AnsibleCollectionManager():
 
         with open(path, "r") as f:
             data = yaml.safe_load(f)
-
-            if data:
+            if data and isinstance(data, dict):
                 result = data.get("collections", [])
 
         return result
