@@ -2,6 +2,8 @@
 
 # primary node
 - name: bootstrap primary cluster node
+  when:
+    - not running_in_check_mode
   block:
     - name: create wsrep configuration
       ansible.builtin.template:

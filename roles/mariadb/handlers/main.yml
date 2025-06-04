@@ -3,6 +3,8 @@
 - name: systemctl daemon-reload
   ansible.builtin.systemd:
     daemon_reload: true
+  when:
+    - ansible_service_mgr == "systemd"
 
 - name: restart mariadb
   listen: restart mariadb
@@ -12,12 +14,14 @@
   notify:
     - check mariadb pid file
   when:
+    - not running_in_check_mode
     - not mariadb_galera_cluster
 
 - name: restart galera cluster
   listen: restart mariadb
   include_tasks: handlers/galera.yml
   when:
+    - not running_in_check_mode
     - mariadb_galera_cluster
     - _mysql_cnf_changed.changed | default('false')
 
@@ -33,3 +37,5 @@
     timeout: 60
     msg: "Timeout to find {{ mariadb_config_mysqld.pid_file }}"
   ignore_errors: false
+  when:
+    - not running_in_check_mode
