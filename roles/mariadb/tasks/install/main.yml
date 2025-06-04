@@ -20,18 +20,6 @@
   when:
     - not running_in_check_mode
 
-- name: create directory for pid file '{{ mariadb_config_mysqld.pid_file | dirname }}'
-  ansible.builtin.file:
-    path: "{{ mariadb_config_mysqld.pid_file | dirname }}"
-    state: directory
-    owner: mysql
-    group: mysql
-    mode: "0775"
-  when:
-    - not running_in_check_mode
-    - mariadb_config_mysqld.pid_file is defined
-    - mariadb_config_mysqld.pid_file | string | length > 0
-
 - name: handle debian specific tasks
   block:
     - name: fix debian specific debian-start file
