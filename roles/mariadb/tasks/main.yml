@@ -21,16 +21,19 @@
 - name: databases
   ansible.builtin.include_tasks: databases.yml
   when:
+    - not running_in_check_mode
     - mariadb_databases | default([]) | count > 0
 
 - name: users
   ansible.builtin.include_tasks: users.yml
   when:
+    - not running_in_check_mode
     - mariadb_users | default([]) | count > 0
 
 - name: replication
   ansible.builtin.include_tasks: replication.yml
   when:
+    - not running_in_check_mode
     - (mariadb_replication.enabled is defined and mariadb_replication.enabled)
     - (mariadb_replication.role is defined and mariadb_replication.role | length > 0)
     - mariadb_replication.role in ['primary', 'replica']
@@ -41,6 +44,7 @@
 - name: restart after config changes
   ansible.builtin.include_tasks: restart.yml
   when:
+    - not running_in_check_mode
     - _mysql_cnf_changed is defined
     - _mysql_cnf_changed.changed is defined
     - not _mysql_cnf_changed.changed | bool

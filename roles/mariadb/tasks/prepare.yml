@@ -20,6 +20,14 @@
         - default.yml
       skip: true
 
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
 - name: validate mariadb users
   ansible.builtin.fail:
     msg: "your users definition is not valid!\n
@@ -40,10 +48,14 @@
   ansible.builtin.package:
     name: "{{ mariadb_dependencies }}"
     state: present
+  when:
+    - not running_in_check_mode
+    - mariadb_dependencies | default([]) | count > 0
 
 - name: repositories
   ansible.builtin.include_tasks: repositories.yml
   when:
+    - not running_in_check_mode
     - ansible_os_family | lower == 'debian'
 
 - name: update facts to get latest information
@@ -89,12 +101,12 @@
     - mariadb_galera.node_addresses | bodsch.core.type == 'list'
     - mariadb_galera.node_addresses | count > 0
 
-- name: d
-  debug:
-    msg:
-      - "{{ _mariadb_galera_cluster }}"
-      - "{{ hostname | default('') }}"
-      - "{{ ansible_hostname | default('') }}"
+# - name: d
+#   debug:
+#     msg:
+#       - "{{ _mariadb_galera_cluster }}"
+#       - "{{ hostname | default('') }}"
+#       - "{{ ansible_hostname | default('') }}"
 
 - name: define root system userdata
   ansible.builtin.set_fact:
@@ -109,6 +121,7 @@
 
 - name: galera packages
   when:
+    - not running_in_check_mode
     - mariadb_galera_cluster
     - ansible_distribution | lower == 'archlinux'
   ansible.builtin.set_fact:

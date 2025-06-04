@@ -2,6 +2,7 @@
 
 - name: restart galera secondary cluster nodes
   when:
+    - not running_in_check_mode
     - mariadb_galera_primary_node != ansible_hostname
   block:
     - name: restart galera secondary cluster nodes ({{ item }})
