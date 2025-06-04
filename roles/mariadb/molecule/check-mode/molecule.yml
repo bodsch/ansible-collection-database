@@ -29,7 +29,7 @@ provisioner:
   name: ansible
   ansible_args:
     - --diff
-    - -vv
+    - -v
   config_options:
     defaults:
       check_mode_markers: true
@@ -49,6 +49,7 @@ scenario:
     - create
     - prepare
     - converge
+    - idempotence
     - verify
     - destroy
 
