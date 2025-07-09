@@ -29,7 +29,7 @@ def base_directory():
         molecule_directory = "."
     else:
         directory = "."
-        molecule_directory = "molecule/{}".format(os.environ.get('MOLECULE_SCENARIO_NAME'))
+        molecule_directory = f"molecule/{os.environ.get('MOLECULE_SCENARIO_NAME')}"
 
     return directory, molecule_directory
 
@@ -75,8 +75,8 @@ def test_data_directory(host, get_vars):
     """
       configured datadir
     """
-    directory = get_vars.get("postgresql_config_mysqld", {}).get("datadir", "/var/lib/mysql")
-    user = "mysql"
+    directory = get_vars.get("postgresql_data_dir", "/var/lib/postgres/data")
+    user = "postgres"
 
     dir = host.file(directory)
     assert dir.is_directory
@@ -88,53 +88,20 @@ def test_tmp_directory(host, get_vars):
     """
       configured tmpdir
     """
-    directory = get_vars.get("postgresql_config_mysqld", {}).get("tmpdir", "/tmp")
+    directory = get_vars.get("postgresql_data_dir", "/var/lib/postgres/data")
 
     dir = host.file(directory)
     assert dir.is_directory
-
-
-def test_log_directory(host, get_vars):
-    """
-      configured logdir
-    """
-    error_log_file = get_vars.get("postgresql_config_mysqld", {}).get("log_error", "/var/log/mysql/error.log")
-    user = "mysql"
-
-    dir = host.file(os.path.dirname(error_log_file))
-    assert dir.is_directory
-    assert dir.user == user
-
-
-def test_directories(host, get_vars):
-    """
-      used config directory
-
-      debian based: /etc/mysql
-      redhat based: /etc/my.cnf.d
-      arch based  : /etc/my.cnf.d
-    """
-    # pp_json(get_vars)
-
-    directories = [
-        get_vars.get("postgresql_config_dir"),
-        get_vars.get("postgresql_config_include_dir")
-    ]
-
-    pp_json(directories)
-
-    for dirs in directories:
-        d = host.file(dirs)
-        assert d.is_directory
 
 
 def test_files(host, get_vars):
     """
       created config files
     """
+    directory = get_vars.get("postgresql_data_dir", "/var/lib/postgres/data")
+
     files = [
-        get_vars.get("postgresql_config_file"),
-        f"{get_vars.get('postgresql_config_include_dir')}/mysql.cnf"
+        f"{directory}/pg_hba.conf"
     ]
 
     for _file in files:
@@ -153,9 +120,9 @@ def test_user(host, get_vars):
     if distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
         shell = "/sbin/nologin"
     elif distribution in ['arch', 'artix']:
-        shell = "/usr/bin/nologin"
+        shell = "/usr/bin/bash"
 
-    user_name = "mysql"
+    user_name = "postgres"
     u = host.user(user_name)
     g = host.group(user_name)
 
@@ -169,7 +136,7 @@ def test_service_running_and_enabled(host, get_vars):
     """
       running service
     """
-    service_name = get_vars.get("postgresql_service")
+    service_name = "postgresql"
 
     service = host.service(service_name)
     assert service.is_running
@@ -187,18 +154,15 @@ def test_listening_socket(host, get_vars):
     distribution = host.system_info.distribution
     release = host.system_info.release
 
-    bind_address = get_vars.get("postgresql_config_mysqld").get("bind-address", "127.0.0.1")
-    bind_port = get_vars.get("postgresql_config_mysqld").get("port", 3306)
-    socket_name = get_vars.get("postgresql_socket")
+    bind_address = "127.0.0.1"
+    bind_port = 5432
+    socket_name = "/run/postgresql/.s.PGSQL.5432"
 
     f = host.file(socket_name)
     assert f.exists
 
     listen = []
-    listen.append("tcp://{}:{}".format(bind_address, bind_port))
-
-    if not (distribution == 'ubuntu' and release == '18.04'):
-        listen.append("unix://{}".format(socket_name))
+    listen.append(f"tcp://{bind_address}:{bind_port}")
 
     for spec in listen:
         socket = host.socket(spec)
