@@ -204,7 +204,7 @@ postgresql_defaults_config_error_handling:
   recovery_init_sync_method: fsync        # fsync, syncfs (Linux 5.8+)
 
 postgresql_defaults_config_file_locations:
-  data_directory: ""                      # 'ConfigDir'           # use data in another directory
+  data_directory: "{{ postgresql_data_dir }}"                      # 'ConfigDir'           # use data in another directory
                                          # (change requires restart)
   hba_file: ""                            # 'ConfigDir/pg_hba.conf'     # host-based authentication file
                                          # (change requires restart)

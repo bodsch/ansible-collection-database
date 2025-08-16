@@ -198,12 +198,12 @@ postgresql_config_error_handling:
   data_sync_retry: ""                     # false           # retry or panic on failure to fsync data?
   recovery_init_sync_method: ""           # fsync           # fsync, syncfs (Linux 5.8+)
 
-postgresql_config_file_locations:
-  data_directory: ""                      # 'ConfigDir'                 # use data in another directory
-  hba_file: ""                            # 'ConfigDir/pg_hba.conf'     # host-based authentication file
-  ident_file: ""                          # 'ConfigDir/pg_ident.conf'   # ident configuration file
-  # If external_pid_file is not explicitly set, no extra PID file is written.
-  external_pid_file: ''                   # write an extra PID file
+postgresql_config_file_locations: {}
+#   data_directory: ""                      # 'ConfigDir'                 # use data in another directory
+#   hba_file: ""                            # 'ConfigDir/pg_hba.conf'     # host-based authentication file
+#   ident_file: ""                          # 'ConfigDir/pg_ident.conf'   # ident configuration file
+#   # If external_pid_file is not explicitly set, no extra PID file is written.
+#   external_pid_file: ''                   # write an extra PID file
 
 postgresql_config_lock_management:
   deadlock_timeout: ""                    # 1s
