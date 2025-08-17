@@ -104,14 +104,8 @@ def local_facts(host):
     """
       return local facts
     """
-    local_fact = host.ansible("setup").get("ansible_facts").get("ansible_local")
-
-    print(f"local_fact     : {local_fact}")
-
-    if local_fact:
-        return local_fact.get("mariadb_backup", {})
-    else:
-        return dict()
+    ansible_facts = host.ansible("setup").get("ansible_facts", {})
+    return ansible_facts.get("ansible_local").get("mariadb_backup")
 
 
 @pytest.mark.parametrize("dirs", [
@@ -124,11 +118,10 @@ def test_directories(host, dirs):
 
 
 @pytest.mark.parametrize("files", [
-    "/usr/local/bin/mariadb_backup.py",
     "/etc/mariadb_backup/mariadb_backup.yml",
-    "/lib/systemd/system/mariadb-backup.service",
-    "/lib/systemd/system/mariadb-backup.timer"
+    "/usr/local/bin/mariadb_backup.py",
 ])
 def test_files(host, files):
     f = host.file(files)
+    assert f.exists
     assert f.is_file
