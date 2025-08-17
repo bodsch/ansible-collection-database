@@ -4,6 +4,12 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
+- name: validate postgresql config
+  ansible.builtin.command: |
+    sudo -u postgres "{{ postgresql_bin_path }}/postgres" -D "{{ postgresql_data_dir }}" --config-file="{{ postgresql_config_path }}/postgresql.conf" -C data_directory
+  register: postgresql_config_validate
+  failed_when: postgresql_config_validate.rc != 0
+
 - name: restart postgresql
   ansible.builtin.service:
     name: "{{ postgresql_daemon }}"

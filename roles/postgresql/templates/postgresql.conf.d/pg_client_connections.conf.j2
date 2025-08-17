@@ -120,8 +120,8 @@ session_replication_role            = {{ statement_behavior.session_replication_
             statement_behavior.statement_timeout | string | length > 0 %}
 statement_timeout                   = {{ statement_behavior.statement_timeout }}
       {% endif %}
-      {% if postgresql_version is version_compare('15.0', '>=') %}
-      {# not in v15 #}
+      {% if postgresql_version is version_compare('17', '>=') %}
+      {# since 17 #}
         {% if statement_behavior.transaction_timeout is defined and
               statement_behavior.transaction_timeout | string | length > 0 %}
 transaction_timeout                 = {{ statement_behavior.transaction_timeout }}
@@ -147,8 +147,8 @@ gin_pending_list_limit              = {{ statement_behavior.gin_pending_list_lim
             statement_behavior.createrole_self_grant | string | length > 0 %}
 createrole_self_grant               = {{ statement_behavior.createrole_self_grant }}
       {% endif %}
-      {% if postgresql_version is version_compare('15.0', '>=') %}
-      {# not in v15 #}
+      {% if postgresql_version is version_compare('17', '>=') %}
+      {# since 17 #}
         {% if statement_behavior.event_triggers is defined and
               statement_behavior.event_triggers | string | length > 0 %}
 event_triggers                      = {{ statement_behavior.event_triggers | bodsch.core.config_bool(true_as="on", false_as="off") }}
@@ -204,7 +204,7 @@ lc_numeric                          = '{{ locale_and_formatting.lc_numeric }}'
           locale_and_formatting.lc_time | string | length > 0 %}
 lc_time                             = '{{ locale_and_formatting.lc_time }}'
     {% endif %}
-    {% if postgresql_version is version_compare('15.0', '>=') %}
+    {% if postgresql_version is version_compare('15', '>=') %}
     {# not in v15 #}
       {% if locale_and_formatting.icu_validation_level is defined and
             locale_and_formatting.icu_validation_level | string | length > 0  and
