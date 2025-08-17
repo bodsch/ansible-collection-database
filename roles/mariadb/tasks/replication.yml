@@ -34,6 +34,7 @@
         password encypted: {{ mariadb_replication.user.encrypted | default('true') }}"
   # no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
   when:
+    - not running_in_check_mode
     - mariadb_replication.role == 'primary'
     - mariadb_replication.primary is defined
     - mariadb_replication.primary | length != 0
@@ -54,6 +55,7 @@
   register: state_of_replica
   # no_log: true
   when:
+    - not running_in_check_mode
     - mariadb_replication.role == 'replica'
 
 - name: check primary replication status
@@ -66,6 +68,7 @@
     config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
   register: state_of_primary
   when:
+    - not running_in_check_mode
     - mariadb_replication.role == 'replica'
     - (mariadb_replication.primary is defined and mariadb_replication.primary | length > 0)
 
@@ -85,6 +88,7 @@
   no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
   register: configure_replication_on_replica
   when:
+    - not running_in_check_mode
     - (state_of_replica.Is_Replica is defined and not state_of_replica.Is_Replica) or
       (state_of_replica.Is_Replica is not defined and state_of_replica is failed)
     - mariadb_replication.role == 'replica'
@@ -105,6 +109,7 @@
     config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
   register: start_replication
   when:
+    - not running_in_check_mode
     - (state_of_replica.Is_Replica is defined and not state_of_replica.Is_Replica) or
       (state_of_replica.Is_Replica is not defined and state_of_replica is failed)
     - mariadb_replication.role == 'replica'

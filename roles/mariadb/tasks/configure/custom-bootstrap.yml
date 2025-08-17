@@ -5,6 +5,7 @@
     datadir: /var/lib/mysql
     skip_test_db: false
   when:
+    - not running_in_check_mode
     - ansible_os_family | lower == 'archlinux' or
       ansible_distribution | lower | replace(' ', '') == 'artixlinux'
 
@@ -13,6 +14,7 @@
     datadir: "{{ mariadb_config_mysqld.datadir }}"
     skip_test_db: false
   when:
+    - not running_in_check_mode
     - mariadb_config_mysqld.datadir is defined
     - mariadb_config_mysqld.datadir != "/var/lib/mysql"
 

@@ -85,10 +85,12 @@ authentication_timeout               = {{ postgresql_config_authentication.authe
   {# scram-sha-256 or md5 #}
 password_encryption                 = {{ postgresql_config_authentication.password_encryption }}
   {% endif %}
-  {% if postgresql_config_authentication.scram_iterations is defined and
-        postgresql_config_authentication.scram_iterations | string | length > 0 %}
+  {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_config_authentication.scram_iterations is defined and
+          postgresql_config_authentication.scram_iterations | string | length > 0 %}
   {# 4096 #}
 scram_iterations                    = {{ postgresql_config_authentication.scram_iterations }}
+    {% endif %}
   {% endif %}
   {% if postgresql_config_authentication.krb.server.keyfile is defined and
         postgresql_config_authentication.krb.server.keyfile | string | length > 0 %}
@@ -99,9 +101,11 @@ krb_server_keyfile                  = '{{ postgresql_config_authentication.krb.s
         postgresql_config_authentication.krb.caseins_users | string | length > 0 %}
 krb_caseins_users                   = {{ postgresql_config_authentication.krb.caseins_users | bodsch.core.config_bool(true_as="on", false_as="off") }}
   {% endif %}
-  {% if postgresql_config_authentication.gss.accept_delegation is defined and
-        postgresql_config_authentication.gss.accept_delegation | string | length > 0 %}
+  {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_config_authentication.gss.accept_delegation is defined and
+          postgresql_config_authentication.gss.accept_delegation | string | length > 0 %}
 gss_accept_delegation               = {{ postgresql_config_authentication.gss.accept_delegation | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
   {% endif %}
 # - SSL -
   {% if postgresql_config_authentication.ssl | bodsch.core.type == "dict" %}

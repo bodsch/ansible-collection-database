@@ -2,8 +2,9 @@
 
 # secondary nodes
 - name: bootstrap secondary cluster nodes
+  when:
+    - not running_in_check_mode
   block:
-
     - name: start galera secondary cluster nodes
       ansible.builtin.service:
         name: "{{ mariadb_service }}"

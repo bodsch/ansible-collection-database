@@ -2,6 +2,7 @@
 
 - name: create monitoring database and user
   when:
+    - not running_in_check_mode
     - mariadb_monitoring is defined
     - mariadb_monitoring.enabled | bool
     - mariadb_monitoring.system_user is defined

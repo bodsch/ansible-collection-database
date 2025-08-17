@@ -19,6 +19,7 @@
 
 - name: galera cluster mode
   when:
+    - not running_in_check_mode
     - mariadb_galera_cluster
     - not galera_bootstraped_database
   block:
@@ -37,6 +38,7 @@
     - name: reconfigure primary instance
       ansible.builtin.include_tasks: galera/primary_reconfigure.yml
       when:
+        - not running_in_check_mode
         - mariadb_galera_primary_node == ansible_hostname
 
   rescue:
@@ -71,6 +73,8 @@
         msg: "Error while creating the initial database structure!"
 
 - name: cluster information
+  when:
+    - not running_in_check_mode
   block:
     - name: get galera cluster state
       community.mysql.mysql_query:

@@ -1,0 +1,23 @@
+---
+
+mariadb_backup_connection:
+  encrypted_login: false
+  username: 'backup'
+  password: "{{ vault__database.passwords.backup }}"
+  host: "{{ database_hostname }}"
+  port: 3306
+  socket: "" # /run/mysqld/mysqld.sock
+  commpress_communication: true
+  login_cnf_file: ''
+  use_ssl: false
+  max_allowed_packet: ''
+  single_transaction: true
+
+mariadb_backup_cron:
+  type: cron          # alternative: systemd
+  daemon: "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
+  enabled: true       # [true, false]
+
+mariadb_backup_include:
+  databases:
+    - demo

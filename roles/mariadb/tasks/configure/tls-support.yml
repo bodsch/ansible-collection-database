@@ -2,7 +2,8 @@
 
 - name: TLS support
   when:
-    - mariadb_config_mysqld | support_tls
+    - not running_in_check_mode
+    - mariadb_config_mysqld | bodsch.database.support_tls
   block:
     - name: copy certificates
       become: true

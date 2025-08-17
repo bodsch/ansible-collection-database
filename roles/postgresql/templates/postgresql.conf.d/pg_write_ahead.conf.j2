@@ -25,11 +25,17 @@ wal_log_hints                       = {{ settings.wal_log_hints | bodsch.core.co
     {% endif %}
     {% if settings.wal_compression is defined and
           settings.wal_compression | string | length > 0 %}
-      {% if settings.wal_compression | bodsch.core.type == "str" and
-            settings.wal_compression in ["pglz", "lz4", "zstd"] %}
-wal_compression                     = {{ settings.wal_compression }}
-      {% elif settings.wal_compression | bodsch.core.type == "bool" %}
-wal_compression                     = {{ settings.wal_compression | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {# v14: parameter "wal_compression" requires a Boolean value #}
+      {% if postgresql_version is version_compare('14', '<=') %}
+        {% set _wal_compression = False %}
+      {% else %}
+        {% set _wal_compression = settings.wal_compression %}
+      {% endif %}
+      {% if _wal_compression | bodsch.core.type == "str" and
+            _wal_compression in ["pglz", "lz4", "zstd"] %}
+wal_compression                     = {{ _wal_compression }}
+      {% elif _wal_compression | bodsch.core.type == "bool" %}
+wal_compression                     = {{ _wal_compression | bodsch.core.config_bool(true_as="on", false_as="off") }}
       {% endif %}
     {% endif %}
     {% if settings.wal_log_hints is defined and
@@ -111,13 +117,15 @@ min_wal_size                        = {{ checkpoint.wal_size.min }}
   {% endif %}
   {% if write_ahead.prefetch | bodsch.core.type == "dict" %}
     {% set prefetch = write_ahead.prefetch %}
-    {% if prefetch.recovery_prefetch is defined and
-          prefetch.recovery_prefetch | string | length > 0 %}
+    {% if postgresql_version is version_compare('14', '>') %}
+      {% if prefetch.recovery_prefetch is defined and
+            prefetch.recovery_prefetch | string | length > 0 %}
 recovery_prefetch                   = {{ prefetch.recovery_prefetch }}
-    {% endif %}
-    {% if prefetch.wal_decode_buffer_size is defined and
-          prefetch.wal_decode_buffer_size | string | length > 0 %}
+      {% endif %}
+      {% if prefetch.wal_decode_buffer_size is defined and
+            prefetch.wal_decode_buffer_size | string | length > 0 %}
 wal_decode_buffer_size              = {{ prefetch.wal_decode_buffer_size }}
+      {% endif %}
     {% endif %}
   {% endif %}
   {% if write_ahead.archive | bodsch.core.type == "dict" %}
@@ -196,13 +204,15 @@ recovery_target_action              = '{{ recovery_target.recovery_target }}'
   {% endif %}
   {% if write_ahead.summarize | bodsch.core.type == "dict" %}
     {% set summarize = write_ahead.summarize %}
-    {% if summarize.summarize_wal is defined and
-          summarize.summarize_wal | string | length > 0 %}
+    {% if postgresql_version is version_compare('16', '>') %}
+      {% if summarize.summarize_wal is defined and
+            summarize.summarize_wal | string | length > 0 %}
 summarize_wal                       = {{ summarize.summarize_wal | bodsch.core.config_bool(true_as="on", false_as="off") }}
-    {% endif %}
-    {% if summarize.wal_summary_keep_time is defined and
-          summarize.wal_summary_keep_time | string | length > 0 %}
+      {% endif %}
+      {% if summarize.wal_summary_keep_time is defined and
+            summarize.wal_summary_keep_time | string | length > 0 %}
 wal_summary_keep_time               = '{{ summarize.wal_summary_keep_time }}'
+      {% endif %}
     {% endif %}
   {% endif %}
 {% endif %}

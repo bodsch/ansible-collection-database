@@ -25,6 +25,7 @@
 
 - name: set database root password
   when:
+    - not running_in_check_mode
     - _mariadb_root_system_user.password | default('') | length > 0
     - _mariadb_root_system_user.update
     - not _mariadb_root_system_user.ignore | default('true')
@@ -38,6 +39,7 @@
 
 - name: secure database (remove anonymous user, disallow remote root login, ...)
   when:
+    - not running_in_check_mode
     - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_hostname)
   bodsch.database.mariadb_secure:
     dba_root_username: "{{ _mariadb_root_system_user.username }}"

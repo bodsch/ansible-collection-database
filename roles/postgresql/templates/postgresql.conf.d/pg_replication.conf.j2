@@ -96,9 +96,11 @@ wal_retrieve_retry_interval         = {{ standby.wal_retrieve_retry_interval }}
           standby.recovery_min_apply_delay | string | length > 0 %}
 recovery_min_apply_delay            = {{ standby.recovery_min_apply_delay }}
     {% endif %}
-    {% if standby.sync_replication_slots is defined and
-          standby.sync_replication_slots | string | length > 0 %}
+    {% if postgresql_version is version_compare('16', '>') %}
+      {% if standby.sync_replication_slots is defined and
+            standby.sync_replication_slots | string | length > 0 %}
 sync_replication_slots              = {{ standby.sync_replication_slots | bodsch.core.config_bool(true_as="on", false_as="off") }}
+      {% endif %}
     {% endif %}
   {% endif %}
   {% if replication.subscribers | bodsch.core.type == "dict" %}
@@ -112,9 +114,11 @@ max_logical_replication_workers     = {{ subscribers.max_logical_replication_wor
           subscribers.max_sync_workers_per_subscription | string | length > 0 %}
 max_sync_workers_per_subscription   = {{ subscribers.max_sync_workers_per_subscription }}
     {% endif %}
-    {% if subscribers.max_parallel_apply_workers_per_subscription is defined and
-          subscribers.max_parallel_apply_workers_per_subscription | string | length > 0 %}
+    {% if postgresql_version is version_compare('15', '>') %}
+      {% if subscribers.max_parallel_apply_workers_per_subscription is defined and
+            subscribers.max_parallel_apply_workers_per_subscription | string | length > 0 %}
 max_parallel_apply_workers_per_subscription = {{ subscribers.max_parallel_apply_workers_per_subscription }}
+      {% endif %}
     {% endif %}
   {% endif %}
 {% endif %}

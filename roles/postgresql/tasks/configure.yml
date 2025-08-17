@@ -69,6 +69,7 @@
     - statistics
     - write_ahead
   notify:
+    - validate postgresql config
     - restart postgresql
 
 - name: remove older ansible backup files
@@ -84,3 +85,8 @@
     backup: true
   notify:
     - restart postgresql
+
+- name: flush handlers
+  ansible.builtin.meta: flush_handlers
+
+...

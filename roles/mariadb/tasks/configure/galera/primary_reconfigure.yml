@@ -1,8 +1,9 @@
 ---
 
 - name: reconfigure primary cluster node
+  when:
+    - not running_in_check_mode
   block:
-
     - name: remove wsrep.cnf (was only needed for the bootstrap)
       ansible.builtin.file:
         state: absent

@@ -55,4 +55,4 @@
   roles:
     # - role: apparmor
     # - role: snapd
-    - role: bodsch.core.snakeoil
+    - role: bodsch.certs.snakeoil

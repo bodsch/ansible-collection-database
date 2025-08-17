@@ -5,10 +5,12 @@
   {% set reporting = postgresql_config_reporting %}
   {% set log_destination = "stderr" %}
   {% set logging_collector = True %}
-  {% if reporting.log_destination is defined and
-        reporting.log_destination | string | length > 0 and
-        reporting.log_destination in ["stderr", "csvlog", "jsonlog", "syslog", "eventlog"] %}
-    {% set log_destination = reporting.log_destination %}
+  {% if postgresql_version is version_compare('15', '>=') %}
+    {% if reporting.log_destination is defined and
+          reporting.log_destination | string | length > 0 and
+          reporting.log_destination in ["stderr", "csvlog", "jsonlog", "syslog", "eventlog"] %}
+      {% set log_destination = reporting.log_destination %}
+    {% endif %}
   {% endif %}
   {% if reporting.logging_collector is defined and
         reporting.logging_collector | string | length > 0 %}
@@ -107,9 +109,11 @@ log_statement_sample_rate           = {{ postgresql_config_reporting.log_stateme
         postgresql_config_reporting.log_transaction_sample_rate | string | length > 0 %}
 log_transaction_sample_rate         = {{ postgresql_config_reporting.log_transaction_sample_rate }}
   {% endif %}
-  {% if postgresql_config_reporting.log_startup_progress_interval is defined and
-        postgresql_config_reporting.log_startup_progress_interval | string | length > 0 %}
+  {% if postgresql_version is version_compare('14', '>') %}
+    {% if postgresql_config_reporting.log_startup_progress_interval is defined and
+          postgresql_config_reporting.log_startup_progress_interval | string | length > 0 %}
 log_startup_progress_interval       = {{ postgresql_config_reporting.log_startup_progress_interval }}
+    {% endif %}
   {% endif %}
 # - What to Log -
   {% if postgresql_config_reporting.debug_print_parse is defined and

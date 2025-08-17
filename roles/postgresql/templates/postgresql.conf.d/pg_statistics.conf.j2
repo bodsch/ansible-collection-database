@@ -32,10 +32,12 @@ track_wal_io_timing                 = {{ statistics.track_wal_io_timing | bodsch
         statistics.track_functions in ["none", "pl", "all"] %}
 track_functions                     = {{ statistics.track_functions }}
   {% endif %}
-  {% if statistics.stats_fetch_consistency is defined and
-        statistics.stats_fetch_consistency | string | length > 0 and
-        statistics.stats_fetch_consistency in ["cache", "none", "snapshot"] %}
+  {% if postgresql_version is version_compare('14', '>') %}
+    {% if statistics.stats_fetch_consistency is defined and
+          statistics.stats_fetch_consistency | string | length > 0 and
+          statistics.stats_fetch_consistency in ["cache", "none", "snapshot"] %}
 stats_fetch_consistency             = {{ statistics.stats_fetch_consistency }}
+    {% endif %}
   {% endif %}
   {% if statistics.compute_query_id is defined and
         statistics.compute_query_id | string | length > 0 %}

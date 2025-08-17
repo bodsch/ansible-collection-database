@@ -1,0 +1,58 @@
+---
+
+- name: install database client package
+  when:
+    - mariadb_backup_client_package | default('') | string | length > 0
+    - mariadb_backup_client_package | regex_search(".*-client")
+  ansible.builtin.package:
+    name: "{{ mariadb_backup_client_package }}"
+    state: present
+
+- name: find mariadb_backup binary
+  ansible.builtin.find:
+    paths: /tmp/mariadb_backup
+    file_type: file
+    patterns:
+      - "mariadb_backup.py"
+    recurse: true
+  register: found_binary
+
+- name: define mariadb_backup_source
+  ansible.builtin.set_fact:
+    mariadb_backup_source: "{{
+        found_binary.files |
+        sort(attribute='path', reverse=True) |
+        map(attribute='path') | list | first }}"
+  when:
+    - found_binary.files is defined
+    - found_binary.files | count > 0
+
+- name: copy mariadb_backup
+  ansible.builtin.copy:
+    src: "{{ mariadb_backup_source }}"
+    dest: /usr/local/bin/
+    mode: "0755"
+    backup: true
+    remote_src: true
+
+- name: detect the installed binary
+  ansible.builtin.stat:
+    path: /usr/local/bin/mariadb_backup.py
+    # get_checksum: false
+  register: stat_mariadb_backup_binary
+  ignore_errors: true
+
+- name: define mariadb_backup binary checksum
+  ansible.builtin.set_fact:
+    mariadb_backup_checksum: "{{ stat_mariadb_backup_binary.stat.checksum }}"
+  when:
+    - stat_mariadb_backup_binary is defined
+    - stat_mariadb_backup_binary.stat is defined
+    - stat_mariadb_backup_binary.stat.checksum is defined
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: mariadb_backup
+    facts:
+      version: "{{ mariadb_backup_version }}"
+      checksum: "{{ mariadb_backup_checksum }}"

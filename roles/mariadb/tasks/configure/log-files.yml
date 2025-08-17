@@ -2,6 +2,7 @@
 
 - name: handle mariadb slow query log
   when:
+    - not running_in_check_mode
     - mariadb_config_mysqld.slow_query_log_file is defined
     - mariadb_config_mysqld.slow_query_log_file | string | length > 0
   block:
@@ -32,6 +33,7 @@
 
 - name: handle mariadb error log
   when:
+    - not running_in_check_mode
     - mariadb_config_mysqld.log_error is defined
     - mariadb_config_mysqld.log_error | string | length > 0
   block:

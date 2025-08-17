@@ -1,0 +1,25 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+OPTIONS=" \
+  --directory {{ mariadb_backup_backup_directory }} \
+  --config /etc/mariadb_backup/mariadb_backup.yml \
+  --log-level {{ mariadb_backup_loglevel | default('INFO') }}
+"
+{#
+/usr/local/bin/mariadb_backup.py --help
+usage: mariadb_backup.py [-h] [-d DIRECTORY] [-C CONFIG] [--mycnf MYCNF] [--dry-run DRY_RUN] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+
+create mariadb backups
+
+options:
+  -h, --help            show this help message and exit
+  -d DIRECTORY, --directory DIRECTORY
+                        backup directory to store
+  -C CONFIG, --config CONFIG
+                        configuration file
+  --mycnf MYCNF         my.cnf file
+  --dry-run DRY_RUN     do nothing
+  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Setzt das Log-Level (default: INFO)
+#}

@@ -2,6 +2,7 @@
 
 - name: no galera cluster mode
   when:
+    - not running_in_check_mode
     - not mariadb_galera_cluster
   block:
     - name: start mariadb first time

@@ -1,0 +1,41 @@
+---
+
+connection:
+  encrypted_login: {{ mariadb_backup_connection.encrypted_login | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  username: {{ mariadb_backup_connection.username | default('') }}
+  password: {{ mariadb_backup_connection.password | default('') }}
+  host: {{ mariadb_backup_connection.host | default('') }}
+  port: {{ mariadb_backup_connection.port | default('') }}
+  socket: {{ mariadb_backup_connection.socket | default('') }}
+  commpress_communication: {{ mariadb_backup_connection.commpress_communication | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  login_cnf_file: {{ mariadb_backup_connection.login_cnf_file | default('') }}
+  use_ssl: {{ mariadb_backup_connection.use_ssl | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  max_allowed_packet: {{ mariadb_backup_connection.max_allowed_packet | default('') }}
+  single_transaction: {{ mariadb_backup_connection.single_transaction | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+
+storage:
+  destination: {{ mariadb_backup_stoarge.destination | default('/srv/backup') }}
+  rotation:
+    # Set rotation of daily backups. VALUE*24hours
+    # If you want to keep only today's backups, you could choose 1,
+    # i.e. everything older than 24hours will be removed.
+    daily: {{ mariadb_backup_stoarge.rotation.daily | default('2') }}
+    weekly: {{ mariadb_backup_stoarge.rotation.weekly | default('2') }}
+
+notification:
+  enabled: {{ mariadb_backup_notification.enabled | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  smtp:
+    server_name: {{ mariadb_backup_notification.smtp.server_name | default('') }}
+    port: {{ mariadb_backup_notification.smtp.port | default('') }}
+    tls: {{ mariadb_backup_notification.smtp.tls | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+    auth:
+      username: {{ mariadb_backup_notification.smtp.auth.username }}
+      password: {{ mariadb_backup_notification.smtp.auth.password }}
+  sender: {{ mariadb_backup_notification.sender | default('') }}
+  recipient: {{ mariadb_backup_notification.recipient | default('') }}
+
+excludes:
+  {{ mariadb_backup_exclude | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
+
+includes:
+  {{ mariadb_backup_include | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
