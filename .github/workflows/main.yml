@@ -58,7 +58,6 @@ jobs:
         ansible-version:
           - '8.5'
         python_version:
-          - "3.11"
           - "3.12"
         scenario:
           - default
@@ -78,6 +77,11 @@ jobs:
         uses: actions/setup-python@v5.6.0
         with:
           python-version: "${{ matrix.python_version }}"
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y python3-dateutil
 
       - name: install dependencies
         run: |
