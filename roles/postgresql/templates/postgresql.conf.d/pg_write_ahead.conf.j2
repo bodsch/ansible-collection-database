@@ -196,13 +196,15 @@ recovery_target_action              = '{{ recovery_target.recovery_target }}'
   {% endif %}
   {% if write_ahead.summarize | bodsch.core.type == "dict" %}
     {% set summarize = write_ahead.summarize %}
-    {% if summarize.summarize_wal is defined and
-          summarize.summarize_wal | string | length > 0 %}
+    {% if postgresql_version is version_compare('15', '>') %}
+      {% if summarize.summarize_wal is defined and
+            summarize.summarize_wal | string | length > 0 %}
 summarize_wal                       = {{ summarize.summarize_wal | bodsch.core.config_bool(true_as="on", false_as="off") }}
-    {% endif %}
-    {% if summarize.wal_summary_keep_time is defined and
-          summarize.wal_summary_keep_time | string | length > 0 %}
+      {% endif %}
+      {% if summarize.wal_summary_keep_time is defined and
+            summarize.wal_summary_keep_time | string | length > 0 %}
 wal_summary_keep_time               = '{{ summarize.wal_summary_keep_time }}'
+      {% endif %}
     {% endif %}
   {% endif %}
 {% endif %}

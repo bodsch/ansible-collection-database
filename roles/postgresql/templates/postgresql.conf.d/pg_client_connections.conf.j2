@@ -204,7 +204,7 @@ lc_numeric                          = '{{ locale_and_formatting.lc_numeric }}'
           locale_and_formatting.lc_time | string | length > 0 %}
 lc_time                             = '{{ locale_and_formatting.lc_time }}'
     {% endif %}
-    {% if postgresql_version is version_compare('15', '>=') %}
+    {% if postgresql_version is version_compare('15', '>') %}
     {# not in v15 #}
       {% if locale_and_formatting.icu_validation_level is defined and
             locale_and_formatting.icu_validation_level | string | length > 0  and

@@ -76,9 +76,11 @@ enable_partitionwise_join           = {{ query_tuning.enable_partitionwise_join 
         query_tuning.enable_partitionwise_aggregate | string | length > 0 %}
 enable_partitionwise_aggregate      = {{ query_tuning.enable_partitionwise_aggregate | bodsch.core.config_bool(true_as="on", false_as="off") }}
   {% endif %}
-  {% if query_tuning.enable_presorted_aggregate is defined and
-        query_tuning.enable_presorted_aggregate | string | length > 0 %}
+  {% if postgresql_version is version_compare('15', '>') %}
+    {% if query_tuning.enable_presorted_aggregate is defined and
+          query_tuning.enable_presorted_aggregate | string | length > 0 %}
 enable_presorted_aggregate          = {{ query_tuning.enable_presorted_aggregate | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
   {% endif %}
   {% if query_tuning.enable_seqscan is defined and
         query_tuning.enable_seqscan | string | length > 0 %}
@@ -92,9 +94,11 @@ enable_sort                         = {{ query_tuning.enable_sort | bodsch.core.
         query_tuning.enable_tidscan | string | length > 0 %}
 enable_tidscan                      = {{ query_tuning.enable_tidscan | bodsch.core.config_bool(true_as="on", false_as="off") }}
   {% endif %}
-  {% if query_tuning.enable_group_by_reordering is defined and
-        query_tuning.enable_group_by_reordering | string | length > 0 %}
+  {% if postgresql_version is version_compare('15', '>') %}
+    {% if query_tuning.enable_group_by_reordering is defined and
+          query_tuning.enable_group_by_reordering | string | length > 0 %}
 enable_group_by_reordering          = {{ query_tuning.enable_group_by_reordering | bodsch.core.config_bool(true_as="on", false_as="off") }}
+    {% endif %}
   {% endif %}
 # - Planner Cost Constants -
   {% if query_tuning.seq_page_cost is defined and
