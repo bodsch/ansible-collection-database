@@ -45,7 +45,7 @@ synchronize_seqscans                = {{ compatibility.synchronize_seqscans | bo
         compatibility.transform_null_equals | string | length > 0 %}
 transform_null_equals               = {{ compatibility.transform_null_equals | bodsch.core.config_bool(true_as="on", false_as="off") }}
   {% endif %}
-  {% if postgresql_version is version_compare('15', '>') %}
+  {% if postgresql_version is version_compare('16', '>') %}
     {% if compatibility.allow_alter_system is defined and
           compatibility.allow_alter_system | string | length > 0 %}
 allow_alter_system                  = {{ compatibility.allow_alter_system | bodsch.core.config_bool(true_as="on", false_as="off") }}

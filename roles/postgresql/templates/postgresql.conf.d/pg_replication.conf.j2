@@ -96,7 +96,7 @@ wal_retrieve_retry_interval         = {{ standby.wal_retrieve_retry_interval }}
           standby.recovery_min_apply_delay | string | length > 0 %}
 recovery_min_apply_delay            = {{ standby.recovery_min_apply_delay }}
     {% endif %}
-    {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_version is version_compare('16', '>') %}
       {% if standby.sync_replication_slots is defined and
             standby.sync_replication_slots | string | length > 0 %}
 sync_replication_slots              = {{ standby.sync_replication_slots | bodsch.core.config_bool(true_as="on", false_as="off") }}

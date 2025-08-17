@@ -72,7 +72,7 @@ dynamic_shared_memory_type          = {{ memory.dynamic_shared_memory_type }}
 min_dynamic_shared_memory           = {{ memory.min_dynamic_shared_memory }}
     {% endif %}
     {# ------------------ #}
-    {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_version is version_compare('16', '>') %}
       {% if memory.vacuum_buffer_usage_limit is defined and
             memory.vacuum_buffer_usage_limit | string | length > 0 %}
 vacuum_buffer_usage_limit           = {{ memory.vacuum_buffer_usage_limit }}
@@ -115,7 +115,7 @@ transaction_buffers                 = {{ memory.transaction_buffers }}
           disk.temp_file_limit | string | length > 0 %}
 temp_file_limit                     = {{ disk.temp_file_limit }}
     {% endif %}
-    {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_version is version_compare('16', '>') %}
       {% if disk.max_notify_queue_pages is defined and
             disk.max_notify_queue_pages | string | length > 0 %}
 max_notify_queue_pages              = {{ disk.max_notify_queue_pages }}
@@ -193,7 +193,7 @@ effective_io_concurrency            = {{ async_behavior.effective_io_concurrency
           async_behavior.maintenance_io_concurrency | string | length > 0 %}
 maintenance_io_concurrency          = {{ async_behavior.maintenance_io_concurrency }}
     {% endif %}
-    {% if postgresql_version is version_compare('15', '>') %}
+    {% if postgresql_version is version_compare('16', '>') %}
       {% if async_behavior.io_combine_limit is defined and
             async_behavior.io_combine_limit | string | length > 0 %}
 io_combine_limit                    = {{ async_behavior.io_combine_limit }}
