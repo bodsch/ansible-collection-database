@@ -2,11 +2,14 @@
 
 # Set postgresql state when configuration changes are made. Recommended values:
 # `restarted` or `reloaded`
-postgresql_restarted_state: "restarted"
+# postgresql_restarted_state: "restarted"
 
-postgresql_python_library: python-psycopg2
+# postgresql_python_library: python-psycopg2
 postgresql_user: postgres
 postgresql_group: postgres
+
+postgresql_config_authentication:
+  password_encryption: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
 
 # Databases to ensure exist.
 postgresql_databases: []

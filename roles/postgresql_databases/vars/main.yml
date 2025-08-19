@@ -8,7 +8,9 @@ postgresql_bin_path: "/usr/lib/postgresql/{{ postgresql_version }}/bin"
 postgresql_config_path: "/etc/postgresql/{{ postgresql_version }}/main"
 postgresql_daemon: "postgresql@{{ postgresql_version }}-main"
 
-postgresql_dependencies: []
+postgresql_dependencies:
+  - python3-psycopg
+  # - python3-psycopg2
 
 postgresql_packages:
   - postgresql

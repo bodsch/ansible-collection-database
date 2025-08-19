@@ -20,11 +20,6 @@
         - default.yml
       skip: true
 
-- name: install dependecies
-  ansible.builtin.package:
-    name: "{{ postgresql_dependencies }}"
-    state: present
-
 - name: detect if postgresql installed
   ansible.builtin.stat:
     path: /usr/bin/postgres
@@ -38,5 +33,18 @@
   when:
     - postgresql_binary_file is defined
     - postgresql_binary_file.stat is defined
+
+- name: install dependecies
+  ansible.builtin.package:
+    name: "{{ postgresql_dependencies }}"
+    state: present
+  when:
+    - postgresql_installed
+
+- name: pg conn
+  become: true
+  become_user: postgres
+  bodsch.database.postgres_connection:
+  register: pg_connection
 
 ...

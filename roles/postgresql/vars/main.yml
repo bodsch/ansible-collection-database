@@ -10,7 +10,7 @@ postgresql_daemon: "postgresql@{{ postgresql_version }}-main"
 
 postgresql_dependencies: []
 
-postgresql_packages:
+postgresql_packages:/etc/postgresql/
   - postgresql
   - postgresql-contrib
   - libpq-dev

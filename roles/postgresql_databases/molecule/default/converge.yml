@@ -6,4 +6,4 @@
   become: false
 
   roles:
-    - role: bodsch.database.postgresql
+    - role: bodsch.database.postgresql_databases
