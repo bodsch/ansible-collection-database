@@ -9,9 +9,13 @@ mariadb_system_users:
     update: true
     ignore: true
 
-# mariadb_root_password:
+mariadb_instances: >-
+  {{ groups['replica']
+     | map('extract', hostvars, ['ansible_facts', 'default_ipv4', 'address'])
+     | select('defined')
+     | select('string')
+     | list }}
 
-mariadb_instances: "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_facts.default_ipv4', 'address']) | list }}"
 mariadb_hostnames: "{{ groups['mariadb'] | map('extract', hostname) | list }}"
 
 mariadb_databases:
@@ -64,7 +68,11 @@ mariadb_config_galera:
   wsrep_notify_cmd: "/bin/wsrep_notify.sh"
   wsrep_cluster_name: "{{ mariadb_galera.cluster_name }}"
   wsrep_provider: "/usr/lib/libgalera_smm.so"
-  wsrep_cluster_address: "gcomm://{{ mariadb_galera.node_addresses | bodsch.database.wsrep_cluster_address() }}"
+  # wsrep_cluster_address: "gcomm://{{ mariadb_galera.node_addresses | bodsch.database.wsrep_cluster_address() }}"
+  wsrep_cluster_address: >-
+    gcomm://{{ mariadb_galera.node_addresses
+               | map(attribute='address')
+               | join(',') }}
   binlog_format: "row"
   default_storage_engine: "InnoDB"
   innodb_autoinc_lock_mode: "2"

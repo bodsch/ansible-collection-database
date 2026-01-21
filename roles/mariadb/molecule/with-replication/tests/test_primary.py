@@ -3,7 +3,7 @@ from __future__ import annotations, unicode_literals
 import os
 
 import testinfra.utils.ansible_runner
-from helper.molecule import get_vars, pp_json
+from helper.molecule import get_vars
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ["MOLECULE_INVENTORY_FILE"]
@@ -73,7 +73,7 @@ def test_directories(host, get_vars):
     redhat based: /etc/my.cnf.d
     arch based  : /etc/my.cnf.d
     """
-    pp_json(get_vars)
+    # print(get_vars)
 
     directories = [
         get_vars.get("mariadb_config_dir"),

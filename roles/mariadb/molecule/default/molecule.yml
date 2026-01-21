@@ -24,6 +24,10 @@ platforms:
     tmpfs:
       - /run
       - /tmp
+    labels:
+      service-discover.enabled: "true"
+      service-discover.port.3128: "/metrics"
+      service-discover.port.3181: "/actuator/prometheus"
 
 provisioner:
   name: ansible

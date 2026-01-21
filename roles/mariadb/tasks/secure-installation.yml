@@ -1,13 +1,14 @@
 ---
 
-# - name: define root system userdata
-#   ansible.builtin.set_fact:
-#     _mariadb_root_system_user: "{{ mariadb_system_users | bodsch.database.system_user('root') }}"
+- name: define root system userdata
+  ansible.builtin.set_fact:
+    _mariadb_root_system_user: "{{ mariadb_system_users | bodsch.database.system_user('root') }}"
+  no_log: true
 
 - name: validate custom root password
   when:
-    - not _mariadb_root_system_user.ignore | default('true')
-    - _mariadb_root_system_user.password | default('') | length == 0
+    - not (_mariadb_root_system_user['ignore'] | default(true) | bool)
+    - (_mariadb_root_system_user['password'] | default('') | length) == 0
   block:
     - name: warn if a custom root password is not specified
       ansible.builtin.fail:
@@ -26,25 +27,25 @@
 - name: set database root password
   when:
     - not running_in_check_mode
-    - _mariadb_root_system_user.password | default('') | length > 0
-    - _mariadb_root_system_user.update
-    - not _mariadb_root_system_user.ignore | default('true')
+    - (_mariadb_root_system_user['password'] | default('') | length) > 0
+    - (_mariadb_root_system_user['update'] | default(false) | bool)
+    - not (_mariadb_root_system_user['ignore'] | default(true) | bool)
   bodsch.database.mariadb_root_password:
-    dba_root_username: "{{ _mariadb_root_system_user.username }}"
-    dba_root_password: "{{ _mariadb_root_system_user.password }}"
+    dba_root_username: "{{ _mariadb_root_system_user['username'] }}"
+    dba_root_password: "{{ _mariadb_root_system_user['password'] }}"
     dba_bind_address: "{{ mariadb_bind_address | default(omit) }}"
     dba_socket: "{{ mariadb_socket | default(omit) }}"
     dba_config_directory: "{{ mariadb_config_dir }}"
-    mycnf_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+    mycnf_file: "{{ _mariadb_root_system_user['home'] | default('/root') }}/.my.cnf"
 
 - name: secure database (remove anonymous user, disallow remote root login, ...)
   when:
     - not running_in_check_mode
     - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_facts.hostname)
   bodsch.database.mariadb_secure:
-    dba_root_username: "{{ _mariadb_root_system_user.username }}"
-    dba_root_password: "{{ _mariadb_root_system_user.password }}"
-    mycnf_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
+    dba_root_username: "{{ _mariadb_root_system_user['username'] }}"
+    dba_root_password: "{{ _mariadb_root_system_user['password'] }}"
+    mycnf_file: "{{ _mariadb_root_system_user['home'] | default('/root') }}/.my.cnf"
     dba_socket: "{{ mariadb_socket | default(omit) }}"
     disallow_anonymous_users: true
     disallow_test_database: true

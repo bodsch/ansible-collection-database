@@ -1,6 +1,11 @@
 ---
 
-mariadb_instances: "{{ groups['replica'] | map('extract', hostvars, ['ansible_facts.default_ipv4', 'address']) | list }}"
+mariadb_instances: >-
+  {{ groups['replica']
+     | map('extract', hostvars, ['ansible_facts', 'default_ipv4', 'address'])
+     | select('defined')
+     | select('string')
+     | list }}
 
 mariadb_system_users:
   - username: root

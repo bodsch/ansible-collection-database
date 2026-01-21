@@ -73,8 +73,6 @@ def test_directories(host, get_vars):
     redhat based: /etc/my.cnf.d
     arch based  : /etc/my.cnf.d
     """
-    pp_json(get_vars)
-
     directories = [
         get_vars.get("mariadb_config_dir"),
         get_vars.get("mariadb_config_include_dir"),
