@@ -46,7 +46,7 @@ postgresql_defaults_config_connections:
 
 postgresql_defaults_config_authentication:
   authentication_timeout: 1min                        # 1s-600s
-  password_encryption: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
+  password_encryption: "{{ ansible_facts.fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
   scram_iterations: 4096
   # GSSAPI using Kerberos
   krb:

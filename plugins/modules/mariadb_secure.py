@@ -5,12 +5,17 @@
 # Apache (see LICENSE or https://opensource.org/licenses/Apache-2.0)
 
 from __future__ import absolute_import, division, print_function
+
 import os
 
-from ansible.module_utils._text import to_native
+try:
+    from ansible.module_utils.common.text.converters import to_native
+except ImportError:  # pragma: no cover
+    from ansible.module_utils._text import to_native
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves import configparser
 from ansible.module_utils.mysql import mysql_driver, mysql_driver_fail_msg
+from ansible.module_utils.six.moves import configparser
 
 # ---------------------------------------------------------------------------------------
 
@@ -36,19 +41,22 @@ EXAMPLES = """
 
 class MariaDBSecure(object):
     """
-      Main Class to implement the Icinga2 API Client
+    Main Class to implement the Icinga2 API Client
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
         self.disallow_anonymous_users = module.params.get("disallow_anonymous_users")
         self.disallow_test_database = module.params.get("disallow_test_database")
-        self.disallow_remote_root_login = module.params.get("disallow_remote_root_login")
+        self.disallow_remote_root_login = module.params.get(
+            "disallow_remote_root_login"
+        )
         self.dba_root_username = module.params.get("dba_root_username")
         self.dba_root_password = module.params.get("dba_root_password")
         self.dba_socket = module.params.get("dba_socket")
@@ -58,7 +66,7 @@ class MariaDBSecure(object):
 
     def run(self):
         """
-          runner
+        runner
         """
         # mysqladmin_binary = self.module.get_bin_path("mysqladmin", False)
         # mysql_binary = self.module.get_bin_path("mysql", False)
@@ -84,10 +92,7 @@ class MariaDBSecure(object):
                 self.module.log(msg=f" - disallow remote root login: {state}")
 
                 if error:
-                    return dict(
-                        failed=True,
-                        msg=error_message
-                    )
+                    return dict(failed=True, msg=error_message)
 
             if self.disallow_anonymous_users:
                 state, error, error_message = self._remove_remote_root_login()
@@ -95,10 +100,7 @@ class MariaDBSecure(object):
                 self.module.log(msg=f" - disallow anonymous users: {state}")
 
                 if error:
-                    return dict(
-                        failed=True,
-                        msg=error_message
-                    )
+                    return dict(failed=True, msg=error_message)
 
             if self.disallow_test_database:
                 state, error, error_message = self._remove_test_database()
@@ -106,22 +108,14 @@ class MariaDBSecure(object):
                 self.module.log(msg=f" - remove test database: {state}")
 
                 if error:
-                    return dict(
-                        failed=True,
-                        msg=error_message
-                    )
+                    return dict(failed=True, msg=error_message)
         else:
-            res = dict(
-                changed=False,
-                msg=message
-
-            )
+            res = dict(changed=False, msg=message)
 
         return res
 
     def _remove_anonymous_users(self):
-        """
-        """
+        """ """
         cursor, conn, error, message = self._mysql_connect()
 
         if error:
@@ -139,13 +133,14 @@ class MariaDBSecure(object):
 
         except Exception as e:
             conn.rollback()
-            self.module.fail_json(msg="Cannot execute SQL '%s' : %s" % (query, to_native(e)))
+            self.module.fail_json(
+                msg="Cannot execute SQL '%s' : %s" % (query, to_native(e))
+            )
 
         return (True, False, None)
 
     def _remove_remote_root_login(self):
-        """
-        """
+        """ """
         results = None
 
         cursor, conn, error, message = self._mysql_connect()
@@ -162,7 +157,9 @@ class MariaDBSecure(object):
             results = cursor.fetchall()
 
         except Exception as e:
-            self.module.fail_json(msg="Cannot execute SQL '%s' : %s" % (query, to_native(e)))
+            self.module.fail_json(
+                msg="Cannot execute SQL '%s' : %s" % (query, to_native(e))
+            )
 
         queries = []
         if results:
@@ -177,7 +174,9 @@ class MariaDBSecure(object):
 
             except Exception as e:
                 conn.rollback()
-                self.module.fail_json(msg="Cannot execute SQL '%s' : %s" % (q, to_native(e)))
+                self.module.fail_json(
+                    msg="Cannot execute SQL '%s' : %s" % (q, to_native(e))
+                )
 
         conn.commit()
         conn.close()
@@ -185,8 +184,7 @@ class MariaDBSecure(object):
         return (True, False, None)
 
     def _remove_test_database(self):
-        """
-        """
+        """ """
         cursor, conn, error, message = self._mysql_connect()
 
         if error:
@@ -203,13 +201,15 @@ class MariaDBSecure(object):
 
         except Exception as e:
             conn.rollback()
-            self.module.fail_json(msg="Cannot execute SQL '%s' : %s" % (query, to_native(e)))
+            self.module.fail_json(
+                msg="Cannot execute SQL '%s' : %s" % (query, to_native(e))
+            )
 
         return (True, False, None)
 
     def _exec(self, commands):
         """
-          execute commands
+        execute commands
         """
         self.module.log(msg="commands: {}".format(commands))
 
@@ -221,29 +221,29 @@ class MariaDBSecure(object):
 
     def _mysql_connect(self):
         """
-            return:
-                cursor
-                conn
-                error
-                message
+        return:
+            cursor
+            conn
+            error
+            message
         """
         config = {}
 
         config_file = self.mycnf_file
 
         if config_file and os.path.exists(config_file):
-            config['read_default_file'] = config_file
+            config["read_default_file"] = config_file
 
         # If dba_user or dba_password are given, they should override the
         # config file
         if self.dba_root_username is not None:
-            config['user'] = self.dba_root_username
+            config["user"] = self.dba_root_username
 
         if self.dba_root_password is not None:
-            config['passwd'] = self.dba_root_password
+            config["passwd"] = self.dba_root_password
 
         if self.dba_socket is not None and os.path.exists(self.dba_socket):
-            config['unix_socket'] = self.dba_socket
+            config["unix_socket"] = self.dba_socket
 
         # self.module.log(msg=f"config : {config}")
 
@@ -272,39 +272,15 @@ class MariaDBSecure(object):
 
 
 def main():
-    """
-    """
+    """ """
     specs = dict(
-        disallow_anonymous_users=dict(
-            required=False,
-            type='bool'
-        ),
-        disallow_test_database=dict(
-            required=False,
-            type='bool'
-        ),
-        disallow_remote_root_login=dict(
-            required=False,
-            type='bool'
-        ),
-        dba_root_username=dict(
-            required=False,
-            type='str'
-        ),
-        dba_root_password=dict(
-            required=False,
-            type='str',
-            no_log=True
-        ),
-        dba_socket=dict(
-            required=False,
-            type='str'
-        ),
-        mycnf_file=dict(
-            required=False,
-            type="str",
-            default="/root/.my.cnf"
-        ),
+        disallow_anonymous_users=dict(required=False, type="bool"),
+        disallow_test_database=dict(required=False, type="bool"),
+        disallow_remote_root_login=dict(required=False, type="bool"),
+        dba_root_username=dict(required=False, type="str"),
+        dba_root_password=dict(required=False, type="str", no_log=True),
+        dba_socket=dict(required=False, type="str"),
+        mycnf_file=dict(required=False, type="str", default="/root/.my.cnf"),
     )
 
     module = AnsibleModule(
@@ -324,5 +300,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

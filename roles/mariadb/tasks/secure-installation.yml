@@ -40,7 +40,7 @@
 - name: secure database (remove anonymous user, disallow remote root login, ...)
   when:
     - not running_in_check_mode
-    - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_hostname)
+    - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_facts.hostname)
   bodsch.database.mariadb_secure:
     dba_root_username: "{{ _mariadb_root_system_user.username }}"
     dba_root_password: "{{ _mariadb_root_system_user.password }}"

@@ -5,11 +5,12 @@
 # Apache (see LICENSE or https://opensource.org/licenses/Apache-2.0)
 
 from __future__ import absolute_import, print_function
-import shutil
-import os
+
 import grp
-import pwd
 import hashlib
+import os
+import pwd
+import shutil
 
 # from ansible.module_utils import distro
 from ansible.module_utils.basic import AnsibleModule
@@ -17,21 +18,22 @@ from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '0.1',
-    'status': ['preview'],
-    'supported_by': 'community'
+    "metadata_version": "0.1",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
 
 class MariadbDataDirectories(object):
     """
-        Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
         self.source = module.params.get("source")
@@ -54,12 +56,11 @@ class MariadbDataDirectories(object):
     def get_file_ownership(self, filename):
         return (
             pwd.getpwuid(os.stat(filename).st_uid).pw_name,
-            grp.getgrgid(os.stat(filename).st_gid).gr_name
+            grp.getgrgid(os.stat(filename).st_gid).gr_name,
         )
 
     def run(self):
-        """
-        """
+        """ """
         failed = False
         changed = False
         msg = "module init."
@@ -67,37 +68,28 @@ class MariadbDataDirectories(object):
         verify_sources, msg = self.verify_source_files()
 
         if not verify_sources:
-            return dict(
-                changed=False,
-                failed=verify_sources,
-                msg=msg
-            )
+            return dict(changed=False, failed=verify_sources, msg=msg)
 
         if len(self.destination) == 0:
             return dict(
                 changed=False,
                 failed=True,
-                msg="The destination directory was not properly defined!"
+                msg="The destination directory was not properly defined!",
             )
 
         result = self.create_destination_directory()
 
-        if not result.get('failed', False):
+        if not result.get("failed", False):
             changed, failed = self.copy_files()
             if changed:
                 msg = "The certificate files have been copied successfully."
             else:
                 msg = "The certificate files are up to date."
 
-        return dict(
-            failed=failed,
-            changed=changed,
-            msg=msg
-        )
+        return dict(failed=failed, changed=changed, msg=msg)
 
     def verify_source_files(self):
-        """
-        """
+        """ """
         missing = []
 
         if len(self.ssl_files) < 3:
@@ -109,7 +101,10 @@ class MariadbDataDirectories(object):
                 missing.append("ca")
 
         if len(missing) > 0:
-            return False, f"The source files were not specified completely! The following files are missing: {', '.join(missing)}"
+            return (
+                False,
+                f"The source files were not specified completely! The following files are missing: {', '.join(missing)}",
+            )
 
         for f in self.ssl_files:
             if not os.path.exists(f):
@@ -121,13 +116,12 @@ class MariadbDataDirectories(object):
         return True, ""
 
     def create_destination_directory(self):
-        """
-        """
+        """ """
         if os.path.isdir(self.destination):
             return dict(
                 failed=False,
                 changed=False,
-                msg=f"Directory {self.destination} already exists."
+                msg=f"Directory {self.destination} already exists.",
             )
 
         # Create the directory
@@ -137,24 +131,15 @@ class MariadbDataDirectories(object):
 
             shutil.chown(self.destination, self.owner, self.group)
 
-            return dict(
-                failed=False,
-                changed=True,
-                msg=msg
-            )
+            return dict(failed=False, changed=True, msg=msg)
 
         except OSError as error:
             msg = f"Directory '{self.destination}' can not be created. ({error})"
 
-            return dict(
-                failed=True,
-                changed=False,
-                msg=msg
-            )
+            return dict(failed=True, changed=False, msg=msg)
 
     def copy_files(self):
-        """
-        """
+        """ """
         changed = False
         failed = False
 
@@ -183,8 +168,7 @@ class MariadbDataDirectories(object):
         return changed, failed
 
     def verify(self, source_file, destination_file):
-        """
-        """
+        """ """
         # self.module.log(msg=f"verify({source_file} : {destination_file})")
         s_checksum = None
         d_checksum = None
@@ -203,42 +187,28 @@ class MariadbDataDirectories(object):
             return False
 
     def __create_checksum_file(self, filename):
-        """
-        """
+        """ """
         with open(filename, "r") as d:
-            _data = d.read().rstrip('\n')
+            _data = d.read().rstrip("\n")
             return self.__checksum(_data)
 
     def __checksum(self, plaintext):
-        """
-        """
-        _bytes = plaintext.encode('utf-8')
+        """ """
+        _bytes = plaintext.encode("utf-8")
         _hash = hashlib.sha256(_bytes)
         return _hash.hexdigest()
 
 
 def main():
-    """
-    """
+    """ """
     specs = dict(
         source=dict(
             required=True,
-            type='dict',
+            type="dict",
         ),
-        destination=dict(
-            required=True,
-            type='path'
-        ),
-        owner=dict(
-            required=False,
-            type='str',
-            default="mysql"
-        ),
-        group=dict(
-            required=False,
-            type='str',
-            default="mysql"
-        ),
+        destination=dict(required=True, type="path"),
+        owner=dict(required=False, type="str", default="mysql"),
+        group=dict(required=False, type="str", default="mysql"),
     )
 
     module = AnsibleModule(
@@ -255,5 +225,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

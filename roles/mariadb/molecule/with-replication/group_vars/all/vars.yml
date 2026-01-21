@@ -1,6 +1,6 @@
 ---
 
-mariadb_instances: "{{ groups['replica'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
+mariadb_instances: "{{ groups['replica'] | map('extract', hostvars, ['ansible_facts.default_ipv4', 'address']) | list }}"
 
 mariadb_system_users:
   - username: root
@@ -22,7 +22,7 @@ mariadb_users:
     encrypted: false
 
 mariadb_config_mysqld:
-  bind-address: "{{ ansible_default_ipv4.address }}"
+  bind-address: "{{ ansible_facts.default_ipv4.address }}"
   socket: "{{ mariadb_socket }}"
   skip-external-locking:
   # Skip reverse DNS lookup of clients
@@ -38,8 +38,8 @@ mariadb_config_mysqld:
   max_connections: 20
   # replication
   server-id: "{{ mariadb_server_id }}"
-  relay_log: "{{ ansible_hostname }}-relay-bin"
-  relay_log_index: "{{ ansible_hostname }}-relay-bin.index"
+  relay_log: "{{ ansible_facts.hostname }}-relay-bin"
+  relay_log_index: "{{ ansible_facts.hostname }}-relay-bin.index"
   max_binlog_size: 100M
 
 # mariadb_replication_master: "master"

@@ -8,7 +8,7 @@
       bodsch.core.package_version:
         state: available
         package_name: "{{ mariadb_server }}"
-        repository: "{{ 'MariaDB' if ansible_os_family | lower == 'redhat' and mariadb_use_external_repo else '' }}"
+        repository: "{{ 'MariaDB' if ansible_facts.os_family | lower == 'redhat' and mariadb_use_external_repo else '' }}"
       register: package_version
 
     - name: define mariadb version

@@ -23,7 +23,7 @@
 # wsrep_cluster_address               = gcomm://
 {% else %}
 # wsrep_cluster_address               = gcomm://{{ mariadb_galera.node_addresses | default([]) | join(',') }}
-# ?gmcast.listen_addr=tcp://{{ ansible_default_ipv4.address }}:4567
+# ?gmcast.listen_addr=tcp://{{ ansible_facts.default_ipv4.address }}:4567
 {% endif %}
 # wsrep_node_address                  = {{ mariadb_galera.node.address }}
 # wsrep_node_name                     = {{ mariadb_galera.node.name }}

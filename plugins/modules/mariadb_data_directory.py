@@ -5,10 +5,11 @@
 # Apache (see LICENSE or https://opensource.org/licenses/Apache-2.0)
 
 from __future__ import absolute_import, print_function
-import shutil
-import os
+
 import grp
+import os
 import pwd
+import shutil
 
 # from ansible.module_utils import distro
 from ansible.module_utils.basic import AnsibleModule
@@ -16,21 +17,22 @@ from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '0.1',
-    'status': ['preview'],
-    'supported_by': 'community'
+    "metadata_version": "0.1",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
 
 class MariadbDataDirectories(object):
     """
-        Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
         self.source = module.params.get("source")
@@ -39,7 +41,7 @@ class MariadbDataDirectories(object):
     def get_file_ownership(self, filename):
         return (
             pwd.getpwuid(os.stat(filename).st_uid).pw_name,
-            grp.getgrgid(os.stat(filename).st_gid).gr_name
+            grp.getgrgid(os.stat(filename).st_gid).gr_name,
         )
 
     def run(self):
@@ -48,14 +50,15 @@ class MariadbDataDirectories(object):
                 changed=False,
                 failed=False,
                 msg="source '{}' and destination '{}' are the same".format(
-                    self.source, self.destination)
+                    self.source, self.destination
+                ),
             )
 
         if os.path.exists(self.destination):
             return dict(
                 failed=False,
                 changed=False,
-                msg="directory {} already exists".format(self.destination)
+                msg="directory {} already exists".format(self.destination),
             )
 
         # info = Path(self.source)
@@ -88,23 +91,15 @@ class MariadbDataDirectories(object):
         return dict(
             changed=True,
             failed=False,
-            msg="directory {} synced to {}".format(self.source, self.destination)
+            msg="directory {} synced to {}".format(self.source, self.destination),
         )
 
 
 def main():
-    """
-    """
+    """ """
     specs = dict(
-        source=dict(
-            required=False,
-            type='path',
-            default='/var/lib/mysql'
-        ),
-        destination=dict(
-            required=True,
-            type='path'
-        ),
+        source=dict(required=False, type="path", default="/var/lib/mysql"),
+        destination=dict(required=True, type="path"),
     )
 
     module = AnsibleModule(
@@ -119,5 +114,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

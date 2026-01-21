@@ -1,12 +1,16 @@
 ---
 
+- name: d
+  debug:
+    msg: "{{ mariadb_config_mysqld }}"
+
 - name: handle mariadb slow query log
   when:
     - not running_in_check_mode
-    - mariadb_config_mysqld.slow_query_log_file is defined
-    - mariadb_config_mysqld.slow_query_log_file | string | length > 0
+    - (mariadb_config_mysqld.slow_query_log_file is defined and
+       mariadb_config_mysqld.slow_query_log_file | string | length > 0)
   block:
-    - name: create directory for slow query log file '{{ mariadb_config_mysqld.slow_query_log_file | dirname }}'
+    - name: create directory for slow query log file
       ansible.builtin.file:
         path: "{{ mariadb_config_mysqld.slow_query_log_file | dirname }}"
         state: directory
@@ -14,7 +18,7 @@
         group: adm
         mode: "0775"
 
-    - name: create slow query log file '{{ mariadb_config_mysqld.slow_query_log_file }}'
+    - name: create slow query log file
       ansible.builtin.file:
         path: "{{ mariadb_config_mysqld.slow_query_log_file }}"
         state: touch

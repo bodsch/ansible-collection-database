@@ -15,7 +15,7 @@ mariadb_backup_connection:
 
 mariadb_backup_cron:
   type: cron          # alternative: systemd
-  daemon: "{{ 'cron' if ansible_os_family | lower == 'debian' else 'cronie' }}"
+  daemon: "{{ 'cron' if ansible_facts.os_family | lower == 'debian' else 'cronie' }}"
   enabled: true       # [true, false]
 
 mariadb_backup_include:

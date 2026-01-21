@@ -10,7 +10,7 @@
   when:
     - not running_in_check_mode
     - not mariadb_installed
-    - ansible_os_family | lower != 'archlinux'
+    - ansible_facts.os_family | lower != 'archlinux'
 
 - name: ensure mariadb packages are installed
   ansible.builtin.package:
@@ -29,7 +29,7 @@
         mode: "0755"
   when:
     - not running_in_check_mode
-    - ansible_os_family | lower == 'debian'
+    - ansible_facts.os_family | lower == 'debian'
 
 - name: remove policy-rc.d
   ansible.builtin.file:
@@ -37,7 +37,7 @@
     state: absent
   when:
     - not running_in_check_mode
-    - ansible_os_family | lower != 'archlinux'
+    - ansible_facts.os_family | lower != 'archlinux'
 
 - name: create custom fact file
   bodsch.core.facts:

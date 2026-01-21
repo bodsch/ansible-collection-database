@@ -1,84 +1,38 @@
+from __future__ import annotations, unicode_literals
 
-from ansible.parsing.dataloader import DataLoader
-from ansible.template import Templar
-
-import json
-import pytest
 import os
 
 import testinfra.utils.ansible_runner
-
+from helper.molecule import get_vars, pp_json
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('replica_1')
+    os.environ["MOLECULE_INVENTORY_FILE"]
+).get_hosts("replica_2")
+
+# --- tests -----------------------------------------------------------------
 
 
-def pp_json(json_thing, sort=True, indents=2):
-    if type(json_thing) is str:
-        print(json.dumps(json.loads(json_thing), sort_keys=sort, indent=indents))
-    else:
-        print(json.dumps(json_thing, sort_keys=sort, indent=indents))
-    return None
-
-
-def base_directory():
-    cwd = os.getcwd()
-
-    if ('group_vars' in os.listdir(cwd)):
-        directory = "../.."
-        molecule_directory = "."
-    else:
-        directory = "."
-        molecule_directory = "molecule/{}".format(os.environ.get('MOLECULE_SCENARIO_NAME'))
-
-    return directory, molecule_directory
-
-
-@pytest.fixture()
-def get_vars(host):
+def local_facts(host):
     """
-
+    return local facts
     """
-    base_dir, molecule_dir = base_directory()
-    distribution = host.system_info.distribution
-    release = host.system_info.release
-    operation_system = None
+    local_fact = host.ansible("setup").get("ansible_facts").get("ansible_local")
 
-    if distribution in ['debian', 'ubuntu']:
-        operation_system = "debian"
-    elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
-        operation_system = "redhat"
-    elif distribution in ['arch', 'artix']:
-        operation_system = "archlinux"
+    print(f"local_fact     : {local_fact}")
 
-    print(" -> distibution {} / os {} / release {}".format(distribution, operation_system, release))
-
-    file_defaults = f"file={base_dir}/defaults/main.yml name=role_defaults"
-    file_vars = f"file={base_dir}/vars/main.yml name=role_vars"
-    file_molecule = f"file={molecule_dir}/group_vars/all/vars.yml name=test_vars"
-    file_distibution = f"file={base_dir}/vars/{operation_system}.yml name=role_distibution"
-
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
-
-    ansible_vars = defaults_vars
-    ansible_vars.update(vars_vars)
-    ansible_vars.update(distibution_vars)
-    ansible_vars.update(molecule_vars)
-
-    templar = Templar(loader=DataLoader(), variables=ansible_vars)
-    result = templar.template(ansible_vars, fail_on_undefined=False)
-
-    return result
+    if local_fact:
+        return local_fact.get("mariadb", {})
+    else:
+        return dict()
 
 
 def test_data_directory(host, get_vars):
     """
-      configured datadir
+    configured datadir
     """
-    directory = get_vars.get("mariadb_config_mysqld", {}).get("datadir", "/var/lib/mysql")
+    directory = get_vars.get("mariadb_config_mysqld", {}).get(
+        "datadir", "/var/lib/mysql"
+    )
     user = "mysql"
 
     dir = host.file(directory)
@@ -89,7 +43,7 @@ def test_data_directory(host, get_vars):
 
 def test_tmp_directory(host, get_vars):
     """
-      configured tmpdir
+    configured tmpdir
     """
     directory = get_vars.get("mariadb_config_mysqld", {}).get("tmpdir", "/tmp")
 
@@ -99,9 +53,11 @@ def test_tmp_directory(host, get_vars):
 
 def test_log_directory(host, get_vars):
     """
-      configured logdir
+    configured logdir
     """
-    error_log_file = get_vars.get("mariadb_config_mysqld", {}).get("log_error", "/var/log/mysql/error.log")
+    error_log_file = get_vars.get("mariadb_config_mysqld", {}).get(
+        "log_error", "/var/log/mysql/error.log"
+    )
     user = "mysql"
 
     dir = host.file(os.path.dirname(error_log_file))
@@ -111,17 +67,17 @@ def test_log_directory(host, get_vars):
 
 def test_directories(host, get_vars):
     """
-      used config directory
+    used config directory
 
-      debian based: /etc/mysql
-      redhat based: /etc/my.cnf.d
-      arch based  : /etc/my.cnf.d
+    debian based: /etc/mysql
+    redhat based: /etc/my.cnf.d
+    arch based  : /etc/my.cnf.d
     """
     pp_json(get_vars)
 
     directories = [
         get_vars.get("mariadb_config_dir"),
-        get_vars.get("mariadb_config_include_dir")
+        get_vars.get("mariadb_config_include_dir"),
     ]
 
     for dirs in directories:
@@ -131,11 +87,11 @@ def test_directories(host, get_vars):
 
 def test_files(host, get_vars):
     """
-      created config files
+    created config files
     """
     files = [
         get_vars.get("mariadb_config_file"),
-        "{}/mysql.cnf".format(get_vars.get("mariadb_config_include_dir"))
+        "{}/mysql.cnf".format(get_vars.get("mariadb_config_include_dir")),
     ]
 
     for _file in files:
@@ -145,15 +101,15 @@ def test_files(host, get_vars):
 
 def test_user(host, get_vars):
     """
-      created user
+    created user
     """
-    shell = '/bin/false'
+    shell = "/bin/false"
 
     distribution = host.system_info.distribution
 
-    if distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+    if distribution in ["redhat", "ol", "centos", "rocky", "almalinux"]:
         shell = "/sbin/nologin"
-    elif distribution in ['arch', 'artix']:
+    elif distribution in ["arch", "artix"]:
         shell = "/usr/bin/nologin"
 
     user_name = "mysql"
@@ -168,7 +124,7 @@ def test_user(host, get_vars):
 
 def test_service_running_and_enabled(host, get_vars):
     """
-      running service
+    running service
     """
     service_name = get_vars.get("mariadb_service")
 
