@@ -1,14 +1,19 @@
 # python 3 headers, required if submitting to Ansible
+from __future__ import absolute_import, print_function
 
-
-from __future__ import (absolute_import, print_function)
 __metaclass__ = type
 
 import os
 import re
+
 # import json
+
+try:
+    from collections.abc import Mapping
+except ImportError:  # pragma: no cover
+    from collections import Mapping
+
 from ansible.utils.display import Display
-from ansible.module_utils.common._collections_compat import Mapping
 
 # https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html
 # https://blog.oddbit.com/post/2019-04-25-writing-ansible-filter-plugins/
@@ -17,21 +22,19 @@ display = Display()
 
 
 class FilterModule(object):
-    """
-    """
+    """ """
 
     def filters(self):
         return {
-            'support_tls': self.support_tls,
-            'tls_directory': self.tls_directory,
-            'detect_galera': self.detect_galera,
-            'wsrep_cluster_address': self.wsrep_cluster_address,
-            'system_user': self.system_user,
+            "support_tls": self.support_tls,
+            "tls_directory": self.tls_directory,
+            "detect_galera": self.detect_galera,
+            # "wsrep_cluster_address": self.wsrep_cluster_address,
+            "system_user": self.system_user,
         }
 
     def support_tls(self, data):
-        """
-        """
+        """ """
         # display.vv(f"support_tls({data})")
 
         ssl_ca = data.get("ssl-ca", None)
@@ -44,8 +47,7 @@ class FilterModule(object):
             return False
 
     def tls_directory(self, data):
-        """
-        """
+        """ """
         # display.vv(f"tls_directory({data})")
 
         directory = []
@@ -65,8 +67,7 @@ class FilterModule(object):
             return directory[0]
 
     def detect_galera(self, data, hostvars):
-        """
-        """
+        """ """
         display.vv(f"detect_galera({data}, hostvars)")
         result = dict(
             galera=False,
@@ -85,7 +86,7 @@ class FilterModule(object):
                 v = dict(v)
 
             display.vv(f"  - {x}")
-            _facts = v.get('ansible_facts')
+            _facts = v.get("ansible_facts")
             # display.vv(f"    ansible facts: {_facts}")
             display.vv(f"    facts default_ipv4  : {_facts.get('default_ipv4')}")
             display.vv(f"    facts default_ipv6  : {_facts.get('default_ipv6')}")
@@ -99,7 +100,7 @@ class FilterModule(object):
         # self._galera_node_information(hostvars)
 
         if isinstance(data, dict):
-            if data.get('wsrep_on', 'OFF') == 'ON':
+            if data.get("wsrep_on", "OFF") == "ON":
                 cluster_member = ""
                 cluster_members = []
                 # cluster_name = data.get("wsrep_node_name", "")
@@ -112,9 +113,9 @@ class FilterModule(object):
                 result = re.search(pattern, cluster_adress)
 
                 if result:
-                    cluster_member = result.group('cluster_member')
+                    cluster_member = result.group("cluster_member")
 
-                cluster_members = cluster_member.split(',')
+                cluster_members = cluster_member.split(",")
                 # remove empty elements
                 cluster_members = list(filter(None, cluster_members))
                 members_count = len(cluster_members)
@@ -133,11 +134,19 @@ class FilterModule(object):
                     #     primary = False
 
                 if isinstance(hostvars, Mapping):
-                    node_information = {x: v.get("ansible_default_ipv4", None).get("address", None) for x, v in hostvars.items() if v.get("ansible_default_ipv4", {}).get("address", None)}
+                    node_information = {
+                        x: v.get("ansible_default_ipv4", None).get("address", None)
+                        for x, v in hostvars.items()
+                        if v.get("ansible_default_ipv4", {}).get("address", None)
+                    }
                     display.vv(f"  node_information: '{node_information}'")
 
-                primary_node = [x for x, v in node_information.items() if v == primary_address][0]
-                replica_nodes = [x for x, v in node_information.items() if v != primary_address]
+                primary_node = [
+                    x for x, v in node_information.items() if v == primary_address
+                ][0]
+                replica_nodes = [
+                    x for x, v in node_information.items() if v != primary_address
+                ]
 
                 result = dict(
                     galera=True,
@@ -151,28 +160,27 @@ class FilterModule(object):
 
         return result
 
-    def wsrep_cluster_address(self, data):
-        """
-            input: [
-                {'address': '10.29.0.10', 'port': '', 'name': 'primary'},
-                {'address': '10.29.0.21', 'port': '', 'name': 'replica_1'},
-                {'address': '10.29.0.22', 'port': '', 'name': 'replica_2'}
-            ]
-
-            output:
-                '10.29.0.10:,10.29.0.21:,10.29.0.22:'
-        """
-        display.vv(f"wsrep_cluster_address({data})")
-        result = None
-        result = [f"{x.get('address')}" for x in data]
-
-        result = ",".join(result)
-
-        return result
+    # def wsrep_cluster_address(self, data):
+    #     """
+    #     input: [
+    #         {'address': '10.29.0.10', 'port': '', 'name': 'primary'},
+    #         {'address': '10.29.0.21', 'port': '', 'name': 'replica_1'},
+    #         {'address': '10.29.0.22', 'port': '', 'name': 'replica_2'}
+    #     ]
+    #
+    #     output:
+    #         '10.29.0.10:,10.29.0.21:,10.29.0.22:'
+    #     """
+    #     display.vv(f"wsrep_cluster_address({data})")
+    #     result = None
+    #     result = [f"{x.get('address')}" for x in data]
+    #
+    #     result = ",".join(result)
+    #
+    #     return result
 
     def _galera_node_information(self, data):
-        """
-        """
+        """ """
         display.vv("_galera_node_information(data)")
         result = dict()
 
@@ -184,7 +192,9 @@ class FilterModule(object):
             #
             # display.vv(f"- {host_data}")
             #
-            primary_address = values.get("ansible_default_ipv4", {}).get("address", None)
+            primary_address = values.get("ansible_default_ipv4", {}).get(
+                "address", None
+            )
             host_name = values.get("hostname", None)
 
             if not host_name:
@@ -199,7 +209,7 @@ class FilterModule(object):
         """ """
         display.vv(f"system_user({data}, {username})")
 
-        result = [x for x in data if x.get('username') == username]
+        result = [x for x in data if x.get("username") == username]
         if len(result) == 1:
             result = result[0]
 

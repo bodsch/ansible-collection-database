@@ -5,8 +5,9 @@
 # Apache (see LICENSE or https://opensource.org/licenses/Apache-2.0)
 
 from __future__ import absolute_import, print_function
-import os
+
 import grp
+import os
 import pwd
 
 from ansible.module_utils.basic import AnsibleModule
@@ -14,21 +15,22 @@ from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '0.1',
-    'status': ['preview'],
-    'supported_by': 'community'
+    "metadata_version": "0.1",
+    "status": ["preview"],
+    "supported_by": "community",
 }
 
 
 class MariadbBootstrap(object):
     """
-        Main Class
+    Main Class
     """
+
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
         self.mariadb_datadir = module.params.get("datadir")
@@ -36,7 +38,9 @@ class MariadbBootstrap(object):
         self.mariadb_user = module.params.get("user")
         self.mariadb_force = module.params.get("force")
         self.mariadb_no_defaults = module.params.get("no_defaults")
-        self.mariadb_skip_auth_anonymous_user = module.params.get("skip_auth_anonymous_user")
+        self.mariadb_skip_auth_anonymous_user = module.params.get(
+            "skip_auth_anonymous_user"
+        )
         self.mariadb_skip_name_resolve = module.params.get("skip_name_resolve")
         self.mariadb_skip_test_db = module.params.get("skip_test_db")
 
@@ -45,34 +49,33 @@ class MariadbBootstrap(object):
     def get_file_ownership(self, filename):
         return (
             pwd.getpwuid(os.stat(filename).st_uid).pw_name,
-            grp.getgrgid(os.stat(filename).st_gid).gr_name
+            grp.getgrgid(os.stat(filename).st_gid).gr_name,
         )
 
     def touch(self, fname):
         try:
             os.utime(fname, None)
         except OSError:
-            open(fname, 'a').close()
+            open(fname, "a").close()
 
     def run(self):
-        result = dict(
-            failed=False,
-            msg="none"
-        )
+        result = dict(failed=False, msg="none")
 
         # change into basedir (needful at archlinux)
         os.chdir("/usr")
 
-        mariadb_install_db = self.module.get_bin_path('mysql_install_db', True)
+        mariadb_install_db = self.module.get_bin_path("mysql_install_db", True)
 
         # no binary found
         if not mariadb_install_db:
             return dict(
                 failed=True,
-                msg="can't find 'mysql_install_db' on system. please install package first."
+                msg="can't find 'mysql_install_db' on system. please install package first.",
             )
 
-        user_table_exists = os.path.exists(os.path.join(self.mariadb_datadir, "mysql", "user.frm"))
+        user_table_exists = os.path.exists(
+            os.path.join(self.mariadb_datadir, "mysql", "user.frm")
+        )
         bootstrap_file_exists = os.path.exists(self.bootstrapped_file)
 
         # self.module.log(msg="= user.MYD             : {}".format(os.path.join(self.mariadb_datadir, "mysql", "user.frm")))
@@ -82,9 +85,7 @@ class MariadbBootstrap(object):
         # bootstrapped_file found
         if user_table_exists and bootstrap_file_exists:
             return dict(
-                failed=False,
-                changed=False,
-                msg="mariadb is already bootstrapped"
+                failed=False, changed=False, msg="mariadb is already bootstrapped"
             )
 
         args = []
@@ -126,8 +127,8 @@ class MariadbBootstrap(object):
         # self.module.log(msg="  args: {}".format(args))
 
         rc, out, err = self.module.run_command(
-            [mariadb_install_db] + args,
-            check_rc=False)
+            [mariadb_install_db] + args, check_rc=False
+        )
 
         # self.module.log(msg="  rc : '{}'".format(rc))
         # self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
@@ -139,56 +140,25 @@ class MariadbBootstrap(object):
             return dict(
                 failed=False,
                 changed=True,
-                msg="The MariaDB data directories and the system tables were successfully created."
+                msg="The MariaDB data directories and the system tables were successfully created.",
             )
         else:
-            return dict(
-                failed=True,
-                msg=out
-            )
+            return dict(failed=True, msg=out)
 
         return result
 
 
 def main():
-    """
-    """
+    """ """
     specs = dict(
-        datadir=dict(
-            required=False,
-            type='path',
-            default='/var/lib/mysql'
-        ),
-        basedir=dict(
-            required=False,
-            type='path',
-            default='/usr'
-        ),
-        user=dict(
-            required=False,
-            type='str',
-            default='mysql'
-        ),
-        force=dict(
-            required=False,
-            type='bool'
-        ),
-        no_defaults=dict(
-            required=False,
-            type='bool'
-        ),
-        skip_auth_anonymous_user=dict(
-            required=False,
-            type='bool'
-        ),
-        skip_name_resolve=dict(
-            required=False,
-            type='bool'
-        ),
-        skip_test_db=dict(
-            required=False,
-            type='bool'
-        ),
+        datadir=dict(required=False, type="path", default="/var/lib/mysql"),
+        basedir=dict(required=False, type="path", default="/usr"),
+        user=dict(required=False, type="str", default="mysql"),
+        force=dict(required=False, type="bool"),
+        no_defaults=dict(required=False, type="bool"),
+        skip_auth_anonymous_user=dict(required=False, type="bool"),
+        skip_name_resolve=dict(required=False, type="bool"),
+        skip_test_db=dict(required=False, type="bool"),
     )
 
     module = AnsibleModule(
@@ -205,5 +175,5 @@ def main():
 
 
 # import module snippets
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

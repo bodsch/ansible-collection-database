@@ -6,8 +6,8 @@
     skip_test_db: false
   when:
     - not running_in_check_mode
-    - ansible_os_family | lower == 'archlinux' or
-      ansible_distribution | lower | replace(' ', '') == 'artixlinux'
+    - ansible_facts.os_family | lower == 'archlinux' or
+      ansible_facts.distribution | lower | replace(' ', '') == 'artixlinux'
 
 - name: run bootstrap on custom data directories '{{ mariadb_config_mysqld.datadir }}'
   bodsch.database.mariadb_bootstrap:

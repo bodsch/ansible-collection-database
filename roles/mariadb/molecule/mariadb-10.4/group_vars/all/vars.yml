@@ -58,8 +58,8 @@ mariadb_config_mysqld:
   # Logging
   log_error: /var/log/mysql/error.log
   # server_id: "{{ mariadb_server_id }}"
-  relay_log: "{{ ansible_hostname }}-relay-bin"
-  relay_log_index: "{{ ansible_hostname }}-relay-bin.index"
+  relay_log: "{{ ansible_facts.hostname }}-relay-bin"
+  relay_log_index: "{{ ansible_facts.hostname }}-relay-bin.index"
   # required for Wsrep GTID Mode, needs to be same path on all nodes
   # log_bin: "{{ mariadb.galera.cluster_name }}-log-bin"
   # log_bin_index: "{{ mariadb.galera.cluster_name }}-log-bin.index"

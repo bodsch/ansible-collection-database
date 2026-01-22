@@ -3,7 +3,7 @@
 - name: restart galera primary cluster node
   when:
     - not running_in_check_mode
-    - mariadb_galera_primary_node == ansible_hostname
+    - mariadb_galera_primary_node == ansible_facts.hostname
     - _mysql_cnf_changed.changed | default('false')
   block:
     - name: restart galera primary cluster node
@@ -26,7 +26,7 @@
     label: "{{ item }}"
   when:
     - not running_in_check_mode
-    - mariadb_galera_primary_node != ansible_hostname
+    - mariadb_galera_primary_node != ansible_facts.hostname
     - _mysql_cnf_changed.changed | default('false')
     - inventory_hostname == item
 

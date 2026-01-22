@@ -1,17 +1,16 @@
-
-from ansible.parsing.dataloader import DataLoader
-from ansible.template import Templar
-
 import json
-import pytest
 import os
 import re
 from typing import Any
-import testinfra.utils.ansible_runner
 
+import pytest
+import testinfra.utils.ansible_runner
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+    os.environ["MOLECULE_INVENTORY_FILE"]
+).get_hosts("all")
 
 
 def pp_json(json_thing, sort=True, indents=2):
@@ -25,7 +24,7 @@ def pp_json(json_thing, sort=True, indents=2):
 def base_directory():
     cwd = os.getcwd()
 
-    if ('group_vars' in os.listdir(cwd)):
+    if "group_vars" in os.listdir(cwd):
         directory = "../.."
         molecule_directory = "."
     else:
@@ -36,8 +35,7 @@ def base_directory():
 
 
 def read_ansible_yaml(file_name, role_name):
-    """
-    """
+    """ """
     read_file = None
 
     for e in ["yml", "yaml"]:
@@ -52,21 +50,21 @@ def read_ansible_yaml(file_name, role_name):
 @pytest.fixture()
 def get_vars(host):
     """
-        parse ansible variables
-        - defaults/main.yml
-        - vars/main.yml
-        - vars/${DISTRIBUTION}.yaml
-        - molecule/${MOLECULE_SCENARIO_NAME}/group_vars/all/vars.yml
+    parse ansible variables
+    - defaults/main.yml
+    - vars/main.yml
+    - vars/${DISTRIBUTION}.yaml
+    - molecule/${MOLECULE_SCENARIO_NAME}/group_vars/all/vars.yml
     """
     base_dir, molecule_dir = base_directory()
     distribution = host.system_info.distribution
     operation_system = None
 
-    if distribution in ['debian', 'ubuntu']:
+    if distribution in ["debian", "ubuntu"]:
         operation_system = "debian"
-    elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+    elif distribution in ["redhat", "ol", "centos", "rocky", "almalinux"]:
         operation_system = "redhat"
-    elif distribution in ['arch', 'artix']:
+    elif distribution in ["arch", "artix"]:
         operation_system = f"{distribution}linux"
 
     # print(" -> {} / {}".format(distribution, os))
@@ -74,14 +72,32 @@ def get_vars(host):
 
     file_defaults = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
     file_vars = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
-    file_distibution = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
-    file_molecule = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
+    file_distibution = read_ansible_yaml(
+        f"{base_dir}/vars/{operation_system}", "role_distibution"
+    )
+    file_molecule = read_ansible_yaml(
+        f"{molecule_dir}/group_vars/all/vars", "test_vars"
+    )
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars = (
+        host.ansible("include_vars", file_defaults)
+        .get("ansible_facts")
+        .get("role_defaults")
+    )
+    vars_vars = (
+        host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    )
+    distibution_vars = (
+        host.ansible("include_vars", file_distibution)
+        .get("ansible_facts")
+        .get("role_distibution")
+    )
+    molecule_vars = (
+        host.ansible("include_vars", file_molecule)
+        .get("ansible_facts")
+        .get("test_vars")
+    )
     # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars
@@ -118,20 +134,19 @@ def replace_version(obj: Any, version: str) -> Any:
 
 def local_facts(host):
     """
-      return local facts
+    return local facts
     """
     ansible_facts = host.ansible("setup").get("ansible_facts", {})
     return ansible_facts.get("ansible_local").get("postgresql")
 
 
 def test_postgres_user(host, get_vars):
-    """
-    """
-    shell = '/bin/bash'
+    """ """
+    shell = "/bin/bash"
 
     distribution = host.system_info.distribution
 
-    if distribution in ['arch', 'artix']:
+    if distribution in ["arch", "artix"]:
         shell = "/usr/bin/bash"
 
     user_name = "postgres"
@@ -146,7 +161,7 @@ def test_postgres_user(host, get_vars):
 
 def test_data_directory(host, get_vars):
     """
-      configured datadir
+    configured datadir
     """
     directory = get_vars.get("postgresql_data_dir", "/var/lib/postgres/data")
 
@@ -159,8 +174,7 @@ def test_data_directory(host, get_vars):
 
 
 def test_config_directory(host, get_vars):
-    """
-    """
+    """ """
     directory = get_vars.get("postgresql_config_path", "/var/lib/postgres/data")
 
     dir = host.file(directory)
@@ -172,7 +186,7 @@ def test_config_directory(host, get_vars):
 
 def test_config_files(host, get_vars):
     """
-      created config files
+    created config files
     """
     directory = get_vars.get("postgresql_config_path", "/var/lib/postgres/data")
 
@@ -200,7 +214,7 @@ def test_config_files(host, get_vars):
 
 def test_service_running_and_enabled(host, get_vars):
     """
-      running service
+    running service
     """
     daemon = get_vars.get("postgresql_daemon", "postgresql")
 
@@ -210,8 +224,7 @@ def test_service_running_and_enabled(host, get_vars):
 
 
 def test_listening_socket(host, get_vars):
-    """
-    """
+    """ """
     listening = host.socket.get_listening_sockets()
 
     for i in listening:
