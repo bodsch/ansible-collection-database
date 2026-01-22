@@ -59,7 +59,7 @@
 #
 #     - name: detect error
 #       when:
-#         - ansible_service_mgr == 'systemd'
+#         - ansible_facts.service_mgr == 'systemd'
 #       block:
 #         - name: systemd unit
 #           ansible.builtin.debug:

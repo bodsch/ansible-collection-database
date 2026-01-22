@@ -11,21 +11,25 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import warnings
+from distutils.version import LooseVersion
+
+try:
+    from ansible.module_utils.common.text.converters import to_native
+except ImportError:  # pragma: no cover
+    from ansible.module_utils._text import to_native
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves import configparser
 from ansible.module_utils.mysql import (
+    mysql_common_argument_spec,
     mysql_driver,
     mysql_driver_fail_msg,
-    mysql_common_argument_spec
 )
-from ansible.module_utils._text import to_native
-from distutils.version import LooseVersion
+from ansible.module_utils.six.moves import configparser
 
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: mysql_replication
 short_description: Manage mariad replication
@@ -202,9 +206,9 @@ seealso:
 - name: MariaDB replication reference
   description: Complete reference of the MariaDB replication documentation.
   link: https://mariadb.com/kb/en/setting-up-replication/
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Stop mysql replica thread
   mariadb_replication:
     mode: stop_replica
@@ -264,28 +268,27 @@ EXAMPLES = r'''
     mode: change_primary
     fail_on_error: true
 
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 queries:
   description: List of executed queries which modified DB's state.
   returned: always
   type: list
   sample: ["CHANGE MASTER TO MASTER_HOST='primary2.example.com',MASTER_PORT=3306"]
   version_added: '0.1.0'
-'''
+"""
 
 
-class MariadbReplication():
-    """
+class MariadbReplication:
+    """ """
 
-    """
     executed_queries = []
     module = None
 
     def __init__(self, module):
         """
-          Initialize all needed Variables
+        Initialize all needed Variables
         """
         self.module = module
 
@@ -313,162 +316,143 @@ class MariadbReplication():
         self.ssl_key = module.params.get("client_key")
         self.ssl_ca = module.params.get("ca_cert")
         # check_hostname = module.params.get("check_hostname")
-        self.connect_timeout = module.params.get('connect_timeout')
-        self.config_file = module.params.get('config_file')
-        self.primary_delay = module.params.get('primary_delay')
+        self.connect_timeout = module.params.get("connect_timeout")
+        self.config_file = module.params.get("config_file")
+        self.primary_delay = module.params.get("primary_delay")
 
-        if module.params.get("primary_use_gtid") == 'disabled':
-            self.primary_use_gtid = 'no'
+        if module.params.get("primary_use_gtid") == "disabled":
+            self.primary_use_gtid = "no"
         else:
             self.primary_use_gtid = module.params.get("primary_use_gtid")
         self.connection_name = module.params.get("connection_name")
         self.channel = module.params.get("channel")
         self.fail_on_error = module.params.get("fail_on_error")
 
-        self.primary_term = 'MASTER'
-        self.replica_term = 'SLAVE'
+        self.primary_term = "MASTER"
+        self.replica_term = "SLAVE"
 
-        if self.primary_use_gtid == 'replica_pos':
-            self.primary_use_gtid = 'slave_pos'
+        if self.primary_use_gtid == "replica_pos":
+            self.primary_use_gtid = "slave_pos"
 
         # module.log(msg="  mode: {}".format(self.mode))
 
     def run(self):
-        """
-        """
+        """ """
         result = dict(failed=True)
 
         if mysql_driver is None:
             self.module.fail_json(msg=mysql_driver_fail_msg)
         else:
-            warnings.filterwarnings('error', category=mysql_driver.Warning)
+            warnings.filterwarnings("error", category=mysql_driver.Warning)
 
         cursor, conn, error, message = self._mysql_connect()
 
         if error:
-            return dict(
-                failed=True,
-                msg=message
-            )
+            return dict(failed=True, msg=message)
 
         self.prepare(cursor)
 
-        if self.mode == 'get_primary':
+        if self.mode == "get_primary":
             """
-              get primary information
+            get primary information
             """
             result = self.get_primary(cursor)
 
         elif self.mode == "get_replica":
             """
-              get replica state
+            get replica state
             """
             result = self.get_replica(cursor)
 
         elif self.mode == "change_primary":
-            """
-            """
+            """ """
             result = {}
 
             try:
                 self.change_primary(cursor)
             except mysql_driver.Warning as e:
-                result['warning'] = to_native(e)
+                result["warning"] = to_native(e)
             except Exception as e:
                 self.module.fail_json(
-                    msg=f"{to_native(e)}. Query == CHANGE MASTER TO ...")
+                    msg=f"{to_native(e)}. Query == CHANGE MASTER TO ..."
+                )
 
-            result['changed'] = True
+            result["changed"] = True
 
             self.module.exit_json(queries=self.executed_queries, **result)
 
         elif self.mode in ("start_replica"):
-            """
-            """
+            """ """
             started = self.start_replica(cursor)
             if started is True:
                 self.module.exit_json(
-                    msg="Replica started ",
-                    changed=True,
-                    queries=self.executed_queries
+                    msg="Replica started ", changed=True, queries=self.executed_queries
                 )
             else:
                 self.module.exit_json(
                     msg="Replica already started (Or cannot be started)",
                     changed=False,
-                    queries=self.executed_queries
+                    queries=self.executed_queries,
                 )
 
         elif self.mode in ("stop_replica"):
-            """
-            """
+            """ """
             stopped = self.stop_replica(cursor)
 
             if stopped is True:
                 self.module.exit_json(
-                    msg="Replica stopped",
-                    changed=True,
-                    queries=self.executed_queries
+                    msg="Replica stopped", changed=True, queries=self.executed_queries
                 )
             else:
                 self.module.exit_json(
                     msg="Replica already stopped",
                     changed=False,
-                    queries=self.executed_queries
+                    queries=self.executed_queries,
                 )
 
         elif self.mode in ("reset_primary"):
-            """
-            """
+            """ """
             reset = self.reset_primary(cursor)
 
             if reset is True:
                 self.module.exit_json(
-                    msg="Primary reset",
-                    changed=True,
-                    queries=self.executed_queries
+                    msg="Primary reset", changed=True, queries=self.executed_queries
                 )
             else:
                 self.module.exit_json(
                     msg="Primary already reset",
                     changed=False,
-                    queries=self.executed_queries
+                    queries=self.executed_queries,
                 )
 
         elif self.mode in ("reset_replica"):
-            """
-            """
+            """ """
             reset = self.reset_replica(cursor)
 
             if reset is True:
                 self.module.exit_json(
-                    msg="Replica reset",
-                    changed=True,
-                    queries=self.executed_queries
+                    msg="Replica reset", changed=True, queries=self.executed_queries
                 )
             else:
                 self.module.exit_json(
                     msg="Replica already reset",
                     changed=False,
-                    queries=self.executed_queries
+                    queries=self.executed_queries,
                 )
 
         elif self.mode in ("reset_replica_all"):
-            """
-            """
+            """ """
             reset = self.reset_replica_all(cursor)
 
             if reset is True:
                 self.module.exit_json(
-                    msg="Replica reset",
-                    changed=True,
-                    queries=self.executed_queries
+                    msg="Replica reset", changed=True, queries=self.executed_queries
                 )
             else:
                 self.module.exit_json(
                     msg="Replica already reset",
                     changed=False,
-                    queries=self.executed_queries
+                    queries=self.executed_queries,
                 )
 
         warnings.simplefilter("ignore")
@@ -476,8 +460,7 @@ class MariadbReplication():
         return result
 
     def prepare(self, cursor):
-        """
-        """
+        """ """
         cursor.execute("SELECT VERSION() as version")
 
         curser_fetched = cursor.fetchone()
@@ -492,15 +475,16 @@ class MariadbReplication():
 
             # self.module.log(f"- version: {LooseVersion(version)}")
 
-            if LooseVersion(version) >= LooseVersion('10.5.1'):  # or LooseVersion(result) >= LooseVersion('8.0.22'):
+            if LooseVersion(version) >= LooseVersion(
+                "10.5.1"
+            ):  # or LooseVersion(result) >= LooseVersion('8.0.22'):
                 # self.primary_term = 'PRIMARY'
-                self.replica_term = 'REPLICA'
-                if self.primary_use_gtid == 'slave_pos':
-                    self.primary_use_gtid = 'replica_pos'
+                self.replica_term = "REPLICA"
+                if self.primary_use_gtid == "slave_pos":
+                    self.primary_use_gtid = "replica_pos"
 
     def get_primary(self, cursor):
-        """
-        """
+        """ """
         # self.module.log("get_primary()")
 
         result = dict()
@@ -524,24 +508,19 @@ class MariadbReplication():
 
         if not isinstance(primary_status, dict):
             primary_status = dict(
-                Is_Primary=False,
-                msg="Server is not configured as mysql master"
+                Is_Primary=False, msg="Server is not configured as mysql master"
             )
         else:
-            primary_status['Is_Primary'] = True
+            primary_status["Is_Primary"] = True
 
-        result = dict(
-            queries=self.executed_queries,
-            **primary_status
-        )
+        result = dict(queries=self.executed_queries, **primary_status)
 
         # self.module.log(msg="  result: {}".format(result))
 
         return result
 
     def get_replica(self, cursor):
-        """
-        """
+        """ """
         # self.module.log("get_replica()")
 
         result = dict()
@@ -563,16 +542,12 @@ class MariadbReplication():
 
         if not isinstance(replica_status, dict):
             replica_status = dict(
-                Is_Replica=False,
-                msg="Server is not configured as mysql replica"
+                Is_Replica=False, msg="Server is not configured as mysql replica"
             )
         else:
-            replica_status['Is_Replica'] = True
+            replica_status["Is_Replica"] = True
 
-        result = dict(
-            queries=self.executed_queries,
-            **replica_status
-        )
+        result = dict(queries=self.executed_queries, **replica_status)
 
         # self.module.log(msg="  result: {}".format(result))
 
@@ -581,9 +556,8 @@ class MariadbReplication():
         # self.module.exit_json(queries=self.executed_queries, **status)
 
     def stop_replica(self, cursor):
-        """
-        """
-        query = f'STOP {self.replica_term}'
+        """ """
+        query = f"STOP {self.replica_term}"
 
         if self.connection_name:
             query = f"STOP {self.replica_term} '{self.connection_name}'"
@@ -602,17 +576,14 @@ class MariadbReplication():
             stopped = False
         except Exception as e:
             if self.fail_on_error:
-                self.module.fail_json(
-                    msg=f"STOP REPLICA failed: {to_native(e)}"
-                )
+                self.module.fail_json(msg=f"STOP REPLICA failed: {to_native(e)}")
             stopped = False
 
         return stopped
 
     def reset_replica(self, cursor):
-        """
-        """
-        query = f'RESET {self.replica_term}'
+        """ """
+        query = f"RESET {self.replica_term}"
 
         if self.connection_name:
             query = f"RESET {self.replica_term} '{self.connection_name}'"
@@ -631,17 +602,14 @@ class MariadbReplication():
             reset = False
         except Exception as e:
             if self.fail_on_error:
-                self.module.fail_json(
-                    msg=f"RESET REPLICA failed: {to_native(e)}"
-                )
+                self.module.fail_json(msg=f"RESET REPLICA failed: {to_native(e)}")
             reset = False
 
         return reset
 
     def reset_replica_all(self, cursor):
-        """
-        """
-        query = f'RESET {self.replica_term} ALL'
+        """ """
+        query = f"RESET {self.replica_term} ALL"
 
         if self.connection_name:
             query = f"RESET {self.replica_term} '{self.connection_name}' ALL"
@@ -660,17 +628,14 @@ class MariadbReplication():
             reset = False
         except Exception as e:
             if self.fail_on_error:
-                self.module.fail_json(
-                    msg=f"RESET REPLICA ALL failed: {to_native(e)}"
-                )
+                self.module.fail_json(msg=f"RESET REPLICA ALL failed: {to_native(e)}")
             reset = False
 
         return reset
 
     def reset_primary(self, cursor):
-        """
-        """
-        query = 'RESET MASTER'
+        """ """
+        query = "RESET MASTER"
 
         # self.module.log(msg="- query: {}".format(query))
 
@@ -683,16 +648,13 @@ class MariadbReplication():
             reset = False
         except Exception as e:
             if self.fail_on_error:
-                self.module.fail_json(
-                    msg=f"RESET MASTER failed: {to_native(e)}"
-                )
+                self.module.fail_json(msg=f"RESET MASTER failed: {to_native(e)}")
             reset = False
         return reset
 
     def start_replica(self, cursor):
-        """
-        """
-        query = f'START {self.replica_term}'
+        """ """
+        query = f"START {self.replica_term}"
 
         if self.connection_name:
             query = f"START {self.replica_term} '{self.connection_name}'"
@@ -711,16 +673,13 @@ class MariadbReplication():
             started = False
         except Exception as e:
             if self.fail_on_error:
-                self.module.fail_json(
-                    msg=f"START REPLICA failed: {to_native(e)}"
-                )
+                self.module.fail_json(msg=f"START REPLICA failed: {to_native(e)}")
             started = False
 
         return started
 
     def change_primary(self, cursor):
-        """
-        """
+        """ """
         chm = []
         if self.primary_host is not None:
             chm.append(f"MASTER_HOST='{self.primary_host}'")
@@ -761,7 +720,7 @@ class MariadbReplication():
 
         self.module.log(msg=f"  chm: {chm}")
 
-        comma_chm = ','.join(chm)
+        comma_chm = ",".join(chm)
 
         query = f"CHANGE MASTER TO {comma_chm}"
 
@@ -777,26 +736,27 @@ class MariadbReplication():
         cursor.execute(query)
 
     def _mysql_connect(self):
-        """
-        """
-        _mysql_cursor_param = 'cursor'
+        """ """
+        _mysql_cursor_param = "cursor"
 
         config = {}
 
         config_file = self.config_file
 
         if config_file and os.path.exists(config_file):
-            config['read_default_file'] = config_file
+            config["read_default_file"] = config_file
 
         # If dba_user or dba_password are given, they should override the
         # config file
         if self.login_username is not None:
-            config['user'] = self.login_username
+            config["user"] = self.login_username
         if self.login_password is not None:
-            config['passwd'] = self.login_password
+            config["passwd"] = self.login_password
 
-        if self.login_unix_socket is not None and os.path.exists(self.login_unix_socket):
-            config['unix_socket'] = self.login_unix_socket
+        if self.login_unix_socket is not None and os.path.exists(
+            self.login_unix_socket
+        ):
+            config["unix_socket"] = self.login_unix_socket
 
         # self.module.log(msg=f"config : {config}")
 
@@ -822,7 +782,7 @@ class MariadbReplication():
             ),
             db_connection,
             False,
-            "successful connected"
+            "successful connected",
         )
 
     def _parse_from_mysql_config_file(self, cnf):
@@ -832,54 +792,51 @@ class MariadbReplication():
 
 
 def main():
-    """
-    """
+    """ """
     specs = mysql_common_argument_spec()
     specs.update(
         mode=dict(
-            type='str',
-            default='get_replica', choices=[
-                'get_primary',
-                'get_replica',
-                'change_primary',
-                'stop_replica',
-                'start_replica',
-                'reset_primary',
-                'reset_replica',
-                'reset_replica_all',
-            ]),
-        primary_auto_position=dict(type='bool', default=False),
-        primary_host=dict(type='str'),
-        primary_user=dict(type='str'),
-        primary_password=dict(type='str', no_log=True),
-        primary_port=dict(type='int'),
-        primary_connect_retry=dict(type='int'),
-        primary_log_file=dict(type='str'),
-        primary_log_pos=dict(type='int'),
-        relay_log_file=dict(type='str'),
-        relay_log_pos=dict(type='int'),
-        primary_ssl=dict(type='bool', default=False),
-        primary_ssl_ca=dict(type='str'),
-        primary_ssl_capath=dict(type='str'),
-        primary_ssl_cert=dict(type='str'),
-        primary_ssl_key=dict(type='str', no_log=False),
-        primary_ssl_cipher=dict(type='str'),
-        primary_use_gtid=dict(type='str', choices=[
-            'current_pos',
-            'replica_pos',
-            'slave_pos',
-            'disabled']),
-        primary_delay=dict(type='int'),
-        connection_name=dict(type='str'),
-        channel=dict(type='str'),
-        fail_on_error=dict(type='bool', default=False),
+            type="str",
+            default="get_replica",
+            choices=[
+                "get_primary",
+                "get_replica",
+                "change_primary",
+                "stop_replica",
+                "start_replica",
+                "reset_primary",
+                "reset_replica",
+                "reset_replica_all",
+            ],
+        ),
+        primary_auto_position=dict(type="bool", default=False),
+        primary_host=dict(type="str"),
+        primary_user=dict(type="str"),
+        primary_password=dict(type="str", no_log=True),
+        primary_port=dict(type="int"),
+        primary_connect_retry=dict(type="int"),
+        primary_log_file=dict(type="str"),
+        primary_log_pos=dict(type="int"),
+        relay_log_file=dict(type="str"),
+        relay_log_pos=dict(type="int"),
+        primary_ssl=dict(type="bool", default=False),
+        primary_ssl_ca=dict(type="str"),
+        primary_ssl_capath=dict(type="str"),
+        primary_ssl_cert=dict(type="str"),
+        primary_ssl_key=dict(type="str", no_log=False),
+        primary_ssl_cipher=dict(type="str"),
+        primary_use_gtid=dict(
+            type="str", choices=["current_pos", "replica_pos", "slave_pos", "disabled"]
+        ),
+        primary_delay=dict(type="int"),
+        connection_name=dict(type="str"),
+        channel=dict(type="str"),
+        fail_on_error=dict(type="bool", default=False),
     )
 
     module = AnsibleModule(
         argument_spec=specs,
-        mutually_exclusive=[
-            ['connection_name', 'channel']
-        ],
+        mutually_exclusive=[["connection_name", "channel"]],
     )
 
     # module.log(msg="-------------------------------------------------------------")
@@ -893,5 +850,5 @@ def main():
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

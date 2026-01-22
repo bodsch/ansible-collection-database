@@ -116,9 +116,9 @@ mariadb_galera:
       username: "sstuser"
       password: ""
   node:
-    name: "{{ ansible_hostname }}"
+    name: "{{ ansible_facts.hostname }}"
     id: "{{ mariadb_server_id | default('1') }}"
-    address: "{{ ansible_default_ipv4.address | default('127.0.0.1') }}"
+    address: "{{ ansible_facts.default_ipv4.address | default('127.0.0.1') }}"
   gtid_domain_id: "{{ mariadb_server_id | default('1') }}"
 
   provider_options: []

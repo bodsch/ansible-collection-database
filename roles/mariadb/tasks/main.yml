@@ -3,6 +3,18 @@
 - name: prepare
   ansible.builtin.include_tasks: prepare.yml
 
+# - name: d
+#   ansible.builtin.debug:
+#     msg: "{{ ansible_facts.default_ipv4.address }}"
+#
+# - name: d
+#   ansible.builtin.debug:
+#     msg: "{{ groups['replica'] }}"
+#
+# - name: d
+#   ansible.builtin.debug:
+#     msg: "{{ mariadb_instances }}"
+
 - name: detect mariadb version
   ansible.builtin.include_tasks: detect_mariadb_version.yml
 

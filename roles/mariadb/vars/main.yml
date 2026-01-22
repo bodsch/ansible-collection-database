@@ -124,12 +124,12 @@ mariadb_config_defaults_mysqld:
   server_id: "{{ mariadb_server_id }}"
   ## https://mariadb.com/kb/en/replication-and-binary-log-system-variables/#relay_log_basename
   # relay_log_basename
-  relay_log: "{{ ansible_hostname }}-relay-bin"
-  relay_log_index: "{{ ansible_hostname }}-relay-bin.index"
+  relay_log: "{{ ansible_facts.hostname }}-relay-bin"
+  relay_log_index: "{{ ansible_facts.hostname }}-relay-bin.index"
   ## https://mariadb.com/kb/en/replication-and-binary-log-system-variables/#log_bin_basename
   # log_bin_basename:
-  log_bin: "{{ ansible_hostname }}-log-bin"
-  log_bin_index: "{{ ansible_hostname }}-log-bin.index"
+  log_bin: "{{ ansible_facts.hostname }}-log-bin"
+  log_bin_index: "{{ ansible_facts.hostname }}-log-bin.index"
   log_bin_trust_function_creators: "1"
   expire_logs_days: 10
   max_relay_log_size: 100M
@@ -253,7 +253,7 @@ mariadb_defaults_replication:
     encrypted: false
 
 mariadb_defaults_galera:
-  # node_addresses: "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list | join(',') }}"
+  # node_addresses: "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_facts.default_ipv4', 'address']) | list | join(',') }}"
   cluster_name: galera-cluster
   node_addresses: []
     # - address: "10.29.0.10"
@@ -267,16 +267,16 @@ mariadb_defaults_galera:
     #   #name: "replica_2"
     #   # "{{ mariadb_instances | default([]) }}"
     #   # parameters:
-    #   # "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
+    #   # "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_facts.default_ipv4', 'address']) | list }}"
   sst:
     method: rsync
     auth:
       username: "cluster-admin"
       password: "c1ust3R"
   node:
-    name: "{{ ansible_hostname }}"
+    name: "{{ ansible_facts.hostname }}"
     id: "{{ mariadb_server_id }}"
-    address: "{{ ansible_default_ipv4.address | default('127.0.0.1') }}"
+    address: "{{ ansible_facts.default_ipv4.address | default('127.0.0.1') }}"
   gtid_domain_id: "{{ mariadb_server_id }}"
   provider_options: []
     # - debug=yes

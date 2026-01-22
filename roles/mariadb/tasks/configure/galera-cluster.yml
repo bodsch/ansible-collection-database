@@ -27,19 +27,19 @@
     - name: setup primary instance
       ansible.builtin.include_tasks: galera/primary.yml
       when:
-        - mariadb_galera_primary_node == ansible_hostname
+        - mariadb_galera_primary_node == ansible_facts.hostname
         - not galera_bootstraped_database
 
     - name: setup secondary instances
       ansible.builtin.include_tasks: galera/secondary.yml
       when:
-        - not mariadb_galera_primary_node == ansible_hostname
+        - not mariadb_galera_primary_node == ansible_facts.hostname
 
     - name: reconfigure primary instance
       ansible.builtin.include_tasks: galera/primary_reconfigure.yml
       when:
         - not running_in_check_mode
-        - mariadb_galera_primary_node == ansible_hostname
+        - mariadb_galera_primary_node == ansible_facts.hostname
 
   rescue:
 

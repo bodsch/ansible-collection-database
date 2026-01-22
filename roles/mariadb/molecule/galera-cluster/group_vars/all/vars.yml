@@ -9,9 +9,13 @@ mariadb_system_users:
     update: true
     ignore: true
 
-# mariadb_root_password:
+mariadb_instances: >-
+  {{ groups['replica']
+     | map('extract', hostvars, ['ansible_facts', 'default_ipv4', 'address'])
+     | select('defined')
+     | select('string')
+     | list }}
 
-mariadb_instances: "{{ groups['mariadb'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
 mariadb_hostnames: "{{ groups['mariadb'] | map('extract', hostname) | list }}"
 
 mariadb_databases:
@@ -27,7 +31,7 @@ mariadb_users:
     encrypted: false
 
 mariadb_config_mysqld:
-  # bind-address: "{{ ansible_default_ipv4.address }}"
+  # bind-address: "{{ ansible_facts.default_ipv4.address }}"
   socket: "{{ mariadb_socket }}"
   skip-external-locking:
   # Skip reverse DNS lookup of clients
@@ -42,8 +46,8 @@ mariadb_config_mysqld:
   max_connections: 20
   # replication
   server-id: "{{ mariadb_server_id }}"
-  relay_log: "{{ ansible_hostname }}-relay-bin"
-  relay_log_index: "{{ ansible_hostname }}-relay-bin.index"
+  relay_log: "{{ ansible_facts.hostname }}-relay-bin"
+  relay_log_index: "{{ ansible_facts.hostname }}-relay-bin.index"
   max_binlog_size: 100M
   # ----------------------------------------------------
   # required for Wsrep GTID Mode
@@ -64,11 +68,15 @@ mariadb_config_galera:
   wsrep_notify_cmd: "/bin/wsrep_notify.sh"
   wsrep_cluster_name: "{{ mariadb_galera.cluster_name }}"
   wsrep_provider: "/usr/lib/libgalera_smm.so"
-  wsrep_cluster_address: "gcomm://{{ mariadb_galera.node_addresses | bodsch.database.wsrep_cluster_address() }}"
+  # wsrep_cluster_address: "gcomm://{{ mariadb_galera.node_addresses | bodsch.database.wsrep_cluster_address() }}"
+  wsrep_cluster_address: >-
+    gcomm://{{ mariadb_galera.node_addresses
+               | map(attribute='address')
+               | join(',') }}
   binlog_format: "row"
   default_storage_engine: "InnoDB"
   innodb_autoinc_lock_mode: "2"
-  bind-address: "{{ ansible_default_ipv4.address }}"
+  bind-address: "{{ ansible_facts.default_ipv4.address }}"
   # Galera Sync Mode
   wsrep_sst_method: "{{ mariadb_galera.sst.method }}"
   wsrep_sst_auth: "{{ mariadb_galera.sst.auth.username }}:{{ mariadb_galera.sst.auth.password }}"

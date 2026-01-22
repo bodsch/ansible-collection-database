@@ -9,7 +9,7 @@
     mode: "0755"
   when:
     - not postgresql_installed
-    - ansible_os_family | lower != 'archlinux'
+    - ansible_facts.os_family | lower != 'archlinux'
 
 - name: ensure postgresql packages are installed
   ansible.builtin.package:
@@ -22,11 +22,11 @@
     path: /usr/sbin/policy-rc.d
     state: absent
   when:
-    - ansible_os_family | lower != 'archlinux'
+    - ansible_facts.os_family | lower != 'archlinux'
 
 - name: archlinux
   when:
-    - ansible_os_family | lower == 'archlinux'
+    - ansible_facts.os_family | lower == 'archlinux'
   block:
     - name: detect if postgresql installed
       ansible.builtin.stat:
