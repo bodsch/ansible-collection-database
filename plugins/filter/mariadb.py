@@ -29,7 +29,7 @@ class FilterModule(object):
             "support_tls": self.support_tls,
             "tls_directory": self.tls_directory,
             "detect_galera": self.detect_galera,
-            "wsrep_cluster_address": self.wsrep_cluster_address,
+            # "wsrep_cluster_address": self.wsrep_cluster_address,
             "system_user": self.system_user,
         }
 
@@ -160,24 +160,24 @@ class FilterModule(object):
 
         return result
 
-    def wsrep_cluster_address(self, data):
-        """
-        input: [
-            {'address': '10.29.0.10', 'port': '', 'name': 'primary'},
-            {'address': '10.29.0.21', 'port': '', 'name': 'replica_1'},
-            {'address': '10.29.0.22', 'port': '', 'name': 'replica_2'}
-        ]
-
-        output:
-            '10.29.0.10:,10.29.0.21:,10.29.0.22:'
-        """
-        display.vv(f"wsrep_cluster_address({data})")
-        result = None
-        result = [f"{x.get('address')}" for x in data]
-
-        result = ",".join(result)
-
-        return result
+    # def wsrep_cluster_address(self, data):
+    #     """
+    #     input: [
+    #         {'address': '10.29.0.10', 'port': '', 'name': 'primary'},
+    #         {'address': '10.29.0.21', 'port': '', 'name': 'replica_1'},
+    #         {'address': '10.29.0.22', 'port': '', 'name': 'replica_2'}
+    #     ]
+    #
+    #     output:
+    #         '10.29.0.10:,10.29.0.21:,10.29.0.22:'
+    #     """
+    #     display.vv(f"wsrep_cluster_address({data})")
+    #     result = None
+    #     result = [f"{x.get('address')}" for x in data]
+    #
+    #     result = ",".join(result)
+    #
+    #     return result
 
     def _galera_node_information(self, data):
         """ """
