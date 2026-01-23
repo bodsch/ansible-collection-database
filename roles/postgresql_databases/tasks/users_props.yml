@@ -22,6 +22,6 @@
   become_user: "{{ postgresql_user }}"
   # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
   vars:
-    ansible_ssh_pipelining: true
+    ansible_facts.ssh_pipelining: true
   environment:
     PGOPTIONS: "{{ (postgresql_config_authentication.password_encryption == 'scram-sha-256') | ternary('-c password_encryption=scram-sha-256', '') }}"

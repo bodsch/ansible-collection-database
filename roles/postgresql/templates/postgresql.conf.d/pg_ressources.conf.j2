@@ -19,7 +19,7 @@ shared_buffers                      = {{ memory.shared_buffers }}
       {% if memory.huge_pages | bodsch.core.type == "bool" %}
 huge_pages                          = {{ memory.huge_pages | bodsch.core.config_bool(true_as="on", false_as="off") }}
       {% elif memory.huge_pages | bodsch.core.type == "string" and
-              memory.huge_pages and in ['on', 'off', 'try'] %}
+              memory.huge_pages in ['on', 'off', 'try'] %}
 huge_pages                          = {{ memory.huge_pages }}
       {% endif %}
     {% endif %}

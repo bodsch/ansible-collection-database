@@ -9,3 +9,6 @@ postgresql_daemon: "postgresql"
 postgresql_packages:
   - postgresql
   - pgcli
+
+postgresql_dependencies:
+  - python-psycopg

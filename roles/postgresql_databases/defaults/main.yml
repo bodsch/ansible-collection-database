@@ -9,7 +9,7 @@ postgresql_user: postgres
 postgresql_group: postgres
 
 postgresql_config_authentication:
-  password_encryption: "{{ ansible_fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
+  password_encryption: "{{ ansible_facts.fips | ternary('scram-sha-256', 'md5') }}"    # scram-sha-256 or md5
 
 # Databases to ensure exist.
 postgresql_databases: []

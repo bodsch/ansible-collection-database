@@ -263,7 +263,7 @@ class PgSettingsReader:
                 raise RuntimeError(f"DB-Verbindung fehlgeschlagen: {e_pg2} / {e_pg3}")
 
 
-    def _fetch_settings(self, conn, kind: str, keys: Optional[Iterable[str]]) -> Dict[str, str]:
+    def _fetch_settings_OLD(self, conn, kind: str, keys: Optional[Iterable[str]]) -> Dict[str, str]:
         """ """
         self.module.log(msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})")
 
@@ -271,6 +271,10 @@ class PgSettingsReader:
               "SELECT name, setting FROM pg_settings WHERE name = ANY(%s)"
 
         self.module.log(msg=f"= sql: {sql}")
+
+        _sql = sql, (list(keys),)
+
+        self.module.log(msg=f"= _sql: {_sql}")
 
         if kind == "pg2":
             with conn:
@@ -281,9 +285,52 @@ class PgSettingsReader:
         else:  # pg3
             with conn:
                 with conn.cursor() as cur:
-                    cur.execute(sql, (list(keys),) if keys else None)
+                    try:
+                        cur.execute(sql, (list(keys),) if keys else None)
+                    except Exception as e:
+                        self.module.log(msg=f"ERROR: {e}")
 
                     return {name: val for name, val in cur.fetchall()}
+
+    def _fetch_settings(self, conn, kind: str, keys: Optional[Iterable[str]]) -> Dict[str, str]:
+        """ """
+        self.module.log(msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})")
+
+        if keys is not None:
+            names = list(keys)
+            if not names:
+                return {}
+            sql = "SELECT name, setting FROM pg_settings WHERE name = ANY(%s::text[])"
+            params = (names,)
+        else:
+            sql = "SELECT name, setting FROM pg_settings"
+            params = ()
+
+        self.module.log(msg=f"= sql: {sql}")
+        self.module.log(msg=f"= params: {params}")
+
+        with conn:
+            # psycopg3: binary=False erzwingen (sonst ggf. bytes)
+            if kind == "pg3":
+                cur = conn.cursor(binary=False)
+            else:
+                cur = conn.cursor()
+
+            with cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+
+                self.module.log(f" type {type(rows)}")
+                self.module.log(f" {rows}")
+
+                out: Dict[str, str] = {}
+                for name, val in rows:
+                    k = self._decode_db_value(conn, name)
+                    v = self._decode_db_value(conn, val)
+                    out[str(k)] = "" if v is None else str(v)
+
+                self.module.log(f" {out}")
+                return out
 
     # --- Socket-Erkennung --------------------------------------------------------
 
@@ -338,7 +385,26 @@ class PgSettingsReader:
 
     # --- postgresql.conf Parser --------------------------------------------------
 
+    def _decode_db_value(self, conn: Any, v: Any) -> Any:
+        """Normalisiert DB-Werte für JSON: bytes -> str (mit DB-Encoding)."""
+        if v is None or isinstance(v, str):
+            return v
 
+        if isinstance(v, (bytes, bytearray, memoryview)):
+            enc = "utf-8"
+            try:
+                # psycopg2
+                if getattr(conn, "encoding", None):
+                    enc = conn.encoding
+                # psycopg3
+                elif getattr(getattr(conn, "info", None), "encoding", None):
+                    enc = conn.info.encoding
+            except Exception:
+                pass
+            return bytes(v).decode(enc, errors="replace")
+
+        # Fallback: in String wandeln (pg_settings.setting ist text, aber sicher ist sicher)
+        return str(v)
 
 
 

@@ -47,8 +47,13 @@ class PostgresConnection:
         # config = reader.parse_postgresql_conf()
         # self.module.log(msg=f"config: {json.dumps(config, ensure_ascii=False)}")
 
+        self.module.log("--------------------------------")
         data = reader.read()
-        self.module.log(msg=f"data: {json.dumps(data, ensure_ascii=False)}")
+
+        self.module.log(f" type {type(data)}")
+        self.module.log(f" {data}")
+        self.module.log("--------------------------------")
+        self.module.log(f"data: {json.dumps(data, ensure_ascii=False)}")
 
         return dict(
             failed=False,

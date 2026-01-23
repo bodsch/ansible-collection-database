@@ -24,6 +24,8 @@
   ansible.builtin.package:
     name: "{{ postgresql_dependencies }}"
     state: present
+  when:
+    - postgresql_dependencies | default([]) | count > 0
 
 - name: detect if postgresql installed
   ansible.builtin.stat:

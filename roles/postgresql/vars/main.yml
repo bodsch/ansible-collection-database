@@ -10,14 +10,13 @@ postgresql_daemon: "postgresql@{{ postgresql_version }}-main"
 
 postgresql_dependencies: []
 
-postgresql_packages:/etc/postgresql/
+postgresql_packages:
   - postgresql
   - postgresql-contrib
   - libpq-dev
 
 postgresql_python_library:
   - python3-psycopg2
-
 
 postgresql_defaults_config_connections:
   listen_addresses: []
