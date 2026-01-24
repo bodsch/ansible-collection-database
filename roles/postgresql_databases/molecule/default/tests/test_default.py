@@ -1,16 +1,14 @@
+import json
+import os
 
+import pytest
+import testinfra.utils.ansible_runner
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar
 
-import json
-import pytest
-import os
-
-import testinfra.utils.ansible_runner
-
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+    os.environ["MOLECULE_INVENTORY_FILE"]
+).get_hosts("all")
 
 
 def pp_json(json_thing, sort=True, indents=2):
@@ -24,7 +22,7 @@ def pp_json(json_thing, sort=True, indents=2):
 def base_directory():
     cwd = os.getcwd()
 
-    if ('group_vars' in os.listdir(cwd)):
+    if "group_vars" in os.listdir(cwd):
         directory = "../.."
         molecule_directory = "."
     else:
@@ -36,29 +34,43 @@ def base_directory():
 
 @pytest.fixture()
 def get_vars(host):
-    """
-
-    """
+    """ """
     base_dir, molecule_dir = base_directory()
     distribution = host.system_info.distribution
     operation_system = None
 
-    if distribution in ['debian', 'ubuntu']:
+    if distribution in ["debian", "ubuntu"]:
         operation_system = "debian"
-    elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+    elif distribution in ["redhat", "ol", "centos", "rocky", "almalinux"]:
         operation_system = "redhat"
-    elif distribution in ['arch', 'artix']:
+    elif distribution in ["arch", "artix"]:
         operation_system = "archlinux"
 
     file_defaults = f"file={base_dir}/defaults/main.yml name=role_defaults"
     file_vars = f"file={base_dir}/vars/main.yml name=role_vars"
     file_molecule = f"file={molecule_dir}/group_vars/all/vars.yml name=test_vars"
-    file_distibution = f"file={base_dir}/vars/{operation_system}.yml name=role_distibution"
+    file_distibution = (
+        f"file={base_dir}/vars/{operation_system}.yml name=role_distibution"
+    )
 
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars = (
+        host.ansible("include_vars", file_defaults)
+        .get("ansible_facts")
+        .get("role_defaults")
+    )
+    vars_vars = (
+        host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    )
+    distibution_vars = (
+        host.ansible("include_vars", file_distibution)
+        .get("ansible_facts")
+        .get("role_distibution")
+    )
+    molecule_vars = (
+        host.ansible("include_vars", file_molecule)
+        .get("ansible_facts")
+        .get("test_vars")
+    )
 
     ansible_vars = defaults_vars
     ansible_vars.update(vars_vars)
@@ -73,9 +85,11 @@ def get_vars(host):
 
 def test_data_directory(host, get_vars):
     """
-      configured datadir
+    configured datadir
     """
-    directory = get_vars.get("postgresql_config_mysqld", {}).get("datadir", "/var/lib/mysql")
+    directory = get_vars.get("postgresql_config_mysqld", {}).get(
+        "datadir", "/var/lib/mysql"
+    )
     user = "mysql"
 
     dir = host.file(directory)
@@ -86,7 +100,7 @@ def test_data_directory(host, get_vars):
 
 def test_tmp_directory(host, get_vars):
     """
-      configured tmpdir
+    configured tmpdir
     """
     directory = get_vars.get("postgresql_config_mysqld", {}).get("tmpdir", "/tmp")
 
@@ -96,9 +110,11 @@ def test_tmp_directory(host, get_vars):
 
 def test_log_directory(host, get_vars):
     """
-      configured logdir
+    configured logdir
     """
-    error_log_file = get_vars.get("postgresql_config_mysqld", {}).get("log_error", "/var/log/mysql/error.log")
+    error_log_file = get_vars.get("postgresql_config_mysqld", {}).get(
+        "log_error", "/var/log/mysql/error.log"
+    )
     user = "mysql"
 
     dir = host.file(os.path.dirname(error_log_file))
@@ -108,17 +124,17 @@ def test_log_directory(host, get_vars):
 
 def test_directories(host, get_vars):
     """
-      used config directory
+    used config directory
 
-      debian based: /etc/mysql
-      redhat based: /etc/my.cnf.d
-      arch based  : /etc/my.cnf.d
+    debian based: /etc/mysql
+    redhat based: /etc/my.cnf.d
+    arch based  : /etc/my.cnf.d
     """
     # pp_json(get_vars)
 
     directories = [
         get_vars.get("postgresql_config_dir"),
-        get_vars.get("postgresql_config_include_dir")
+        get_vars.get("postgresql_config_include_dir"),
     ]
 
     pp_json(directories)
@@ -130,11 +146,11 @@ def test_directories(host, get_vars):
 
 def test_files(host, get_vars):
     """
-      created config files
+    created config files
     """
     files = [
         get_vars.get("postgresql_config_file"),
-        f"{get_vars.get('postgresql_config_include_dir')}/mysql.cnf"
+        f"{get_vars.get('postgresql_config_include_dir')}/mysql.cnf",
     ]
 
     for _file in files:
@@ -144,15 +160,15 @@ def test_files(host, get_vars):
 
 def test_user(host, get_vars):
     """
-      created user
+    created user
     """
-    shell = '/bin/false'
+    shell = "/bin/false"
 
     distribution = host.system_info.distribution
 
-    if distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+    if distribution in ["redhat", "ol", "centos", "rocky", "almalinux"]:
         shell = "/sbin/nologin"
-    elif distribution in ['arch', 'artix']:
+    elif distribution in ["arch", "artix"]:
         shell = "/usr/bin/nologin"
 
     user_name = "mysql"
@@ -167,7 +183,7 @@ def test_user(host, get_vars):
 
 def test_service_running_and_enabled(host, get_vars):
     """
-      running service
+    running service
     """
     service_name = get_vars.get("postgresql_service")
 
@@ -177,8 +193,7 @@ def test_service_running_and_enabled(host, get_vars):
 
 
 def test_listening_socket(host, get_vars):
-    """
-    """
+    """ """
     listening = host.socket.get_listening_sockets()
 
     for i in listening:
@@ -187,7 +202,9 @@ def test_listening_socket(host, get_vars):
     distribution = host.system_info.distribution
     release = host.system_info.release
 
-    bind_address = get_vars.get("postgresql_config_mysqld").get("bind-address", "127.0.0.1")
+    bind_address = get_vars.get("postgresql_config_mysqld").get(
+        "bind-address", "127.0.0.1"
+    )
     bind_port = get_vars.get("postgresql_config_mysqld").get("port", 3306)
     socket_name = get_vars.get("postgresql_socket")
 
@@ -197,7 +214,7 @@ def test_listening_socket(host, get_vars):
     listen = []
     listen.append("tcp://{}:{}".format(bind_address, bind_port))
 
-    if not (distribution == 'ubuntu' and release == '18.04'):
+    if not (distribution == "ubuntu" and release == "18.04"):
         listen.append("unix://{}".format(socket_name))
 
     for spec in listen:

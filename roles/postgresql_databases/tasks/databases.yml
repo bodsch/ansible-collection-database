@@ -12,7 +12,7 @@
     login_host: "{{ item.login_host | default('localhost') }}"
     login_password: "{{ item.login_password | default(omit) }}"
     login_user: "{{ item.login_user | default(postgresql_user) }}"
-    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config_connections.unix.socket.directories[0] | default('/run/postgresql')) }}"
+    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
     port: "{{ item.port | default(omit) }}"
     owner: "{{ item.owner | default(postgresql_user) }}"
     state: "{{ item.state | default('present') }}"
@@ -22,5 +22,5 @@
   become: true
   become_user: "{{ postgresql_user }}"
   # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
-  vars:
-    ansible_facts.ssh_pipelining: true
+  # vars:
+  #   ansible_facts.ssh_pipelining: true

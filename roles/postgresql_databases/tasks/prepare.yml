@@ -22,10 +22,14 @@
 
 - name: detect if postgresql installed
   ansible.builtin.stat:
-    path: /usr/bin/postgres
+    path: /usr/bin/pg_ctlcluster # */usr/bin/postgres
     get_checksum: false
     get_mime: false
   register: postgresql_binary_file
+
+- name: d
+  debug:
+    msg: "{{ postgresql_binary_file | default({}) }}"
 
 - name: define postgresql_installed if postgresql installed
   ansible.builtin.set_fact:
@@ -41,10 +45,12 @@
   when:
     - postgresql_installed
 
-- name: pg conn
+- name: detect postgres connectionv
   become: true
   become_user: postgres
   bodsch.database.postgres_connection:
   register: pg_connection
+  when:
+    - postgresql_installed
 
 ...

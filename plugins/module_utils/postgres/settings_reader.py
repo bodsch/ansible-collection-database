@@ -12,15 +12,15 @@ Abhängigkeiten:
 - psycopg2 (bevorzugt) ODER psycopg (psycopg3). Wenn beides fehlt, wird direkt geparst.
 """
 from __future__ import annotations
-import os
-import re
-import json
-import glob
-import socket
-import pathlib
-from dataclasses import dataclass, field
-from typing import Iterable, Optional, Dict, Tuple, List, Any
 
+import glob
+# import json
+import os
+# import pathlib
+import re
+# import socket
+from dataclasses import dataclass
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 # --- Hauptklasse -------------------------------------------------------------
 
@@ -43,11 +43,13 @@ class PgSettingsReader:
         # self. module = module
         self.module.log(msg="PostgresConnection::__post_init__()")
 
-        self._INCLUDE_RE     = re.compile(r"""^\s*(include|include_if_exists)\s*=?\s*(['"])(.*?)\2\s*$""")
-        self._INCLUDE_DIR_RE = re.compile(r"""^\s*include_dir\s*=?\s*(['"])(.*?)\1\s*$""")
-        self._ASSIGN_RE      = re.compile(r"""^\s*([a-zA-Z0-9_.]+)\s*=\s*(.+?)\s*$""")
-
-
+        self._INCLUDE_RE = re.compile(
+            r"""^\s*(include|include_if_exists)\s*=?\s*(['"])(.*?)\2\s*$"""
+        )
+        self._INCLUDE_DIR_RE = re.compile(
+            r"""^\s*include_dir\s*=?\s*(['"])(.*?)\1\s*$"""
+        )
+        self._ASSIGN_RE = re.compile(r"""^\s*([a-zA-Z0-9_.]+)\s*=\s*(.+?)\s*$""")
 
     def read(self) -> Dict[str, str]:
 
@@ -63,7 +65,7 @@ class PgSettingsReader:
                     user=self.user,
                     host=d,
                     port=port,
-                    timeout=self.connect_timeout
+                    timeout=self.connect_timeout,
                 )
 
                 self.module.log(f"- kind {kind}")
@@ -85,7 +87,11 @@ class PgSettingsReader:
         self.module.log("- tcp ...")
         try:
             conn, kind = self._connect(
-                self.dbname, self.user, self.tcp_host, self.tcp_port, self.connect_timeout
+                self.dbname,
+                self.user,
+                self.tcp_host,
+                self.tcp_port,
+                self.connect_timeout,
             )
             try:
                 return self._fetch_settings(conn, kind, self.keys)
@@ -105,7 +111,6 @@ class PgSettingsReader:
         if not conf:
             return {}
 
-
         return {k: conf[k] for k in self.keys if k in conf} if self.keys else conf
 
         if self.keys:
@@ -113,15 +118,13 @@ class PgSettingsReader:
 
         return conf
 
-
-
     def _strip_comments(self, line: str) -> str:
         """Entfernt '#' Kommentare außerhalb von einfachen Quotes."""
         out, in_q = [], False
         i = 0
         while i < len(line):
             c = line[i]
-            if c == "'" and (i == 0 or line[i-1] != "\\"):
+            if c == "'" and (i == 0 or line[i - 1] != "\\"):
                 in_q = not in_q
                 out.append(c)
             elif c == "#" and not in_q:
@@ -131,7 +134,6 @@ class PgSettingsReader:
             i += 1
         return "".join(out).strip()
 
-
     def _unquote(self, value: str) -> str:
         v = value.strip()
         # Entferne optionale Quotes
@@ -140,7 +142,6 @@ class PgSettingsReader:
             v = v.replace("\\'", "'")
         # Entferne trailing/leading Quotesfragmente
         return v.strip()
-
 
     def _parse_file(self, path: str, seen: set[str], result: Dict[str, str]) -> None:
         """ """
@@ -178,7 +179,9 @@ class PgSettingsReader:
                 kind, inc = m_inc.group(1), m_inc.group(3)
                 if not os.path.isabs(inc):
                     inc = os.path.join(base_dir, inc)
-                if kind == "include" or os.path.exists(inc):  # include_if_exists nur wenn vorhanden
+                if kind == "include" or os.path.exists(
+                    inc
+                ):  # include_if_exists nur wenn vorhanden
                     self._parse_file(inc, seen, result)
                 continue
 
@@ -187,11 +190,12 @@ class PgSettingsReader:
                 key, val = m_set.group(1), self._unquote(m_set.group(2))
                 result[key] = val
 
-
     def parse_postgresql_conf(self, conf_path: Optional[str] = None) -> Dict[str, str]:
         """Sucht conf automatisch, wenn nicht angegeben, und parst inkl. Includes."""
 
-        self.module.log(msg=f"PgSettingsReader::parse_postgresql_conf(conf_path: {conf_path})")
+        self.module.log(
+            msg=f"PgSettingsReader::parse_postgresql_conf(conf_path: {conf_path})"
+        )
 
         candidates = []
         if conf_path:
@@ -228,47 +232,58 @@ class PgSettingsReader:
 
         return settings
 
-
     # --- DB Adapter --------------------------------------------------------------
 
-
-    def _connect(self, dbname: str, user: Optional[str], host: Optional[str], port: Optional[int], timeout: int):
+    def _connect(
+        self,
+        dbname: str,
+        user: Optional[str],
+        host: Optional[str],
+        port: Optional[int],
+        timeout: int,
+    ):
         """Versucht psycopg2, sonst psycopg3. Gibt (conn, kind) zurück, kind in {'pg2','pg3'}."""
-        self.module.log(msg=f"PgSettingsReader::_connect(dbname: {dbname}, user: {user}, host: {host}, port: {port}, timeout: {timeout})")
+        self.module.log(
+            msg=f"PgSettingsReader::_connect(dbname: {dbname}, user: {user}, host: {host}, port: {port}, timeout: {timeout})"
+        )
 
         try:
             import psycopg2  # type: ignore
+
             conn = psycopg2.connect(
-                dbname=dbname,
-                user=user,
-                host=host,
-                port=port,
-                connect_timeout=timeout
+                dbname=dbname, user=user, host=host, port=port, connect_timeout=timeout
             )
             return conn, "pg2"
 
         except Exception as e_pg2:
             try:
                 import psycopg  # type: ignore
+
                 conn = psycopg.connect(
                     dbname=dbname,
                     user=user,
                     host=host,
                     port=port,
-                    connect_timeout=timeout
+                    connect_timeout=timeout,
                 )
                 return conn, "pg3"
 
             except Exception as e_pg3:
                 raise RuntimeError(f"DB-Verbindung fehlgeschlagen: {e_pg2} / {e_pg3}")
 
-
-    def _fetch_settings_OLD(self, conn, kind: str, keys: Optional[Iterable[str]]) -> Dict[str, str]:
+    def _fetch_settings_OLD(
+        self, conn, kind: str, keys: Optional[Iterable[str]]
+    ) -> Dict[str, str]:
         """ """
-        self.module.log(msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})")
+        self.module.log(
+            msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})"
+        )
 
-        sql = "SELECT name, setting FROM pg_settings" if not keys else \
-              "SELECT name, setting FROM pg_settings WHERE name = ANY(%s)"
+        sql = (
+            "SELECT name, setting FROM pg_settings"
+            if not keys
+            else "SELECT name, setting FROM pg_settings WHERE name = ANY(%s)"
+        )
 
         self.module.log(msg=f"= sql: {sql}")
 
@@ -292,9 +307,13 @@ class PgSettingsReader:
 
                     return {name: val for name, val in cur.fetchall()}
 
-    def _fetch_settings(self, conn, kind: str, keys: Optional[Iterable[str]]) -> Dict[str, str]:
+    def _fetch_settings(
+        self, conn, kind: str, keys: Optional[Iterable[str]]
+    ) -> Dict[str, str]:
         """ """
-        self.module.log(msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})")
+        self.module.log(
+            msg=f"PgSettingsReader::_fetch_settings(conn, kind: {kind}, keys: {keys})"
+        )
 
         if keys is not None:
             names = list(keys)
@@ -334,18 +353,21 @@ class PgSettingsReader:
 
     # --- Socket-Erkennung --------------------------------------------------------
 
-
-    def _discover_unix_sockets(self, extra_dirs: Optional[Iterable[str]] = None) -> List[Tuple[str, int]]:
+    def _discover_unix_sockets(
+        self, extra_dirs: Optional[Iterable[str]] = None
+    ) -> List[Tuple[str, int]]:
         """Finde .s.PGSQL.* in üblichen Verzeichnissen. Liefert (dir, port)."""
 
-        self.module.log(msg=f"PgSettingsReader::_discover_unix_sockets(extra_dirs: {extra_dirs})")
+        self.module.log(
+            msg=f"PgSettingsReader::_discover_unix_sockets(extra_dirs: {extra_dirs})"
+        )
 
-        dirs = list(filter(None, [
-            "/var/run/postgresql",
-            "/run/postgresql",
-            "/tmp",
-            *(extra_dirs or [])
-        ]))
+        dirs = list(
+            filter(
+                None,
+                ["/var/run/postgresql", "/run/postgresql", "/tmp", *(extra_dirs or [])],
+            )
+        )
 
         self.module.log(msg=f" - dirs: {dirs}")
 
@@ -376,7 +398,6 @@ class PgSettingsReader:
             except Exception:
                 continue
 
-
         out = list(found_by_inode.values())
         out.sort(key=lambda x: (x[1] != 5432, x[1]))  # 5432 zuerst
 
@@ -405,9 +426,6 @@ class PgSettingsReader:
 
         # Fallback: in String wandeln (pg_settings.setting ist text, aber sicher ist sicher)
         return str(v)
-
-
-
 
 
 # --- CLI-Demo ---------------------------------------------------------------

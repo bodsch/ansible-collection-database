@@ -10,7 +10,7 @@
   {% if postgresql_config_connections.listen_addresses is defined and
         postgresql_config_connections.listen_addresses | bodsch.core.type == "list" and
         postgresql_config_connections.listen_addresses | count > 0 %}
-listen_addresses                    = {{ postgresql_config_connections.listen_addresses | join(',') }}
+listen_addresses                    = '{{ postgresql_config_connections.listen_addresses | join("','") }}'
   {% endif %}
   {% if postgresql_config_connections.port is defined and
         postgresql_config_connections.port | string | length > 0 %}
@@ -20,9 +20,14 @@ port                                = {{ postgresql_config_connections.port }}
         postgresql_config_connections.max_connections | string | length > 0 %}
 max_connections                     = {{ postgresql_config_connections.max_connections }}
   {% endif %}
-  {% if postgresql_config_connections.max_connections is defined and
-        postgresql_config_connections.max_connections | string | length > 0 %}
-reserved_connections                =  {{ postgresql_config_connections.max_connections }}
+  {% if postgresql_version is version_compare('15', '<') %}
+    {% if postgresql_config_connections.max_connections is defined and
+          postgresql_config_connections.max_connections | string | length > 0 %}
+# TODO
+# v15:
+# unrecognized configuration parameter "reserved_connections" in file "/etc/postgresql/15/main/postgresql.conf.d/pg_connections.conf" line 11
+# reserved_connections                = {{ postgresql_config_connections.max_connections }}
+    {% endif %}
   {% endif %}
   {% if postgresql_config_connections.superuser_reserved_connections is defined and
         postgresql_config_connections.superuser_reserved_connections | string | length > 0 %}
