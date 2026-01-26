@@ -34,7 +34,7 @@ mariadb_backup_defaults_notification:
   sender: ""                    # backup@example.com
   recipient: ""                 # admin@foo.bar
 
-mariadb_backup_defaults_stoarge:
+mariadb_backup_defaults_storage:
   destination: "/srv/backup"
   rotation:
     # Set rotation of daily backups. VALUE*24hours

@@ -25,7 +25,7 @@
   ansible.builtin.set_fact:
     mariadb_backup_connection: "{{ mariadb_backup_defaults_connection | combine(mariadb_backup_connection, recursive=True) }}"
     mariadb_backup_notification: "{{ mariadb_backup_defaults_notification | combine(mariadb_backup_notification, recursive=True) }}"
-    mariadb_backup_stoarge: "{{ mariadb_backup_defaults_stoarge | combine(mariadb_backup_stoarge, recursive=True) }}"
+    mariadb_backup_storage: "{{ mariadb_backup_defaults_storage | combine(mariadb_backup_storage, recursive=True) }}"
     mariadb_backup_exclude: "{{ mariadb_backup_defaults_exclude | combine(mariadb_backup_exclude, recursive=True) }}"
     mariadb_backup_include: "{{ mariadb_backup_defaults_include | combine(mariadb_backup_include, recursive=True) }}"
     mariadb_backup_cron: "{{ mariadb_backup_defaults_cron | combine(mariadb_backup_cron, recursive=True) }}"

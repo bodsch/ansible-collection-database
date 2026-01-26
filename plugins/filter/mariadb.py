@@ -6,7 +6,7 @@ __metaclass__ = type
 import os
 import re
 
-# import json
+from typing import List
 
 try:
     from collections.abc import Mapping
@@ -31,6 +31,7 @@ class FilterModule(object):
             "detect_galera": self.detect_galera,
             # "wsrep_cluster_address": self.wsrep_cluster_address,
             "system_user": self.system_user,
+            "client_packages": self.client_packages,
         }
 
     def support_tls(self, data):
@@ -214,5 +215,23 @@ class FilterModule(object):
             result = result[0]
 
         display.vv(f"= {result}")
+
+        return result
+
+
+    def client_packages(self, data):
+        """ """
+        display.v(f"client_packages({data})")
+
+        result: List = []
+        pat = r".*-client"
+
+        _client = [x for x in data if re.search(pat, x)]
+
+        result = data
+
+        display.vv(f"= {result}")
+
+
 
         return result

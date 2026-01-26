@@ -1,11 +1,11 @@
 ---
 
 - name: install database client package
-  when:
-    - mariadb_backup_client_package | default('') | string | length > 0
-    - mariadb_backup_client_package | regex_search(".*-client")
+  # when:
+  #   - mariadb_backup_client_package | default('') | string | length > 0
+  #   - mariadb_backup_client_package | regex_search(".*-client")
   ansible.builtin.package:
-    name: "{{ mariadb_backup_client_package }}"
+    name: "{{ mariadb_backup_client_package | bodsch.database.client_packages() }}"
     state: present
 
 - name: find mariadb_backup binary
