@@ -94,8 +94,25 @@ jobs:
 
       - name: force reinstall of community.docker
         run: |
+          mkdir -p /home/runner/.ansible/tmp
+          mkdir -p /home/runner/.ansible/collections_offline
+
+          cd /home/runner/.ansible/tmp
+          git clone https://github.com/ansible-collections/community.docker
+          cd community.docker
+
+          ansible-galaxy collection build --verbose
+
+          mv -v community-docker-*tar.gz /home/runner/.ansible/collections_offline
+
+          #
           mkdir -p /home/runner/.ansible/collections
-          ansible-galaxy collection install community.docker --force
+
+          ansible-galaxy collection install \
+            ./collections_offline/*.tar.gz \
+            --force
+
+          # ansible-galaxy collection install community.docker --force
 
       - name: Install collection
         run: |
