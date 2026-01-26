@@ -94,25 +94,31 @@ jobs:
 
       - name: force reinstall of community.docker
         run: |
-          mkdir -p /home/runner/.ansible/tmp
-          mkdir -p /home/runner/.ansible/collections_offline
+          curl --silent \
+            https://raw.githubusercontent.com/bodsch/ansible-toolbox/refs/heads/main/agc_install.py \
+            > agc_install.py
 
-          cd /home/runner/.ansible/tmp
-          git clone https://github.com/ansible-collections/community.docker
-          cd community.docker
+          ./agc_install.py community.docker --version 5.0.5
 
-          ansible-galaxy collection build --verbose
-
-          mv -v community-docker-*tar.gz /home/runner/.ansible/collections_offline
-
+          # mkdir -p /home/runner/.ansible/tmp
+          # mkdir -p /home/runner/.ansible/collections_offline
           #
-          mkdir -p /home/runner/.ansible/collections
-
-          ansible-galaxy collection install \
-            ./collections_offline/*.tar.gz \
-            --force
-
-          # ansible-galaxy collection install community.docker --force
+          # cd /home/runner/.ansible/tmp
+          # git clone https://github.com/ansible-collections/community.docker
+          # cd community.docker
+          #
+          # ansible-galaxy collection build --verbose
+          #
+          # mv -v community-docker-*tar.gz /home/runner/.ansible/collections_offline
+          #
+          # #
+          # mkdir -p /home/runner/.ansible/collections
+          #
+          # ansible-galaxy collection install \
+          #   ./collections_offline/*.tar.gz \
+          #   --force
+          #
+          # # ansible-galaxy collection install community.docker --force
 
       - name: Install collection
         run: |
