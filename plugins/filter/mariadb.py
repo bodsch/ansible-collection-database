@@ -5,7 +5,6 @@ __metaclass__ = type
 
 import os
 import re
-
 from typing import List
 
 try:
@@ -218,7 +217,6 @@ class FilterModule(object):
 
         return result
 
-
     def client_packages(self, data):
         """ """
         display.v(f"client_packages({data})")
@@ -231,7 +229,5 @@ class FilterModule(object):
         result = data
 
         display.vv(f"= {result}")
-
-
 
         return result
