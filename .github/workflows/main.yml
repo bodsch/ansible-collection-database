@@ -63,8 +63,9 @@ jobs:
           - default
         collection_role:
           - mariadb
-          - postgresql
           - mariadb_backup
+          - postgresql
+          - postgresql_databases
 
     steps:
       - name: check out the codebase.
@@ -85,44 +86,9 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y python3-dateutil
 
-      # - name: ansible version
-      #   run: |
-      #     ansible --version
-      #
-      # - name: install dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install -r test-requirements.txt
-
       - name: force reinstall of community.docker
         run: |
-          curl --silent \
-            https://raw.githubusercontent.com/bodsch/ansible-toolbox/refs/heads/main/agc_install.py \
-            > agc_install.py
-
-          chmod +x agc_install.py
-
-          ./agc_install.py community.docker --version 5.0.5
-
-          # mkdir -p /home/runner/.ansible/tmp
-          # mkdir -p /home/runner/.ansible/collections_offline
-          #
-          # cd /home/runner/.ansible/tmp
-          # git clone https://github.com/ansible-collections/community.docker
-          # cd community.docker
-          #
-          # ansible-galaxy collection build --verbose
-          #
-          # mv -v community-docker-*tar.gz /home/runner/.ansible/collections_offline
-          #
-          # #
-          # mkdir -p /home/runner/.ansible/collections
-          #
-          # ansible-galaxy collection install \
-          #   ./collections_offline/*.tar.gz \
-          #   --force
-          #
-          # # ansible-galaxy collection install community.docker --force
+          ansible-galaxy collection install community.docker --force
 
       - name: Install collection
         run: |
