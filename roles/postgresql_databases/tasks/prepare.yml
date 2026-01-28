@@ -20,16 +20,17 @@
         - default.yml
       skip: true
 
+- name: facts
+  debug:
+    msg: "{{ postgresql_config_authentication.password_encryption }}"
+
 - name: detect if postgresql installed
   ansible.builtin.stat:
     path: /usr/bin/pg_ctlcluster # */usr/bin/postgres
     get_checksum: false
     get_mime: false
   register: postgresql_binary_file
-
-- name: d
-  debug:
-    msg: "{{ postgresql_binary_file | default({}) }}"
+  no_log: true
 
 - name: define postgresql_installed if postgresql installed
   ansible.builtin.set_fact:

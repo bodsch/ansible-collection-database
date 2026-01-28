@@ -6,11 +6,16 @@
 # TYPE         DATABASE       USER           ADDRESS                       METHOD
 
 {% for client in postgresql_hba_entries %}
-{#
-{% if client.type | bodsch.database.pg_validate_connection_type %}
-{% endif %}
-#}
-{{ (client.type | string).ljust(15) }}
+  {% set _client_type = "local" %}
+  {% set _auth_method = "peer" %}
+  {% if client.type | bodsch.database.pg_validate_connection_type %}
+    {% set _client_type = client.type %}
+  {% endif %}
+  {% if client.auth_method | bodsch.database.pg_validate_password_encryption %}
+    {% set _auth_method = client.auth_method %}
+  {% endif %}
+
+{{ (_client_type | string).ljust(15) }}
 {{- (client.database | string).ljust(15) }}
 {{- (client.user | string).ljust(15) }}
 {%- if client.address | default('') | string | length > 0 -%}
@@ -19,7 +24,7 @@
 {{- (client.ip_address | default('') | string).ljust(15) }}
 {{- (client.ip_mask | default('') | string).ljust(15) }}
 {%- endif -%}
-{{- (client.auth_method | string).rjust(4).ljust(15) }}
+{{- (_auth_method | string).rjust(4).ljust(15) }}
 {{- (client.auth_options | default("")) }}
 {% endfor %}
 #
