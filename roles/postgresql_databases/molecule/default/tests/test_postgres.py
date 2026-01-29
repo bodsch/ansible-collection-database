@@ -3,11 +3,9 @@ from __future__ import annotations, unicode_literals
 import os
 
 import testinfra.utils.ansible_runner
-from helper.molecule import get_vars
+from helper.molecule import get_vars, infra_hosts, local_facts
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ["MOLECULE_INVENTORY_FILE"]
-).get_hosts("database")
+testinfra_hosts = infra_hosts(host_name="database")
 
 # --- tests -----------------------------------------------------------------
 
@@ -31,73 +29,11 @@ def test_postgres_user(host, get_vars):
     assert u.shell == shell
 
 
-def test_data_directory(host, get_vars):
-    """
-    configured datadir
-    """
-    directory = get_vars.get("postgresql_data_dir", "/var/lib/postgres/data")
-
-    user = "postgres"
-
-    dir = host.file(directory)
-    assert dir.is_directory
-    assert dir.user == user
-    assert dir.group == user
-
-
-def test_config_directory(host, get_vars):
-    """ """
-    directory = get_vars.get("postgresql_config_path", "/var/lib/postgres/data")
-
-    dir = host.file(directory)
-    assert dir.is_directory
-
-    dir = host.file(f"{directory}/postgresql.conf.d")
-    assert dir.is_directory
-
-
-def test_config_files(host, get_vars):
-    """
-    created config files
-    """
-    directory = get_vars.get("postgresql_config_path", "/var/lib/postgres/data")
-
-    files = [
-        f"{directory}/pg_hba.conf",
-        f"{directory}/postgresql.conf.d/pg_autovacuum.conf",
-        f"{directory}/postgresql.conf.d/pg_client_connections.conf",
-        f"{directory}/postgresql.conf.d/pg_compatibility.conf",
-        f"{directory}/postgresql.conf.d/pg_connections.conf",
-        f"{directory}/postgresql.conf.d/pg_error_handling.conf",
-        f"{directory}/postgresql.conf.d/pg_file_locations.conf",
-        f"{directory}/postgresql.conf.d/pg_lock_management.conf",
-        f"{directory}/postgresql.conf.d/pg_query_tuning.conf",
-        f"{directory}/postgresql.conf.d/pg_replication.conf",
-        f"{directory}/postgresql.conf.d/pg_reporting.conf",
-        f"{directory}/postgresql.conf.d/pg_ressources.conf",
-        f"{directory}/postgresql.conf.d/pg_statistics.conf",
-        f"{directory}/postgresql.conf.d/pg_write_ahead.conf",
-    ]
-
-    for _file in files:
-        f = host.file(_file)
-        assert f.is_file
-
-
-def test_service_running_and_enabled(host, get_vars):
-    """
-    running service
-    """
-    daemon = get_vars.get("postgresql_daemon", "postgresql")
-
-    service = host.service(daemon)
-    assert service.is_running
-    assert service.is_enabled
-
-
 def test_listening_socket(host, get_vars):
     """ """
     listening = host.socket.get_listening_sockets()
+
+    _postgres_facts = local_facts(host=host, fact="postgresql")
 
     for i in listening:
         print(i)
@@ -107,9 +43,16 @@ def test_listening_socket(host, get_vars):
 
     bind_address = "127.0.0.1"
     bind_port = 5432
-    socket_name = "/run/postgresql/.s.PGSQL.5432"
+    socket_name = f"/run/postgresql/.s.PGSQL.{bind_port}"
+    pid_name = f"/run/postgresql/{_postgres_facts.get('platform_version')}-main.pid"
+
+    print(f"socket: {socket_name}")
+    print(f"pid   : {pid_name}")
 
     f = host.file(socket_name)
+    assert f.exists
+
+    f = host.file(pid_name)
     assert f.exists
 
     listen = []

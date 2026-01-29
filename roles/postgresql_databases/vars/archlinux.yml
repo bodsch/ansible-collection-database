@@ -1,14 +1,14 @@
 ---
 
 # postgresql_version: "14"
-postgresql_data_dir: "/var/lib/postgres/data"
-postgresql_bin_path: "/usr/sbin"
-postgresql_config_path: "/var/lib/postgres/data"
-postgresql_daemon: "postgresql"
+# postgresql_data_dir: "/var/lib/postgres/data"
+# postgresql_bin_path: "/usr/sbin"
+# postgresql_config_path: "/var/lib/postgres/data"
+# postgresql_daemon: "postgresql"
 
-postgresql_packages:
-  - postgresql
-  - pgcli
+# postgresql_packages:
+  # - postgresql
+  # - pgcli
 
 postgresql_dependencies:
   - python-psycopg

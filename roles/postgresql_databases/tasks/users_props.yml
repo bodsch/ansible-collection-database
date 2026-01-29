@@ -1,13 +1,5 @@
 ---
 
-- name: define password encryption
-  when:
-    - postgresql_config_authentication is defined
-    - postgresql_config_authentication.password_encryption is defined
-    - postgresql_config_authentication.password_encryption == 'scram-sha-256'
-  ansible.builtin.set_fact:
-    _postgres_databases_password_encryption: "-c password_encryption=scram-sha-256"
-
 - name: Ensure PostgreSQL users are configured correctly.
   community.postgresql.postgresql_user:
     name: "{{ item.name }}"

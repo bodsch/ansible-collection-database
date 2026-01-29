@@ -51,19 +51,30 @@ class FilterModule(object):
 
     def validate_password_encryption(self, data):
         """
-            https://www.postgresql.org/docs/current/auth-password.html
+        https://www.postgresql.org/docs/current/auth-password.html
 
-            # METHOD can be
-            # "trust", "reject", "md5", "password", "scram-sha-256",
-            # "gss", "sspi", "ident", "peer", "pam", "ldap", "radius" or "cert".
-            # Note that "password" sends passwords in clear text; "md5" or
-            # "scram-sha-256" are preferred since they send encrypted passwords.
+        # METHOD can be
+        # "trust", "reject", "md5", "password", "scram-sha-256",
+        # "gss", "sspi", "ident", "peer", "pam", "ldap", "radius" or "cert".
+        # Note that "password" sends passwords in clear text; "md5" or
+        # "scram-sha-256" are preferred since they send encrypted passwords.
         """
         display.vv(f"validate_password_encryption({data})")
 
         valid = [
-            "trust", "reject", "md5", "password", "scram-sha-256",
-            "gss", "sspi", "ident", "peer", "pam", "ldap", "radius", "cert"
+            "trust",
+            "reject",
+            "md5",
+            "password",
+            "scram-sha-256",
+            "gss",
+            "sspi",
+            "ident",
+            "peer",
+            "pam",
+            "ldap",
+            "radius",
+            "cert",
         ]
 
         if data in valid:

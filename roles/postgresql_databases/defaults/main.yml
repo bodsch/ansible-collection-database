@@ -8,8 +8,8 @@
 postgresql_user: postgres
 postgresql_group: postgres
 
-postgresql_config_authentication:
-  password_encryption: "scram-sha-256"    # scram-sha-256, md5 or password
+# postgresql_config_authentication:
+  # password_encryption: "scram-sha-256"    # scram-sha-256, md5 or password
 
 # Databases to ensure exist.
 postgresql_databases: []

@@ -262,6 +262,7 @@ def get_vars(host) -> Dict[str, Any]:
     # Facts als Input (keine Templates)
     setup = host.ansible("setup")
     facts = setup.get("ansible_facts", {}) if isinstance(setup, dict) else {}
+
     if isinstance(facts, dict):
         merged["ansible_facts"] = facts
         merged.setdefault(
