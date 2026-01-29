@@ -46,7 +46,7 @@
   when:
     - postgresql_installed
 
-- name: detect postgres connectionv
+- name: detect postgres connection
   become: true
   become_user: postgres
   bodsch.database.postgres_connection:

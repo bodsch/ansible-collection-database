@@ -371,7 +371,6 @@ postgresql_defaults_config_reporting:
 
   windows:
     # This is only relevant when logging to eventlog (Windows):
-
     event_source: 'PostgreSQL'
 
   # - When to Log -
