@@ -1,6 +1,6 @@
 ---
 
-- name: Ensure PostgreSQL users are present.
+- name: ensure PostgreSQL users are present.
   community.postgresql.postgresql_user:
     name: "{{ item.name }}"
     password: "{{ item.password | default(omit) }}"
@@ -15,8 +15,5 @@
   no_log: "{{ postgresql_log_security.suppress_user_log | default('true') }}"
   become: true
   become_user: "{{ postgresql_user }}"
-  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
-  #vars:
-  #  ansible_facts.ssh_pipelining: true
   environment:
     PGOPTIONS: "{{ _postgres_databases_password_encryption }}"

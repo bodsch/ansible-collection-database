@@ -1,6 +1,6 @@
 ---
 
-- name: Ensure PostgreSQL databases are present.
+- name: ensure PostgreSQL databases are in requested state
   community.postgresql.postgresql_db:
     name: "{{ item.name }}"
     lc_collate: "{{ item.lc_collate | default(omit) }}"
@@ -9,19 +9,31 @@
     icu_locale: "{{ item.icu_locale | default(omit) }}"
     encoding: "{{ item.encoding | default('UTF-8') }}"
     template: "{{ item.template | default('template0') }}"
-    login_host: "{{ item.login_host | default('localhost') }}"
+
+    # Connection (prefer unix socket by default; only use TCP when explicitly configured)
+    login_host: "{{ item.login_host | default(omit) }}"
     login_password: "{{ item.login_password | default(omit) }}"
     login_user: "{{ item.login_user | default(postgresql_user) }}"
     login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
-    port: "{{ item.port | default(omit) }}"
-    owner: "{{ item.owner | default(postgresql_user) }}"
+    login_port: "{{ item.login_port | default(item.port | default(omit)) }}"
+
     state: "{{ item.state | default('present') }}"
   loop: "{{ postgresql_databases }}"
   loop_control:
     label: "{{ item.name }}, state: {{ item.state | default('present') }}"
-  no_log: "{{ postgresql_log_security.suppress_user_log | default('true') }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) }}"
   become: true
   become_user: "{{ postgresql_user }}"
-  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
-  # vars:
-  #   ansible_facts.ssh_pipelining: true
+
+- name: "enforce database owners idempotently"
+  ansible.builtin.include_tasks: database_owner.yml
+  loop: "{{ postgresql_databases }}"
+  loop_control:
+    loop_var: db_item
+    label: "{{ db_item.name }}"
+  vars:
+    desired_owner: "{{ db_item.owner | default(postgresql_user) }}"
+  when:
+    - db_item.state | default('present') == 'present'
+
+...
