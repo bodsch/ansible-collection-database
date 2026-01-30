@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 
 import hashlib
 import os
+from typing import Optional
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -142,11 +143,6 @@ class MariaDBRootPassword(object):
 
     def _write_mycnf(self):
         """ """
-        ini_password = None
-        ini_username = None
-        ini_socket = None
-        ini_hostname = None
-
         if ConfigParser:
             """
             write ini style my.cnf
@@ -159,6 +155,37 @@ class MariaDBRootPassword(object):
                 self.module.log(msg=f" ERROR : {e}")
                 return
 
+            # ini_config = self._read_ini(config = config)
+
+            try:
+                config.add_section("client")
+            except DuplicateSectionError:
+                # self.module.log(msg=" WARNING : {}".format(e))
+                pass
+
+            config.set("client", "user", self.dba_root_username)
+            config.set("client", "password", self.dba_root_password)
+
+            if self.dba_socket:
+                config.set("client", "socket", self.dba_socket)
+
+            if self.dba_bind_address:
+                config.set("client", "host", self.dba_bind_address)
+
+            # config_content = {section: dict(config[section]) for section in config.sections()}
+            # self.module.log(msg=f" config: {config_content}")
+
+            with open(self.mycnf_file, "w") as configfile:
+                config.write(configfile)
+
+    def _read_ini(self, config: Optional[ConfigParser] = None):
+        """ """
+        ini_password = None
+        ini_username = None
+        ini_hostname = None
+        ini_socket = None
+
+        if config:
             try:
                 ini_username = config.get("client", "user")
 
@@ -184,31 +211,19 @@ class MariaDBRootPassword(object):
                 # self.module.log(msg=" WARNING : {}".format(e))
                 pass
 
-            # self.module.log(msg=f"  - username: {ini_username}")
-            # self.module.log(msg=f"  - password: {ini_password}")
-            # self.module.log(msg=f"  - socket  : {ini_socket}")
-            # self.module.log(msg=f"  - hostname: {ini_hostname}")
+        self.module.log(msg=f"  - username: {ini_username}")
+        self.module.log(msg=f"  - password: {ini_password}")
+        self.module.log(msg=f"  - socket  : {ini_socket}")
+        self.module.log(msg=f"  - hostname: {ini_hostname}")
 
-            try:
-                config.add_section("client")
-            except DuplicateSectionError:
-                # self.module.log(msg=" WARNING : {}".format(e))
-                pass
-
-            config.set("client", "user", self.dba_root_username)
-            config.set("client", "password", self.dba_root_password)
-
-            if self.dba_socket:
-                config.set("client", "socket", self.dba_socket)
-
-            if self.dba_bind_address:
-                config.set("client", "host", self.dba_bind_address)
-
-            # config_content = {section: dict(config[section]) for section in config.sections()}
-            # self.module.log(msg=f" config: {config_content}")
-
-            with open(self.mycnf_file, "w") as configfile:
-                config.write(configfile)
+        return {
+            "ini": {
+                "username": ini_username,
+                "password": ini_password,
+                "hostname": ini_hostname,
+                "socket": ini_socket,
+            }
+        }
 
     def _exec(self, command, check_rc=True):
         """

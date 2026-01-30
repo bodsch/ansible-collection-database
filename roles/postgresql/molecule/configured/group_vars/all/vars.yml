@@ -1,5 +1,9 @@
 ---
 
+postgresql_config_reporting:
+  logging_collector: true
+  log_directory: /var/log/postgresql
+
 postgresql_hba_entries:
   - type: local
     database: all
@@ -19,17 +23,28 @@ postgresql_hba_entries:
     user: all
     address: '::1/128'
     auth_method: "{{ postgresql_config_authentication.password_encryption }}"
-  # - type: hostssl
-  #   database: all
-  #   user: backup
-  #   #ip_address: 192.168.0.130
-  #   #ip_mask: 255.255.255.255
-  #   auth_method: "{{ postgresql_config_authentication.password_encryption }}"
-  - type: local
+  #
+  - type: host
+    description: reject all connections from 192.168.54.1
+    database: all
+    user: all
+    address: 192.168.54.1/32
+    auth_method: reject
+  #
+  - type: host
     database: all
     user: backup
-    #ip_address: 127.0.0.1
-    #ip_mask: 255.255.255.255
+    ip_address: 192.168.0.130
+    ip_mask: 255.255.255.255
+    auth_method: ident
+    auth_options: map=omicron
+  #
+  - type: local
+    description: backup user from IP 192.168.111.150
+    database: all
+    user: backup
+    ip_address: "192.168.111.150"
+    ip_mask: "255.255.255.255"
     auth_method: "{{ postgresql_config_authentication.password_encryption }}"
 
 ...

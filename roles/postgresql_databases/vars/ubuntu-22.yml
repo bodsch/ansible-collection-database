@@ -1,0 +1,6 @@
+---
+
+postgresql_dependencies:
+  - python3-psycopg2
+
+...

@@ -1,0 +1,24 @@
+---
+
+- name: Ensure PostgreSQL users are configured correctly.
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | default(omit) }}"
+    encrypted: "{{ item.encrypted | default(omit) }}"
+    priv: "{{ item.priv | default(omit) }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    db: "{{ item.db | default(omit) }}"
+    login_host: "{{ item.login_host | default('localhost') }}"
+    login_password: "{{ item.login_password | default(omit) }}"
+    login_user: "{{ item.login_user | default(postgresql_user) }}"
+    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
+    port: "{{ item.port | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ postgresql_users }}"
+  loop_control:
+    label: "{{ item.name }}, state: {{ item.state | default('present') }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default('true') }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  environment:
+    PGOPTIONS: "{{ _postgres_databases_password_encryption }}"

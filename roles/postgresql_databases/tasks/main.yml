@@ -1,0 +1,21 @@
+---
+
+- name: prepare
+  ansible.builtin.include_tasks: prepare.yml
+
+- name: postgres users
+  ansible.builtin.include_tasks: users.yml
+  when:
+    - postgresql_installed
+
+- name: postgres configure users
+  ansible.builtin.import_tasks: users_props.yml
+  when:
+    - postgresql_installed
+
+- name: postgres databases
+  ansible.builtin.import_tasks: databases.yml
+  when:
+    - postgresql_installed
+
+...

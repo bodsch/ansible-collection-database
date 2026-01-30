@@ -46,6 +46,16 @@
     mode: "{{ postgresql_config_connections.unix.socket.permissions }}"
   loop: "{{ postgresql_config_connections.unix.socket.directories }}"
 
+- name: create log directory
+  when:
+    - postgresql_config_reporting.log_directory | default('log') | bodsch.database.is_absolute_path()
+  ansible.builtin.file:
+    state: directory
+    path: "{{ postgresql_config_reporting.log_directory }}"
+    owner: root
+    group: "{{ postgresql_group }}"
+    mode: "0775"
+
 - name: create postgres splitted config files
   ansible.builtin.template:
     src: "postgresql.conf.d/pg_{{ item }}.conf.j2"

@@ -1,0 +1,61 @@
+---
+
+- name: include OS specific configuration ({{ ansible_facts.distribution }} ({{ ansible_facts.os_family }}) {{ ansible_facts.distribution_major_version }})
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_facts.distribution | lower }}-{{ ansible_facts.distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_facts.distribution | lower }}-{{ ansible_facts.service_mgr | lower }}.yml"
+        # eg. artixlinux
+        - "{{ ansible_facts.distribution | lower | replace(' ', '') }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_facts.distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_facts.os_family | lower }}.yml"
+        - default.yml
+      skip: true
+
+- name: detect if postgresql installed
+  ansible.builtin.stat:
+    path: /usr/bin/pg_ctlcluster # */usr/bin/postgres
+    get_checksum: false
+    get_mime: false
+  register: postgresql_binary_file
+  no_log: true
+
+- name: define postgresql_installed if postgresql installed
+  ansible.builtin.set_fact:
+    postgresql_installed: "{{ postgresql_binary_file.stat.exists }}"
+  when:
+    - postgresql_binary_file is defined
+    - postgresql_binary_file.stat is defined
+
+- name: install dependecies
+  ansible.builtin.package:
+    name: "{{ postgresql_dependencies }}"
+    state: present
+  when:
+    - postgresql_installed
+
+- name: detect postgres connection
+  become: true
+  become_user: postgres
+  bodsch.database.postgres_connection:
+  register: pg_connection
+  when:
+    - postgresql_installed
+
+- name: define password encryption
+  when:
+    - postgresql_config_authentication is defined
+    - postgresql_config_authentication.password_encryption is defined
+    - postgresql_config_authentication.password_encryption == 'scram-sha-256'
+  ansible.builtin.set_fact:
+    _postgres_databases_password_encryption: "-c password_encryption=scram-sha-256"
+
+...

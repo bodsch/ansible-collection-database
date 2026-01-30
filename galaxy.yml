@@ -23,8 +23,8 @@ tags:
 dependencies:
   bodsch.core: ">=2.6.0"
   bodsch.scm: "*"
-  community.postgresql: ">=4.0"
-  community.mysql: ">=3.0.0"
+  community.postgresql: ">=4.2"
+  community.mysql: ">=4.0"
 
 repository: https://github.com/bodsch/ansible-collection-database
 documentation: https://github.com/bodsch/ansible-collection-database/README.md

@@ -4,8 +4,11 @@
   bodsch.core.package_version:
     state: available
     package_name: "{{ postgresql_server }}"
-    # repository: "{{ 'MariaDB' if ansible_facts.os_family | lower == 'redhat' and postgresql_use_external_repo else '' }}"
   register: package_version
+
+- name: d
+  debug:
+    msg: "{{ package_version }}"
 
 - name: define postgresql version
   ansible.builtin.set_fact:
@@ -23,6 +26,14 @@
     - package_version.available is defined
     - package_version.available.platform_version is defined
 
+- name: define postgresql major version
+  ansible.builtin.set_fact:
+    postgresql_major_version: "{{ package_version.available.major_version }}"
+  when:
+    - package_version is defined
+    - package_version.available is defined
+    - package_version.available.major_version is defined
+
 - name: assert missing postgresql_version
   ansible.builtin.assert:
     that:
@@ -33,7 +44,7 @@
 - name: postgresql version
   ansible.builtin.debug:
     msg:
-      - "postgresql version: {{ postgresql_short_version }} - {{ postgresql_version }}"
+      - "postgresql version: {{ postgresql_major_version }} - {{ postgresql_version }}"
 
 - name: re-include OS specific configuration ({{ ansible_facts.distribution }} ({{ ansible_facts.os_family }}) {{ ansible_facts.distribution_major_version }})
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"

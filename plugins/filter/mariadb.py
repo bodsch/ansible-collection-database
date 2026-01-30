@@ -5,8 +5,7 @@ __metaclass__ = type
 
 import os
 import re
-
-# import json
+from typing import List
 
 try:
     from collections.abc import Mapping
@@ -14,9 +13,6 @@ except ImportError:  # pragma: no cover
     from collections import Mapping
 
 from ansible.utils.display import Display
-
-# https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html
-# https://blog.oddbit.com/post/2019-04-25-writing-ansible-filter-plugins/
 
 display = Display()
 
@@ -31,6 +27,7 @@ class FilterModule(object):
             "detect_galera": self.detect_galera,
             # "wsrep_cluster_address": self.wsrep_cluster_address,
             "system_user": self.system_user,
+            "client_packages": self.client_packages,
         }
 
     def support_tls(self, data):
@@ -212,6 +209,22 @@ class FilterModule(object):
         result = [x for x in data if x.get("username") == username]
         if len(result) == 1:
             result = result[0]
+
+        display.vv(f"= {result}")
+
+        return result
+
+    def client_packages(self, data):
+        """ """
+        display.v(f"client_packages({data})")
+
+        result: List = []
+        pat = r".*-client"
+
+        _client = [x for x in data if re.search(pat, x)]
+
+        if len(_client) > 0:
+            result = data
 
         display.vv(f"= {result}")
 

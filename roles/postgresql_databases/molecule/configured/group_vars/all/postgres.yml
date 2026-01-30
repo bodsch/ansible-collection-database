@@ -1,0 +1,17 @@
+---
+
+postgresql_config_connections:
+  listen_addresses:
+    - "127.0.0.1"
+  port: "5432"
+  max_connections: "10"
+  unix:
+    socket:
+      # directories: []
+        # - /run/postgresql
+        # - /run/postgre
+      group: ""
+      permissions: "0755"
+
+...
+

@@ -1,0 +1,40 @@
+---
+
+- name: "read current owner for '{{ db_item.name }}'"
+  community.postgresql.postgresql_query:
+    login_db: "{{ db_item.maintenance_db | default('postgres') }}"
+    query: |
+      SELECT pg_get_userbyid(datdba) AS owner
+      FROM pg_database
+      WHERE datname = %(dbname)s;
+    named_args:
+      dbname: "{{ db_item.name }}"
+
+    login_host: "{{ db_item.login_host | default(omit) }}"
+    login_password: "{{ db_item.login_password | default(omit) }}"
+    login_user: "{{ db_item.login_user | default(postgresql_user) }}"
+    login_unix_socket: "{{ db_item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
+    login_port: "{{ db_item.login_port | default(db_item.port | default(omit)) }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  changed_when: false
+  register: _db_owner_check
+
+- name: "set owner for '{{ db_item.name }}' to '{{ desired_owner }}'"
+  community.postgresql.postgresql_db:
+    name: "{{ db_item.name }}"
+    state: present
+    owner: "{{ desired_owner }}"
+
+    login_host: "{{ db_item.login_host | default(omit) }}"
+    login_password: "{{ db_item.login_password | default(omit) }}"
+    login_user: "{{ db_item.login_user | default(postgresql_user) }}"
+    login_unix_socket: "{{ db_item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
+    login_port: "{{ db_item.login_port | default(db_item.port | default(omit)) }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) }}"
+  when:
+    - (_db_owner_check.query_result | length) == 1
+    - (_db_owner_check.query_result[0].owner | default('')) != desired_owner

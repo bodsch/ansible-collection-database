@@ -1,0 +1,9 @@
+---
+
+- name: converge
+  hosts: database
+  any_errors_fatal: false
+  become: false
+
+  roles:
+    - role: bodsch.database.postgresql_databases

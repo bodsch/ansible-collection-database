@@ -1,0 +1,10 @@
+---
+
+postgresql_dependencies:
+  - python3-psycopg
+  # - python3-psycopg2
+
+postgresql_installed: false
+
+_postgres_databases_password_encryption: ""
+...
