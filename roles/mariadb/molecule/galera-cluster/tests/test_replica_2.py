@@ -3,27 +3,11 @@ from __future__ import annotations, unicode_literals
 import os
 
 import testinfra.utils.ansible_runner
-from helper.molecule import get_vars, pp_json
+from helper.molecule import get_vars, infra_hosts, local_facts
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ["MOLECULE_INVENTORY_FILE"]
-).get_hosts("replica_2")
+testinfra_hosts = infra_hosts(host_name="replica_2")
 
 # --- tests -----------------------------------------------------------------
-
-
-def local_facts(host):
-    """
-    return local facts
-    """
-    local_fact = host.ansible("setup").get("ansible_facts").get("ansible_local")
-
-    print(f"local_fact     : {local_fact}")
-
-    if local_fact:
-        return local_fact.get("mariadb", {})
-    else:
-        return dict()
 
 
 def test_data_directory(host, get_vars):

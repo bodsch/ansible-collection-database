@@ -15,11 +15,6 @@ from jinja2.nativetypes import NativeEnvironment
 # --- helper ----------------------------------------------------------------
 
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ["MOLECULE_INVENTORY_FILE"]
-).get_hosts("all")
-
-
 def pp_json(json_thing, sort=True, indents=2):
 
     if type(json_thing) is str:
@@ -28,6 +23,37 @@ def pp_json(json_thing, sort=True, indents=2):
         print(json.dumps(json_thing, sort_keys=sort, indent=indents))
 
     return None
+
+
+def local_facts(host, fact: Optional[str] = None) -> Dict:
+    """
+    return local facts
+    """
+    local_fact = host.ansible("setup").get("ansible_facts").get("ansible_local")
+
+    print(f"local_fact     : {local_fact}")
+
+    if local_fact and fact:
+        return local_fact.get(fact, {})
+    else:
+        return dict()
+
+
+def infra_hosts(host_name: Optional[str] = None):
+    """ """
+    _host_name = "all"
+
+    if host_name:
+        _host_name = host_name
+
+    result = testinfra.utils.ansible_runner.AnsibleRunner(
+        os.environ["MOLECULE_INVENTORY_FILE"]
+    ).get_hosts(_host_name)
+
+    print(f"result: {result}")
+    print(f"        {type(result)}")
+
+    return result
 
 
 # --- paths -----------------------------------------------------------------
@@ -238,6 +264,7 @@ def get_vars(host) -> Dict[str, Any]:
     # Facts als Input (keine Templates)
     setup = host.ansible("setup")
     facts = setup.get("ansible_facts", {}) if isinstance(setup, dict) else {}
+
     if isinstance(facts, dict):
         merged["ansible_facts"] = facts
         merged.setdefault(

@@ -2,23 +2,9 @@ from __future__ import annotations, unicode_literals
 
 import os
 
-from helper.molecule import get_vars, pp_json, testinfra_hosts
+from helper.molecule import get_vars, local_facts, pp_json
 
 # --- tests -----------------------------------------------------------------
-
-
-def local_facts(host):
-    """
-    return local facts
-    """
-    local_fact = host.ansible("setup").get("ansible_facts").get("ansible_local")
-
-    print(f"local_fact     : {local_fact}")
-
-    if local_fact:
-        return local_fact.get("mariadb", {})
-    else:
-        return dict()
 
 
 def test_data_directory(host, get_vars):
