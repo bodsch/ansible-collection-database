@@ -14,7 +14,6 @@ except ImportError:  # pragma: no cover
 
 from ansible.utils.display import Display
 
-
 display = Display()
 
 

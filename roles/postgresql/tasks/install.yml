@@ -51,7 +51,7 @@
     name: postgresql
     facts:
       version: "{{ postgresql_version }}"
-      short_version: "{{ postgresql_short_version }}"
+      major_version: "{{ postgresql_major_version }}"
       full_version: "{{ package_version.available.full_version }}"
       platform_version: "{{ package_version.available.platform_version }}"
 

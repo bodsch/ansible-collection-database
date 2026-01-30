@@ -13,10 +13,20 @@ from typing import Optional
 from ansible.module_utils.basic import AnsibleModule
 
 try:
-    from configparser import ConfigParser, DuplicateSectionError, NoOptionError, NoSectionError
+    from configparser import (
+        ConfigParser,
+        DuplicateSectionError,
+        NoOptionError,
+        NoSectionError,
+    )
 except ImportError:
     # ver. < 3.0
-    from ConfigParser import ConfigParser, DuplicateSectionError, NoOptionError, NoSectionError
+    from ConfigParser import (
+        ConfigParser,
+        DuplicateSectionError,
+        NoOptionError,
+        NoSectionError,
+    )
 
 
 DOCUMENTATION = """

@@ -12,8 +12,9 @@ from __future__ import absolute_import, division, print_function
 from typing import Any, List
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.bodsch.database.plugins.module_utils.postgres.settings_reader import \
-    PgSettingsReader
+from ansible_collections.bodsch.database.plugins.module_utils.postgres.settings_reader import (
+    PgSettingsReader,
+)
 
 
 class PostgresConnection:
