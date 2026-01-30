@@ -6,15 +6,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-import hashlib
-import json
-import os
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+# import hashlib
+# import json
+# import os
+from typing import Any, List
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.bodsch.database.plugins.module_utils.postgres.settings_reader import (
-    PgSettingsReader,
-)
+from ansible_collections.bodsch.database.plugins.module_utils.postgres.settings_reader import \
+    PgSettingsReader
 
 
 class PostgresConnection:
@@ -30,7 +29,7 @@ class PostgresConnection:
 
     def run(self):
         """ """
-        self.module.log(msg=f"PostgresConnection::run()")
+        self.module.log("PostgresConnection::run()")
 
         reader = PgSettingsReader(
             module=self.module,
@@ -44,7 +43,7 @@ class PostgresConnection:
         # )
 
         # config = reader.parse_postgresql_conf()
-        # self.module.log(msg=f"config: {json.dumps(config, ensure_ascii=False)}")
+        # self.module.log(f"config: {json.dumps(config, ensure_ascii=False)}")
 
         # self.module.log("--------------------------------")
         data = reader.read()
@@ -59,7 +58,7 @@ class PostgresConnection:
             _port = data.get("port", None)
             _socket_dirs = data.get("unix_socket_directories", None)
 
-            _sockets = self.find_socket_files(_socket_dirs)
+            # _sockets = self.find_socket_files(_socket_dirs)
 
             result = {
                 "listen": {"address": _address, "port": _port},

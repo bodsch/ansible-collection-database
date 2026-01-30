@@ -14,8 +14,6 @@ except ImportError:  # pragma: no cover
 
 from ansible.utils.display import Display
 
-# https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html
-# https://blog.oddbit.com/post/2019-04-25-writing-ansible-filter-plugins/
 
 display = Display()
 
@@ -226,7 +224,8 @@ class FilterModule(object):
 
         _client = [x for x in data if re.search(pat, x)]
 
-        result = data
+        if len(_client) > 0:
+            result = data
 
         display.vv(f"= {result}")
 
