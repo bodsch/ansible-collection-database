@@ -1,0 +1,131 @@
+---
+
+- name: check for archive {{ mysqltuner_local_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip on ansible controller
+  delegate_to: localhost
+  become: false
+  run_once: true
+  ansible.builtin.stat:
+    path: "{{ mysqltuner_local_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+    get_checksum: true
+    get_mime: false
+    get_attributes: false
+  register: _mysqltuner_archive_checksum_local
+
+- name: check for archive mysqltuner_{{ mysqltuner_version }}.zip on destination
+  ansible.builtin.stat:
+    path: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+    get_checksum: true
+    get_mime: false
+    get_attributes: false
+  register: _mysqltuner_archive_checksum_remote
+
+# - name: checkusm local
+#   debug:
+#     msg: "{{ _mysqltuner_archive_checksum_local.stat | default('+') }}"
+#
+# - name: checksum remote
+#   debug:
+#     msg: "{{ _mysqltuner_archive_checksum_remote.stat | default('-') }}"
+
+- name: set facts
+  ansible.builtin.set_fact:
+    mysqltuner_mysqltuner_archive_checksum_local: "{{ _mysqltuner_archive_checksum_local.stat.checksum | default('+') }}"
+    mysqltuner_mysqltuner_archive_checksum_remote: "{{ _mysqltuner_archive_checksum_remote.stat.checksum | default('-') }}"
+
+- name: transfer mysqltuner to destination instance
+  tags:
+    - mysqltuner
+  when:
+    - mysqltuner_install_path is defined and mysqltuner_install_path | length != 0
+    - _mysqltuner_archive_checksum_local.stat.exists | default('true') and
+      not _mysqltuner_archive_checksum_remote.stat.exists | default('false') or
+      mysqltuner_mysqltuner_archive_checksum_local != mysqltuner_mysqltuner_archive_checksum_remote
+  block:
+
+    - name: propagate mysqltuner_{{ mysqltuner_version }}.zip
+      become: true
+      ansible.builtin.copy:
+        src: "{{ mysqltuner_local_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+        dest: "{{ mysqltuner_remote_tmp_directory }}/"
+        mode: "0600"
+
+    - name: create {{ mysqltuner_install_path }}
+      ansible.builtin.file:
+        path: "{{ mysqltuner_install_path }}"
+        state: directory
+        mode: "0750"
+
+    - name: extract mysqltuner_{{ mysqltuner_version }}.zip
+      ansible.builtin.unarchive:
+        src: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+        dest: "{{ mysqltuner_install_path }}"
+        remote_src: true
+
+- name: detect installed mysqltuner binary
+  ansible.builtin.stat:
+    path: "{{ mysqltuner_install_path }}/mysqltuner.pl"
+    get_checksum: true
+    get_mime: false
+    get_attributes: false
+  register: stat_mysqltuner_binary
+
+- name: detect activated mysqltuner binary
+  ansible.builtin.stat:
+    path: "/usr/local/bin/mysqltuner.pl"
+    get_checksum: true
+    get_mime: false
+    get_attributes: false
+  register: stat_mysqltuner_activated
+
+- name: install and activate mysqltuner
+  when:
+    - not running_in_check_mode
+    - (stat_mysqltuner_binary.stat is defined and not stat_mysqltuner_binary.stat.exists | default('false')) or
+      not stat_mysqltuner_activated.stat | bodsch.core.linked_version(mysqltuner_install_path, mysqltuner_version)
+  block:
+    - name: propagate files
+      block:
+
+        - name: create {{ mysqltuner_install_path }}
+          ansible.builtin.file:
+            path: "{{ mysqltuner_install_path }}"
+            state: directory
+            mode: "0750"
+
+        - name: extract mysqltuner_{{ mysqltuner_version }}.zip
+          ansible.builtin.unarchive:
+            src: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+            dest: "{{ mysqltuner_install_path }}"
+            remote_src: true
+
+        - name: make files executable
+          ansible.builtin.file:
+            path: "{{ mysqltuner_install_path }}/mysqltuner.pl"
+            mode: 0755
+
+        - name: create link to binary
+          ansible.builtin.file:
+            src: "{{ mysqltuner_install_path }}/{{ item.name }}"
+            dest: "/usr/local/bin/{{ item.name }}"
+            state: link
+            force: true
+            follow: false
+          loop:
+            - name: mysqltuner.pl
+            - name: basic_passwords.txt
+            - name: vulnerabilities.csv
+          loop_control:
+            label: "{{ item.name }}"
+
+      rescue:
+        - name: delete install directory
+          ansible.builtin.file:
+            path: "{{ mysqltuner_install_path }}"
+            state: absent
+
+        - name: exit with fail
+          ansible.builtin.fail:
+            msg: A serious error occurred during the installation of the binary.
+
+
+...

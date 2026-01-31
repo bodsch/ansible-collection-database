@@ -1,0 +1,13 @@
+---
+
+mysqltuner_version: v2.7.0
+
+mysqltuner_source: git
+
+mysqltuner_git:
+  repository: 'https://github.com/major/MySQLTuner-perl'
+  version: "{{ mysqltuner_version }}"
+
+mysqltuner_install_path: /usr/local/opt/mysqltuner/{{ mysqltuner_version }}
+
+mysqltuner_state: present
