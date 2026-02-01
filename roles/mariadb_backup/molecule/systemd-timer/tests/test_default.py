@@ -2,7 +2,10 @@ from __future__ import annotations, unicode_literals
 
 import os
 
-from helper.molecule import get_vars, local_facts, pp_json
+import testinfra.utils.ansible_runner
+from helper.molecule import get_vars, infra_hosts, local_facts
+
+testinfra_hosts = infra_hosts(host_name="instance")
 
 # --- tests -----------------------------------------------------------------
 

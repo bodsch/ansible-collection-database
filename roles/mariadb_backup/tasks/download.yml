@@ -82,21 +82,4 @@
       ansible.builtin.set_fact:
         mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
 
-- name: propagate mariadb_backup.zip
-  become: true
-  ansible.builtin.copy:
-    src: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup_{{ mariadb_backup_version }}.zip"
-    dest: /tmp
-    mode: "0640"
-
-- name: create temp directory
-  ansible.builtin.file:
-    path: /tmp/mariadb_backup
-    state: directory
-    mode: "0750"
-
-- name: extract mariadb_backup.zip
-  ansible.builtin.unarchive:
-    src: "/tmp/mariadb_backup_{{ mariadb_backup_version }}.zip"
-    dest: /tmp/mariadb_backup
-    remote_src: true
+...
