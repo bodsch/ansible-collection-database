@@ -45,7 +45,7 @@ pacman -S python-dateutil
 | [bodsch.database.mariadb_root_password](./plugins/modules/mariadb_root_password.py)             | |
 | [bodsch.database.mariadb_secure](./plugins/modules/mariadb_secure.py)                           | |
 | [bodsch.database.mariadb_tls_certificates](./plugins/modules/mariadb_tls_certificates.py)       | |
-| [bodsch.database.postgres_connection](./plugins/modules/postgres_connection.py)       | |
+| [bodsch.database.postgres_connection](./plugins/modules/postgres_connection.py)                 | |
 
 
 ## Installing this collection
@@ -53,13 +53,13 @@ pacman -S python-dateutil
 You can install the memsource collection with the Ansible Galaxy CLI:
 
 ```bash
-#> ansible-galaxy collection install bodsch.database
+ansible-galaxy collection install bodsch.database
 ```
 
 To install directly from GitHub:
 
 ```bash
-#> ansible-galaxy collection install git@github.com:bodsch/ansible-collection-database.git
+ansible-galaxy collection install git@github.com:bodsch/ansible-collection-database.git
 ```
 
 
