@@ -6,7 +6,13 @@ This file adheres to the guidelines of [http://keepachangelog.com/](http://keepa
 Versioning follows [Semantic Versioning](http://semver.org/).
 "GH-X" refers to the X'th issue/pull request on the Github project.
 
-## 2.6.0 - 2024-09-10
+## 2026-01-31
+
+### Breaking changes
+
+- move `mysqltuner` in his own role
+
+## 2024-09-10
 
 There are quite a few breaking changes in this version, so update your playbooks!
 

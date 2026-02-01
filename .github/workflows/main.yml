@@ -66,6 +66,7 @@ jobs:
           - mariadb_backup
           - postgresql
           - postgresql_databases
+          - mysqltuner
 
     steps:
       - name: check out the codebase.

@@ -12,8 +12,6 @@ mariadb_monitoring:
   username: 'monitoring'
   password: '8WOMmRWWYHPR'
 
-mariadb_mysqltuner: false
-
 # The default root user installed by mysql - almost always root
 # mariadb_root_home: /root
 # mariadb_root_username: root

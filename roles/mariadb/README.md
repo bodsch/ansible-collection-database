@@ -185,13 +185,6 @@ mariadb_galera:
 (A fully functional configuration can be found under [molecule/galera-cluster](molecule/galera-cluster).)
 
 
-### mysql tuner
-
-```yaml
-mariadb_mysqltuner: true
-```
-
-
 ### default variables
 
 see [default/main.yml](default/main.yml):
@@ -207,8 +200,6 @@ mariadb_monitoring:
   system_user: "nobody"
   username: 'monitoring'
   password: '8WOMmRWWYHPR'
-
-mariadb_mysqltuner: false
 
 mariadb_system_users:
   - username: root
