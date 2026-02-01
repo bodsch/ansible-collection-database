@@ -69,6 +69,13 @@
     get_attributes: false
   register: stat_mysqltuner_binary
 
+- name: fail when extracted binary are missing
+  ansible.builtin.fail:
+    msg: "missing extracted binary on ansible controller"
+  when:
+    - not running_in_check_mode
+    - not stat_mysqltuner_binary.stat.exists
+
 - name: detect activated mysqltuner binary
   ansible.builtin.stat:
     path: "/usr/local/bin/mysqltuner.pl"
@@ -80,23 +87,22 @@
 - name: install and activate mysqltuner
   when:
     - not running_in_check_mode
-    - (stat_mysqltuner_binary.stat is defined and not stat_mysqltuner_binary.stat.exists | default('false')) or
-      not stat_mysqltuner_activated.stat | bodsch.core.linked_version(mysqltuner_install_path, mysqltuner_version)
+    - stat_mysqltuner_activated.stat | bodsch.core.linked_version(mysqltuner_install_path, mysqltuner_version)
   block:
     - name: propagate files
       block:
 
-        - name: create {{ mysqltuner_install_path }}
-          ansible.builtin.file:
-            path: "{{ mysqltuner_install_path }}"
-            state: directory
-            mode: "0750"
-
-        - name: extract mysqltuner_{{ mysqltuner_version }}.zip
-          ansible.builtin.unarchive:
-            src: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
-            dest: "{{ mysqltuner_install_path }}"
-            remote_src: true
+        # - name: create {{ mysqltuner_install_path }}
+        #   ansible.builtin.file:
+        #     path: "{{ mysqltuner_install_path }}"
+        #     state: directory
+        #     mode: "0750"
+        #
+        # - name: extract mysqltuner_{{ mysqltuner_version }}.zip
+        #   ansible.builtin.unarchive:
+        #     src: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
+        #     dest: "{{ mysqltuner_install_path }}"
+        #     remote_src: true
 
         - name: make files executable
           ansible.builtin.file:

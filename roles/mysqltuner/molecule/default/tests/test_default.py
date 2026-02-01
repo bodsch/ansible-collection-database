@@ -9,7 +9,7 @@ from helper.molecule import get_vars, local_facts, pp_json
 
 def test_directories(host):
     """ """
-    directories = ["/etc/mariadb_backup"]
+    directories = ["/usr/local/opt/mysqltuner"]
 
     for dirs in directories:
         d = host.file(dirs)
@@ -19,8 +19,9 @@ def test_directories(host):
 def test_files(host):
     """ """
     files = [
-        "/etc/mariadb_backup/mariadb_backup.yml",
-        "/usr/local/bin/mariadb_backup.py",
+        "/usr/local/bin/mysqltuner.pl",
+        "/usr/local/bin/basic_passwords.txt",
+        "/usr/local/bin/vulnerabilities.csv",
     ]
 
     for _file in files:
