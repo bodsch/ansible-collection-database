@@ -23,7 +23,7 @@ def test_files(host):
     """ """
     files = [
         "/etc/mariadb_backup/mariadb_backup.yml",
-        "/usr/local/bin/mariadb_backup.py",
+        "/usr/local/bin/mariadb-backup",
     ]
 
     for _file in files:

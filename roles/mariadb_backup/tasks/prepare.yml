@@ -20,5 +20,13 @@
         - default.yml
       skip: true
 
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
 - name: update facts to get latest information
   ansible.builtin.setup:

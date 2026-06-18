@@ -1,17 +1,17 @@
 ---
 
 connection:
-  encrypted_login: {{ mariadb_backup_connection.encrypted_login | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  # encrypted_login: {{ mariadb_backup_connection.encrypted_login | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
   username: {{ mariadb_backup_connection.username | default('') }}
   password: {{ mariadb_backup_connection.password | default('') }}
   host: {{ mariadb_backup_connection.host | default('') }}
   port: {{ mariadb_backup_connection.port | default('') }}
   socket: {{ mariadb_backup_connection.socket | default('') }}
-  commpress_communication: {{ mariadb_backup_connection.commpress_communication | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
-  login_cnf_file: {{ mariadb_backup_connection.login_cnf_file | default('') }}
-  use_ssl: {{ mariadb_backup_connection.use_ssl | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
-  max_allowed_packet: {{ mariadb_backup_connection.max_allowed_packet | default('') }}
-  single_transaction: {{ mariadb_backup_connection.single_transaction | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  # commpress_communication: {{ mariadb_backup_connection.commpress_communication | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  # login_cnf_file: {{ mariadb_backup_connection.login_cnf_file | default('') }}
+  # use_ssl: {{ mariadb_backup_connection.use_ssl | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
+  # max_allowed_packet: {{ mariadb_backup_connection.max_allowed_packet | default('') }}
+  # single_transaction: {{ mariadb_backup_connection.single_transaction | bool | bodsch.core.config_bool(true_as='true', false_as='false') }}
 
 storage:
   destination: {{ mariadb_backup_stoarge.destination | default('/srv/backup') }}
@@ -37,5 +37,5 @@ notification:
 excludes:
   {{ mariadb_backup_exclude | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
 
-includes:
-  {{ mariadb_backup_include | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
+# includes:
+#   {{ mariadb_backup_include | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}

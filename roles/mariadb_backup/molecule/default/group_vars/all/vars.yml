@@ -1,7 +1,7 @@
 ---
 
-mariadb_backup_cron:
-  enable: false
+#mariadb_backup_cron:
+#  enable: false
 
 mariadb_backup_include:
   databases:

@@ -1,15 +1,16 @@
 ---
 
-mariadb_backup_version: 1.0.3
+mariadb_backup_version: 2.0.0
 
 mariadb_backup_backup_directory: /srv/backup/mariadb
 
-mariadb_backup_source: git
+mariadb_backup_release: {}
+  # download_url: https://github.com/bodsch/mariadb-backup/releases
+  # file: mariadb-backup_{{ mariadb_backup_version }}_{{ ansible_facts.system | lower }}_{{ system_architecture }}.tar.gz
+  # checksum: mariadb-backup_{{ mariadb_backup_version }}_{{ ansible_facts.system | lower }}_{{ system_architecture }}.tar.gz.sha256
+  # binary: mariadb-backup
 
-# mariadb_backup_archive: "https://github.com/bodsch/AutoMySQLBackup/archive/refs/tags/{{ mariadb_backup_version }}.zip"
-mariadb_backup_git:
-  repository: 'https://git.boone-schulz.de/bodsch/mariadb-backup'
-  version: "{{ mariadb_backup_version }}"
+mariadb_backup_direct_download: false
 
 mariadb_backup_connection:
   encrypted_login: false
@@ -57,9 +58,9 @@ mariadb_backup_include:
   tables: []
 
 mariadb_backup_cron:
-  type: cron          # alternative: systemd
-  daemon: ""          # "{{ 'cron' if ansible_facts.os_family | lower == 'debian' else 'cronie' }}"
-  enabled: true       # [true, false]
-  minute: "58"        # 58
-  hour: "2"           # 2
-  weekday: ""         # *
+  type: systemd          # alternative: cron
+  daemon: ""             # "{{ 'cron' if ansible_facts.os_family | lower == 'debian' else 'cronie' }}"
+  enabled: true          # [true, false]
+  minute: "58"           # 58
+  hour: "2"              # 2
+  weekday: [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
