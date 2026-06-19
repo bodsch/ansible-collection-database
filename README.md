@@ -30,7 +30,7 @@ pacman -S python-dateutil
 
 
 [mariadb]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb.yml
-[mariadb_backup]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb_backup.yml
+[mariadb_backup]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb-backup.yml
 [postgresql]: https://github.com/bodsch/ansible-collection-database/actions/workflows/postgresql.yml
 [postgresql_databases]: https://github.com/bodsch/ansible-collection-database/actions/workflows/postgresql_databases.yml
 [mysqltuner]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mysqltuner.yml
