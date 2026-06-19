@@ -19,14 +19,6 @@
     get_attributes: false
   register: _mysqltuner_archive_checksum_remote
 
-# - name: checkusm local
-#   debug:
-#     msg: "{{ _mysqltuner_archive_checksum_local.stat | default('+') }}"
-#
-# - name: checksum remote
-#   debug:
-#     msg: "{{ _mysqltuner_archive_checksum_remote.stat | default('-') }}"
-
 - name: set facts
   ansible.builtin.set_fact:
     mysqltuner_mysqltuner_archive_checksum_local: "{{ _mysqltuner_archive_checksum_local.stat.checksum | default('+') }}"
@@ -87,22 +79,10 @@
 - name: install and activate mysqltuner
   when:
     - not running_in_check_mode
-    - stat_mysqltuner_activated.stat | bodsch.core.linked_version(mysqltuner_install_path, mysqltuner_version)
+    - not stat_mysqltuner_activated.stat | bodsch.core.linked_version(mysqltuner_install_path, mysqltuner_version)
   block:
     - name: propagate files
       block:
-
-        # - name: create {{ mysqltuner_install_path }}
-        #   ansible.builtin.file:
-        #     path: "{{ mysqltuner_install_path }}"
-        #     state: directory
-        #     mode: "0750"
-        #
-        # - name: extract mysqltuner_{{ mysqltuner_version }}.zip
-        #   ansible.builtin.unarchive:
-        #     src: "{{ mysqltuner_remote_tmp_directory }}/mysqltuner_{{ mysqltuner_version }}.zip"
-        #     dest: "{{ mysqltuner_install_path }}"
-        #     remote_src: true
 
         - name: make files executable
           ansible.builtin.file:
@@ -132,6 +112,5 @@
         - name: exit with fail
           ansible.builtin.fail:
             msg: A serious error occurred during the installation of the binary.
-
 
 ...
