@@ -57,7 +57,7 @@ jobs:
         image:
           - debian:12
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
@@ -111,7 +111,7 @@ jobs:
         image:
           - ubuntu:22.04
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
@@ -165,12 +165,11 @@ jobs:
         image:
           - debian:12
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
           - crond
-          - from-git
           - systemd-timer
         collection_role:
           - mariadb_backup
