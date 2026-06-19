@@ -38,32 +38,32 @@
   ansible.builtin.set_fact:
     mariadb_backup_checksum: "{{ stat_mariadb_backup_binary.stat.checksum }}"
 
-- name: systemd
-  when:
-    - not running_in_check_mode
-    - ansible_facts.service_mgr | lower == "systemd"
-  block:
-    # - name: create mariadb_backup run configuration
-    #   ansible.builtin.template:
-    #     src: "default/mariadb_backup.j2"
-    #     dest: "{{ mariadb_backup_defaults_directory }}/mariadb_backup"
-    #     force: true
-    #     owner: root
-    #     group: "{{ mariadb_backup_system_group }}"
-    #     mode: "0640"
-    #   notify:
-    #     - restart bind exporter
-
-    - name: create systemd service unit
-      ansible.builtin.template:
-        src: "etc/init/systemd/mariadb-backup.service.j2"
-        dest: "{{ systemd_lib_directory }}/mariadb-backup.service"
-        owner: root
-        group: root
-        mode: "0644"
-      notify:
-        - daemon reload
-        - reload mariadb-backup
+# - name: systemd
+#   when:
+#     - not running_in_check_mode
+#     - ansible_facts.service_mgr | lower == "systemd"
+#   block:
+#     # - name: create mariadb_backup run configuration
+#     #   ansible.builtin.template:
+#     #     src: "etc/default/mariadb_backup.j2"
+#     #     dest: "{{ mariadb_backup_defaults_directory }}/mariadb_backup"
+#     #     force: true
+#     #     owner: root
+#     #     group: "{{ mariadb_backup_system_group }}"
+#     #     mode: "0640"
+#     #   notify:
+#     #     - restart bind exporter
+#
+#     - name: create systemd service unit
+#       ansible.builtin.template:
+#         src: "etc/init/systemd/mariadb-backup.service.j2"
+#         dest: "{{ systemd_lib_directory }}/mariadb-backup.service"
+#         owner: root
+#         group: root
+#         mode: "0644"
+#       notify:
+#         - daemon reload
+#         - reload mariadb-backup
 
 # - name: openrc
 #   when:

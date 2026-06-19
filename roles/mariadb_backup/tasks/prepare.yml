@@ -28,5 +28,10 @@
   ansible.builtin.set_fact:
     running_in_check_mode: '{{ _check_mode.check_mode }}'
 
-- name: update facts to get latest information
-  ansible.builtin.setup:
+- name: install dependency
+  when:
+    - not running_in_check_mode
+    - mariadb_backup_client_package | default([]) | count > 0
+  ansible.builtin.package:
+    name: "{{ mariadb_backup_client_package }}"
+    state: present

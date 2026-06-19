@@ -14,5 +14,6 @@
     state: reloaded
   when:
     - not running_in_check_mode
+    - mariadb_backup_cron.enabled | default('false') | bool
 
 ...

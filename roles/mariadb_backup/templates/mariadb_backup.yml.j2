@@ -36,6 +36,7 @@ notification:
 
 excludes:
   {{ mariadb_backup_exclude | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
-
-# includes:
-#   {{ mariadb_backup_include | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
+{#
+includes:
+  {{ mariadb_backup_include | to_nice_yaml(indent=2, sort_keys=False) | indent(width=2, first=False) }}
+#}
