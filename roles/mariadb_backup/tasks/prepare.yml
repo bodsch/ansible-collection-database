@@ -20,5 +20,18 @@
         - default.yml
       skip: true
 
-- name: update facts to get latest information
-  ansible.builtin.setup:
+- name: detect ansible check_mode
+  bodsch.core.check_mode:
+  register: _check_mode
+
+- name: define running_in_check_mode
+  ansible.builtin.set_fact:
+    running_in_check_mode: '{{ _check_mode.check_mode }}'
+
+- name: install dependency
+  when:
+    - not running_in_check_mode
+    - mariadb_backup_client_package | default([]) | count > 0
+  ansible.builtin.package:
+    name: "{{ mariadb_backup_client_package }}"
+    state: present

@@ -57,7 +57,7 @@ jobs:
         image:
           - debian:12
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
@@ -74,10 +74,12 @@ jobs:
         with:
           python-version: "${{ matrix.python_version }}"
 
-      - name: install dependencies
+      - name: Install system packages
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
+          sudo apt-get update -y
+          sudo apt-get install -y python3-dateutil
 
       - name: force reinstall of community.docker
         run: |
@@ -109,7 +111,7 @@ jobs:
         image:
           - ubuntu:22.04
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
@@ -126,10 +128,12 @@ jobs:
         with:
           python-version: "${{ matrix.python_version }}"
 
-      - name: install dependencies
+      - name: Install system packages
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
+          sudo apt-get update -y
+          sudo apt-get install -y python3-dateutil
 
       - name: force reinstall of community.docker
         run: |
@@ -161,12 +165,11 @@ jobs:
         image:
           - debian:12
         ansible-version:
-          - '8.5'
+          - '9.5'
         python_version:
           - "3.12"
         scenario:
           - crond
-          - from-git
           - systemd-timer
         collection_role:
           - mariadb_backup
@@ -180,10 +183,12 @@ jobs:
         with:
           python-version: "${{ matrix.python_version }}"
 
-      - name: install dependencies
+      - name: Install system packages
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
+          sudo apt-get update -y
+          sudo apt-get install -y python3-dateutil
 
       - name: force reinstall of community.docker
         run: |

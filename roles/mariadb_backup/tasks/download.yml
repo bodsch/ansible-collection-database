@@ -1,76 +1,73 @@
 ---
 
+- name: define download information
+  when:
+    - not running_in_check_mode
+  ansible.builtin.set_fact:
+    mariadb_backup_release: "{{ mariadb_backup_defaults_release | combine(mariadb_backup_release, recursive=True) }}"
+
+- name: define delegate instance for download handling
+  when:
+    - not running_in_check_mode
+    - mariadb_backup_direct_download
+  ansible.builtin.set_fact:
+    mariadb_backup_delegate_to: "{{ (ansible_facts | default({})) | bodsch.core.hostname(inventory_hostname=inventory_hostname) }}"
+    mariadb_backup_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/forgejo', true) }}/{{ mariadb_backup_version }}"
+
 - name: create download directory
+  when:
+    - not running_in_check_mode
   become: false
-  delegate_to: localhost
+  delegate_to: "{{ mariadb_backup_delegate_to }}"
+  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
   ansible.builtin.file:
     path: "{{ mariadb_backup_local_tmp_directory }}"
     state: directory
     mode: "0750"
 
-- name: clone mariadb_backup repository to ansible-host
+- name: detect the downloaded mariadb-backup archive
   when:
-    - mariadb_backup_source == "git"
-  block:
-    - name: create local temp directory
-      become: false
-      delegate_to: localhost
-      ansible.builtin.file:
-        path: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup/{{ mariadb_backup_version }}"
-        state: directory
-        mode: "0750"
+    - not running_in_check_mode
+  become: false
+  delegate_to: "{{ mariadb_backup_delegate_to }}"
+  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.file }}"
+  register: stat_mariadb_backup_archive
 
-    - name: download git sources to local directory
-      become: false
-      delegate_to: localhost
-      ansible.builtin.git:
-        repo: "{{ mariadb_backup_git.repository }}"
-        version: "{{ mariadb_backup_git.version | default('master') }}"
-        dest: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup/{{ mariadb_backup_version }}"
-        depth: 1
-        update: true
-        force: true
-
-    - name: create transfer archive
-      become: false
-      delegate_to: localhost
-      community.general.archive:
-        path: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup/{{ mariadb_backup_version }}"
-        dest: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup_{{ mariadb_backup_version }}.zip"
-        mode: "0660"
-        remove: false
-        format: zip
-        exclude_path:
-          - "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup/{{ mariadb_backup_version }}/.git*"
-        exclusion_patterns:
-          - "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup/{{ mariadb_backup_version }}/.git*"
-
-    - name: define mariadb_backup download directory
-      ansible.builtin.set_fact:
-        mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
-
-- name: download mariadb_backup archive to ansible-host
+- name: download
   when:
-    - mariadb_backup_source == "archive"
+    - not running_in_check_mode
+    - stat_mariadb_backup_archive.stat is defined
+    - not stat_mariadb_backup_archive.stat.exists | default('false')
   block:
-    - name: detect the downloaded mariadb_backup archive
+
+    - name: resolve mariadb-backup release
       become: false
       delegate_to: localhost
       run_once: true
-      ansible.builtin.stat:
-        path: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup_{{ mariadb_backup_version }}.zip"
-      register: stat_mariadb_backup_archive
+      bodsch.scm.github_release:
+        project: bodsch
+        repository: mariadb-backup
+        version: "{{ mariadb_backup_version }}"          # "latest" | "2.53.0" | "v2.53.0"
+        architecture: "{{ ansible_facts.architecture }}"
+        system: "{{ ansible_facts.system }}"
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      register: _release
 
-    - name: download mariadb_backup archive
-      when:
-        - stat_mariadb_backup_archive.stat is defined
-        - not stat_mariadb_backup_archive.stat.exists | default('false')
+    - name: download mariadb-backup archive
       become: false
-      delegate_to: localhost
-      run_once: true
+      delegate_to: "{{ mariadb_backup_delegate_to }}"
+      run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
       ansible.builtin.get_url:
-        url: "{{ mariadb_backup_archive }}"
-        dest: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup_{{ mariadb_backup_version }}.zip"
+        url: "{{ _release.download_url }}"
+        url_username: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        url_password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        dest: "{{ mariadb_backup_local_tmp_directory }}/{{ _release.file }}"
+        checksum: "{{ _release.checksum_string | default(omit) }}"
         mode: "0640"
       register: _download_archive
       until: _download_archive is succeeded
@@ -78,8 +75,41 @@
       delay: 2
       check_mode: false
 
-    - name: define mariadb_backup download directory
-      ansible.builtin.set_fact:
-        mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
+  rescue:
+    - name: delete download directory
+      become: false
+      delegate_to: "{{ mariadb_backup_delegate_to }}"
+      run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+      ansible.builtin.file:
+        path: "{{ mariadb_backup_local_tmp_directory }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.
+
+- name: find extracted binaries
+  when:
+    - not running_in_check_mode
+  become: false
+  delegate_to: "{{ mariadb_backup_delegate_to }}"
+  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.binary }}"
+  register: stat_mariadb_backup_binary
+
+- name: extract mariadb-backup archive
+  when:
+    - not running_in_check_mode
+    # - stat_mariadb_backup_downloaded_artefact.stat.mimetype == "application/zip"
+    - stat_mariadb_backup_binary.stat is defined
+    - not stat_mariadb_backup_binary.stat.exists | default('false')
+  become: false
+  delegate_to: "{{ mariadb_backup_delegate_to }}"
+  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  ansible.builtin.unarchive:
+    src: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.file }}"
+    dest: "{{ mariadb_backup_local_tmp_directory }}/"
+    copy: false
 
 ...

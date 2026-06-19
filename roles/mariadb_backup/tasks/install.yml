@@ -1,75 +1,94 @@
 ---
 
-- name: propagate mariadb_backup.zip
-  become: true
-  ansible.builtin.copy:
-    src: "{{ mariadb_backup_local_tmp_directory }}/mariadb_backup_{{ mariadb_backup_version }}.zip"
-    dest: /tmp
-    mode: "0640"
-
-- name: create temp directory
-  ansible.builtin.file:
-    path: /tmp/mariadb_backup
-    state: directory
-    mode: "0750"
-
-- name: extract mariadb_backup.zip
-  ansible.builtin.unarchive:
-    src: "/tmp/mariadb_backup_{{ mariadb_backup_version }}.zip"
-    dest: /tmp/mariadb_backup
-    remote_src: true
-
-- name: install database client package
-  # when:
-  #   - mariadb_backup_client_package | default('') | string | length > 0
-  #   - mariadb_backup_client_package | regex_search(".*-client")
-  ansible.builtin.package:
-    name: "{{ mariadb_backup_client_package | bodsch.database.client_packages() }}"
-    state: present
-
-- name: find mariadb_backup binary
-  ansible.builtin.find:
-    paths: /tmp/mariadb_backup
-    file_type: file
-    patterns:
-      - "mariadb_backup.py"
-    recurse: true
-  register: found_binary
-
-- name: define mariadb_backup_source
-  ansible.builtin.set_fact:
-    mariadb_backup_source: "{{
-        found_binary.files |
-        sort(attribute='path', reverse=True) |
-        map(attribute='path') | list | first }}"
+- name: create install directory
   when:
-    - found_binary.files is defined
-    - found_binary.files | count > 0
-
-- name: copy mariadb_backup
-  ansible.builtin.copy:
-    src: "{{ mariadb_backup_source }}"
-    dest: /usr/local/bin/
+    - not running_in_check_mode
+  ansible.builtin.file:
+    path: "{{ mariadb_backup_install_path }}"
+    state: directory
     mode: "0755"
-    backup: true
-    remote_src: true
+
+- name: deploy and activate mariadb-backup version {{ mariadb_backup_version }}
+  when:
+    - not running_in_check_mode
+  bodsch.core.deploy_and_activate:
+    src_dir: "{{ mariadb_backup_local_tmp_directory }}"
+    install_dir: "{{ mariadb_backup_install_path }}"
+    link_dir: "/usr/local/bin"
+    remote_src: "{{ ('true' if mariadb_backup_direct_download else 'false') | bool }}"
+    mode: "0755"
+    items:
+      - name: "{{ mariadb_backup_release.binary }}"
 
 - name: detect the installed binary
+  when:
+    - not running_in_check_mode
   ansible.builtin.stat:
-    path: /usr/local/bin/mariadb_backup.py
+    path: /usr/local/bin/mariadb-backup
     # get_checksum: false
   register: stat_mariadb_backup_binary
   ignore_errors: true
 
 - name: define mariadb_backup binary checksum
-  ansible.builtin.set_fact:
-    mariadb_backup_checksum: "{{ stat_mariadb_backup_binary.stat.checksum }}"
   when:
+    - not running_in_check_mode
     - stat_mariadb_backup_binary is defined
     - stat_mariadb_backup_binary.stat is defined
     - stat_mariadb_backup_binary.stat.checksum is defined
+  ansible.builtin.set_fact:
+    mariadb_backup_checksum: "{{ stat_mariadb_backup_binary.stat.checksum }}"
+
+# - name: systemd
+#   when:
+#     - not running_in_check_mode
+#     - ansible_facts.service_mgr | lower == "systemd"
+#   block:
+#     # - name: create mariadb_backup run configuration
+#     #   ansible.builtin.template:
+#     #     src: "etc/default/mariadb_backup.j2"
+#     #     dest: "{{ mariadb_backup_defaults_directory }}/mariadb_backup"
+#     #     force: true
+#     #     owner: root
+#     #     group: "{{ mariadb_backup_system_group }}"
+#     #     mode: "0640"
+#     #   notify:
+#     #     - restart bind exporter
+#
+#     - name: create systemd service unit
+#       ansible.builtin.template:
+#         src: "etc/init/systemd/mariadb-backup.service.j2"
+#         dest: "{{ systemd_lib_directory }}/mariadb-backup.service"
+#         owner: root
+#         group: root
+#         mode: "0644"
+#       notify:
+#         - daemon reload
+#         - reload mariadb-backup
+
+# - name: openrc
+#   when:
+#     - not running_in_check_mode
+#     - ansible_facts.service_mgr | lower == "openrc"
+#   block:
+#     - name: create openrc service configuration
+#       ansible.builtin.template:
+#         src: "init/openrc/conf.d/mariadb_backup.j2"
+#         dest: "/etc/conf.d/mariadb_backup"
+#         owner: root
+#         group: root
+#         mode: "0644"
+#
+#     - name: create openrc init configuration
+#       ansible.builtin.template:
+#         src: "init/openrc/init.d/mariadb_backup.j2"
+#         dest: "/etc/init.d/mariadb_backup"
+#         owner: root
+#         group: root
+#         mode: "0750"
 
 - name: create custom fact file
+  when:
+    - not running_in_check_mode
   bodsch.core.facts:
     name: mariadb_backup
     facts:

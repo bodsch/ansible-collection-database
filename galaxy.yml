@@ -2,7 +2,7 @@
 namespace: bodsch
 name: database
 
-version: 0.0.1
+version: 1.1.0
 
 readme: README.md
 
@@ -21,8 +21,9 @@ tags:
   - databases
 
 dependencies:
-  bodsch.core: ">=2.6.0"
-  bodsch.scm: "*"
+  bodsch.core: ">=2.13.4"
+  bodsch.scm: ">=1.11.0"
+  bodsch.systemd: ">=1.4.1"
   community.postgresql: ">=4.2"
   community.mysql: ">=4.0"
 

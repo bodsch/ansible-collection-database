@@ -1,12 +1,20 @@
 ---
 
+mariadb_backup_install_path: /usr/local/opt/mariadb_backup/{{ mariadb_backup_version }}
+
+mariadb_backup_delegate_to: localhost
+
 mariadb_backup_local_tmp_directory: "{{
   lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
   default(lookup('env', 'HOME') ~ '/.cache/ansible/mariadb_backup', true) }}/{{ mariadb_backup_version }}"
 
 mariadb_backup_client_package:
-  - python3-mysqldb
   - mariadb-client
+
+# mariadb_backup_download: false
+# mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
+
+mariadb_backup_checksum: ""
 
 mariadb_backup_defaults_connection:
   encrypted_login: false
@@ -61,8 +69,20 @@ mariadb_backup_defaults_cron:
   hour: "2"           # 2
   weekday: ""         # *
 
-mariadb_backup_download: false
-mariadb_backup_download_directory: "/tmp/mariadb_backup/{{ mariadb_backup_version }}"
+
+mariadb_backup_defaults_release:
+  download_url: https://github.com/bodsch/mariadb-backup/releases
+  file: mariadb-backup_{{ mariadb_backup_version }}_{{ ansible_facts.system | lower }}_{{ system_architecture }}.tar.gz
+  checksum: mariadb-backup_{{ mariadb_backup_version }}_{{ ansible_facts.system | lower }}_{{ system_architecture }}.tar.gz.sha256
+  binary: mariadb-backup
+
+go_arch_map:
+  x86_64: 'amd64'
+  aarch64: 'arm64'
+  armv7l: 'armv7'
+  armv6l: 'armv6'
+
+system_architecture: "{{ go_arch_map[ansible_facts.architecture] | default(ansible_facts.architecture) }}"
 
 mariadb_backup_defaults_directory: /etc/default
 

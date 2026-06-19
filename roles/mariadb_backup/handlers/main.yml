@@ -7,4 +7,13 @@
   when:
     - ansible_facts.service_mgr == 'systemd'
 
+- name: reload mariadb-backup
+  become: true
+  ansible.builtin.service:
+    name: mariadb-backup
+    state: reloaded
+  when:
+    - not running_in_check_mode
+    - mariadb_backup_cron.enabled | default('false') | bool
+
 ...
