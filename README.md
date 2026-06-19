@@ -24,14 +24,14 @@ pacman -S python-dateutil
 |:---------------------------------------------------------------------------    | :---------: | :----       |
 | [bodsch.database.mariadb](./roles/mariadb/README.md)                           | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mariadb.yml?branch=main)][mariadb]                           | Ansible role to install and configure mariadb. |
 | [bodsch.database.mariadb_backup](./roles/mariadb_backup/README.md)             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mariadb_backup.yml?branch=main)][mariadb_backup]             | Installs and configures mariadb_backup. |
-| [bodsch.database.postgres](./roles/postgres/README.md)                         | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/postgres.yml?branch=main)][postgres]                         | Installs and configure postgres |
+| [bodsch.database.postgresql](./roles/postgresql/README.md)                     | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/postgresql.yml?branch=main)][postgres]                       | Installs and configure postgres |
 | [bodsch.database.postgresql_databases](./roles/postgresql_databases/README.md) | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/postgresql_databases.yml?branch=main)][postgresql_databases] | create postgresql databases. |
 | [bodsch.database.mysqltuner](./roles/mysqltuner/README.md)                     | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mysqltuner.yml?branch=main)][mysqltuner]                     | Ansible role to install mysqltuner. |
 
 
 [mariadb]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb.yml
 [mariadb_backup]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb_backup.yml
-[postgres]: https://github.com/bodsch/ansible-collection-database/actions/workflows/postgres.yml
+[postgresql]: https://github.com/bodsch/ansible-collection-database/actions/workflows/postgresql.yml
 [postgresql_databases]: https://github.com/bodsch/ansible-collection-database/actions/workflows/postgresql_databases.yml
 [mysqltuner]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mysqltuner.yml
 
