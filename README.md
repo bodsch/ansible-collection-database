@@ -5,6 +5,15 @@ A collection of Ansible roles for MariadDB, Postgres and Tools.
 
 ## Requirements & Dependencies
 
+- python module: dateutil
+
+```bash
+apt-get install -y python3-dateutil
+
+
+pacman -S python-dateutil
+```
+
 
 ## Included content
 
@@ -17,7 +26,7 @@ A collection of Ansible roles for MariadDB, Postgres and Tools.
 | [bodsch.database.mariadb_backup](./roles/mariadb_backup/README.md)             | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mariadb_backup.yml?branch=main)][mariadb_backup]             | Installs and configures mariadb_backup. |
 | [bodsch.database.postgres](./roles/postgres/README.md)                         | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/postgres.yml?branch=main)][postgres]                         | Installs and configure postgres |
 | [bodsch.database.postgresql_databases](./roles/postgresql_databases/README.md) | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/postgresql_databases.yml?branch=main)][postgresql_databases] | create postgresql databases. |
-| [bodsch.database.mysqltuner](./roles/mysqltuner/README.md)                           | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mysqltuner.yml?branch=main)][mysqltuner]               | Ansible role to install mysqltuner. |
+| [bodsch.database.mysqltuner](./roles/mysqltuner/README.md)                     | [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-collection-database/mysqltuner.yml?branch=main)][mysqltuner]                     | Ansible role to install mysqltuner. |
 
 
 [mariadb]: https://github.com/bodsch/ansible-collection-database/actions/workflows/mariadb.yml
