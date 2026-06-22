@@ -14,7 +14,7 @@
     mariadb_backup_delegate_to: "{{ (ansible_facts | default({})) | bodsch.core.hostname(inventory_hostname=inventory_hostname) }}"
     mariadb_backup_local_tmp_directory: "{{
         lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
-        default('/var/cache/ansible/forgejo', true) }}/{{ mariadb_backup_version }}"
+        default('/var/cache/ansible/mariadb_backup', true) }}/{{ mariadb_backup_version }}"
 
 - name: create download directory
   when:
