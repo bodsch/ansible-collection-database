@@ -2,7 +2,7 @@
 
 # only useable with debian
 mariadb_use_external_repo: false
-mariadb_version: 10.6
+mariadb_version: 12.rolling
 
 mariadb_debian_repo: https://mirror.netcologne.de/mariadb/repo
 

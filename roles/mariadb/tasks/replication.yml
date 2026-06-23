@@ -13,7 +13,7 @@
 
 - name: ensure replication user exists
   delegate_to: "{{ mariadb_replication.primary }}"
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ mariadb_replication.user.name }}"
     host: "{{ item | default('%') }}"
     password: "{{ mariadb_replication.user.password }}"

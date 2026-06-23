@@ -5,7 +5,7 @@
     - not running_in_check_mode
     - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_facts.hostname)
   run_once: "{{ 'true' if mariadb_galera_cluster else 'false' }}"
-  community.mysql.mysql_db:
+  ansible.mysql.mysql_db:
     name: "{{ item.name }}"
     collation: "{{ item.collation | default('utf8_general_ci') }}"
     encoding: "{{ item.encoding | default('utf8') }}"

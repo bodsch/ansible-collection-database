@@ -30,7 +30,7 @@
 
     - name: create sst user
       become: true
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         user: "{{ mariadb_galera.sst.auth.username }}"
         password: "{{ mariadb_galera.sst.auth.password }}"
         priv:

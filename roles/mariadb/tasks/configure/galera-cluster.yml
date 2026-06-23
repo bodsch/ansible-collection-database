@@ -77,7 +77,7 @@
     - not running_in_check_mode
   block:
     - name: get galera cluster state
-      community.mysql.mysql_query:
+      ansible.mysql.mysql_query:
         query: SHOW status WHERE Variable_Name IN ('wsrep_ready', 'wsrep_cluster_status', 'wsrep_connected','wsrep_cluster_size')
         login_unix_socket: "{{ mariadb_socket | default(omit) }}"
       register: _wsrep_state

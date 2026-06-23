@@ -2,7 +2,7 @@
 namespace: bodsch
 name: database
 
-version: 1.1.1
+version: 2.0.0
 
 readme: README.md
 
@@ -21,11 +21,13 @@ tags:
   - databases
 
 dependencies:
-  bodsch.core: ">=2.13.4"
+  ansible.mysql: ">=5.0"
+  ansible.posix: ">=2.2"
+  bodsch.core: ">=2.13.5"
   bodsch.scm: ">=1.11.0"
-  bodsch.systemd: ">=1.4.1"
+  bodsch.systemd: ">=1.5.0"
+  community.general: "*"
   community.postgresql: ">=4.2"
-  community.mysql: ">=4.0"
 
 repository: https://github.com/bodsch/ansible-collection-database
 documentation: https://github.com/bodsch/ansible-collection-database/README.md

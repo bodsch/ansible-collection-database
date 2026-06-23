@@ -12,7 +12,7 @@
     - not mariadb_galera_cluster or (mariadb_galera_cluster and mariadb_galera_primary_node == ansible_facts.hostname)
   block:
     - name: create monitoring database
-      community.mysql.mysql_db:
+      ansible.mysql.mysql_db:
         name: monitoring
         collation: 'utf8_general_ci'
         encoding: 'utf8'
@@ -23,7 +23,7 @@
         config_file: "{{ _mariadb_root_system_user.home | default('/root') }}/.my.cnf"
 
     - name: create monitoring user
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         name: "{{ mariadb_monitoring.username }}"
         host: '%'
         password: "{{ mariadb_monitoring.password }}"

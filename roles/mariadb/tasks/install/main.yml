@@ -27,6 +27,7 @@
         src: etc/mysql/debian-start.j2
         dest: "{{ mariadb_config_dir }}/debian-start"
         mode: "0755"
+        backup: true
   when:
     - not running_in_check_mode
     - ansible_facts.os_family | lower == 'debian'

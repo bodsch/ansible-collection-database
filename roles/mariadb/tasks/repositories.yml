@@ -2,56 +2,46 @@
 
 - name: use external repository
   when:
-    - mariadb_use_external_repo | bool
+    - mariadb_use_external_repo | default(false) | bool
   block:
-    - name: debian
+
+    - name: define distibution family for debian
       when:
-        - ansible_facts.os_family | lower == 'debian'
-      block:
-        - name: add apt signing key
-          ansible.builtin.apt_key:
-            url: https://mariadb.org/mariadb_release_signing_key.asc
-            state: present
-          register: apt_key
-          changed_when: apt_key.changed
-          failed_when: apt_key.failed
+        - ansible_facts.distribution | lower == 'debian'
+      ansible.builtin.set_fact:
+        mariadb_distribution_family: "{{ ansible_facts.os_family | lower }}"
 
-        - name: install mariadb repositories for debian based
-          ansible.builtin.template:
-            src: etc/apt/mariadb.list.j2
-            dest: /etc/apt/sources.list.d/mariadb.list
-            mode: "0644"
-            owner: root
-            group: root
-          register: apt_repo
-          changed_when: apt_repo.changed
-          failed_when: apt_repo.failed
+    - name: define distibution family for ubuntu
+      when:
+        - ansible_facts.distribution | lower == 'ubuntu'
+      ansible.builtin.set_fact:
+        mariadb_distribution_family: "{{ ansible_facts.distribution | lower }}"
 
-        - name: clean apt cache   # noqa command-instead-of-module
-          ansible.builtin.command: |
-            apt-get clean
-          register: bash_output
-          changed_when: bash_output.rc != 0
-          failed_when: bash_output.rc != 0
-          when:
-            - "ansible_version.full is version_compare('2.13', '<')"
-            - apt_key.changed
-            - apt_repo.changed
-
-        - name: clean apt cache
-          ansible.builtin.apt:
-            clean: true
-          when:
-            - "ansible_version.full is version_compare('2.13', '>=')"
-            - apt_key.changed
-            - apt_repo.changed
+    - name: use external repository
+      bodsch.core.apt_sources:
+        name: mariadb
+        filename: mariadb.sources
+        uris:
+          - "{{ mariadb_debian_repo }}/mariadb-server/{{ mariadb_version }}/repo/{{ mariadb_distribution_family }}"
+          - "{{ mariadb_debian_repo }}/maxscale/latest/apt"
+        suites: "{{ ansible_facts.distribution_release }}"
+        components:
+          - main
+        signed_by: /usr/share/keyrings/mariadb-keyring-2025.gpg
+        key:
+          method: download
+          url: "https://supplychain.mariadb.com/mariadb-keyring-2025.gpg"
+          dest: "/usr/share/keyrings/mariadb-keyring-2025.gpg"
+          dearmor: true
+          validate: true
+        update_cache: true
 
 - name: remove external repository
   when:
-    - not mariadb_use_external_repo | bool
+    - not mariadb_use_external_repo | default(false) | bool
   ansible.builtin.file:
     state: absent
-    path: /etc/apt/sources.list.d/mariadb.list
+    path: /etc/apt/sources.list.d/mariadb.sources
   register: apt_ext_repo
   changed_when: apt_ext_repo.changed
   failed_when: apt_ext_repo.failed

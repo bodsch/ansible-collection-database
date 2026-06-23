@@ -7,7 +7,7 @@
         mariadb_galera_primary_node == ansible_facts.hostname
       )
   run_once: "{{ 'true' if mariadb_galera_cluster else 'false' }}"
-  community.mysql.mysql_user:
+  ansible.mysql.mysql_user:
     name: "{{ item.name }}"
     password: "{{ item.password }}"
     host: "{{ item.host | default('localhost') }}"

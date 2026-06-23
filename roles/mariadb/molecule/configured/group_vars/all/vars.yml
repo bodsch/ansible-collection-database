@@ -1,7 +1,9 @@
 ---
 
 mariadb_use_external_repo: true
-mariadb_version: 10.4
+
+mariadb_debian_repo: https://dlm.mariadb.com/repo
+mariadb_version: 12.rolling
 
 mariadb_system_users:
   - username: root
