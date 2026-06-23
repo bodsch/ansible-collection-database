@@ -10,6 +10,25 @@ testinfra_hosts = infra_hosts(host_name="database")
 # --- tests -----------------------------------------------------------------
 
 
+def test_postgres_user(host, get_vars):
+    """ """
+    shell = "/bin/bash"
+
+    distribution = host.system_info.distribution
+
+    if distribution in ["arch", "artix"]:
+        shell = "/usr/bin/bash"
+
+    user_name = "postgres"
+    u = host.user(user_name)
+    g = host.group(user_name)
+
+    assert g.exists
+    assert u.exists
+    assert user_name in u.groups
+    assert u.shell == shell
+
+
 def test_listening_socket(host, get_vars):
     """ """
     listening = host.socket.get_listening_sockets()
@@ -27,8 +46,13 @@ def test_listening_socket(host, get_vars):
     socket_name = f"/run/postgresql/.s.PGSQL.{bind_port}"
     pid_name = f"/run/postgresql/{_postgres_facts.get('platform_version')}-main.pid"
 
-    print(f"socket: {socket_name}")
-    print(f"pid   : {pid_name}")
+    if distribution in ("arch", "artix"):
+        directory = get_vars.get("postgresql_config_path", "/var/lib/postgres/data")
+        pid_name = f"{directory}/postmaster.pid"
+
+    print(f"distribution: {distribution}")
+    print(f"socket      : {socket_name}")
+    print(f"pid         : {pid_name}")
 
     f = host.file(socket_name)
     assert f.exists
