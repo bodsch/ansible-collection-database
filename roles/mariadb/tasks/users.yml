@@ -6,15 +6,15 @@
       ( mariadb_galera_cluster and
         mariadb_galera_primary_node == ansible_facts.hostname
       )
-  run_once: "{{ 'true' if mariadb_galera_cluster else 'false' }}"
+  run_once: "{{ ('true' if mariadb_galera_cluster else 'false') | bool }}"
   ansible.mysql.mysql_user:
     name: "{{ item.name }}"
     password: "{{ item.password }}"
     host: "{{ item.host | default('localhost') }}"
     priv: "{{ item.priv | default('*.*:USAGE') }}"
     state: "{{ item.state | default('present') }}"
-    append_privs: "{{ item.append_privs | default('false') }}"
-    encrypted: "{{ item.encrypted | default('true') }}"
+    append_privs: "{{ item.append_privs | default(false) | bool }}"
+    encrypted: "{{ item.encrypted | default(true) | bool }}"
     login_user:  "{{ _mariadb_root_system_user.username }}"
     login_password: "{{ _mariadb_root_system_user.password }}"
     login_unix_socket: "{{ mariadb_socket | default(omit) }}"

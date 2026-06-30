@@ -35,8 +35,8 @@
   when:
     - not running_in_check_mode
     - stat_mariadb_config_file.stat is defined
-    - stat_mariadb_config_file.stat.exists | default('false')
-    - stat_mariadb_config_file.stat.islnk | default('false')
+    - stat_mariadb_config_file.stat.exists | default(false) | bool
+    - stat_mariadb_config_file.stat.islnk | default(false) | bool
 
 - name: create configuration files
   when:

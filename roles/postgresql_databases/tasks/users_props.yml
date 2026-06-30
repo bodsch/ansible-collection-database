@@ -17,7 +17,7 @@
   loop: "{{ postgresql_users }}"
   loop_control:
     label: "{{ item.name }}, state: {{ item.state | default('present') }}"
-  no_log: "{{ postgresql_log_security.suppress_user_log | default('true') }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) | bool }}"
   become: true
   become_user: "{{ postgresql_user }}"
   environment:

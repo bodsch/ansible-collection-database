@@ -23,7 +23,7 @@
   when:
     - not running_in_check_mode
     - mariadb_galera_cluster
-    - _mysql_cnf_changed.changed | default('false')
+    - _mysql_cnf_changed.changed | default(false) | bool
 
 - name: wait 2 seconds for clean startup
   ansible.builtin.pause:

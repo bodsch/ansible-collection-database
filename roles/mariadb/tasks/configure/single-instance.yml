@@ -26,7 +26,7 @@
 # - name: detect error
 #   when:
 #     - service_status is defined
-#     - service_status.failed | default('false')
+#     - service_status.failed | default(false)
 #   block:
 #     - name: detect error log
 #       ansible.builtin.stat:

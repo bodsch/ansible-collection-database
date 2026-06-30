@@ -15,7 +15,7 @@
     login_user: "{{ db_item.login_user | default(postgresql_user) }}"
     login_unix_socket: "{{ db_item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
     login_port: "{{ db_item.login_port | default(db_item.port | default(omit)) }}"
-  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) | bool }}"
   become: true
   become_user: "{{ postgresql_user }}"
   changed_when: false
@@ -34,7 +34,7 @@
     login_port: "{{ db_item.login_port | default(db_item.port | default(omit)) }}"
   become: true
   become_user: "{{ postgresql_user }}"
-  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) | bool }}"
   when:
     - (_db_owner_check.query_result | length) == 1
     - (_db_owner_check.query_result[0].owner | default('')) != desired_owner

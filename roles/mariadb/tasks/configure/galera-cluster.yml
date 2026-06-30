@@ -7,7 +7,7 @@
 
 - name: define facts
   ansible.builtin.set_fact:
-    galera_bootstraped_database: "{{ _bootstraped_database.stat.exists | default('false') }}"
+    galera_bootstraped_database: "{{ _bootstraped_database.stat.exists | default(false) | bool }}"
 
 - name: create wsrep_notify script
   ansible.builtin.template:

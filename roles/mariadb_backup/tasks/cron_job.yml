@@ -9,7 +9,7 @@
 - name: remove background cron job
   when:
     - not running_in_check_mode
-    - not mariadb_backup_cron.enabled | default('false') | bool
+    - not mariadb_backup_cron.enabled | default(false) | bool
     - mariadb_backup_cron.type | default('cron') | string | lower in ["cron", "systemd"]
   block:
     - name: remove cron jobs
@@ -41,7 +41,7 @@
 - name: create background cron job
   when:
     - not running_in_check_mode
-    - mariadb_backup_cron.enabled | default('false') | bool
+    - mariadb_backup_cron.enabled | default(false) | bool
     - mariadb_backup_cron.type | default('cron') |  string | lower in ["cron", "systemd"]
   block:
     - name: remove cron file
@@ -70,7 +70,7 @@
 
     - name: cron daemon
       when:
-        - mariadb_backup_cron.enabled | default('false') | bool
+        - mariadb_backup_cron.enabled | default(false) | bool
         - mariadb_backup_cron.daemon | default('') | string | length > 0
         - mariadb_backup_cron.type | default('cron') | string == "cron"
       block:
@@ -92,7 +92,7 @@
 
     - name: systemd unit
       when:
-        - mariadb_backup_cron.enabled | default('false') | bool
+        - mariadb_backup_cron.enabled | default(false) | bool
         - mariadb_backup_cron.type | default('cron') | string == "systemd"
       block:
         - name: create mariadb-backup run configuration

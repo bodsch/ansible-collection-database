@@ -58,7 +58,7 @@
     - name: download mysqltuner archive
       when:
         - stat_mysqltuner_archive.stat is defined
-        - not stat_mysqltuner_archive.stat.exists | default('false')
+        - not stat_mysqltuner_archive.stat.exists | default(false) | bool
       become: false
       delegate_to: localhost
       run_once: true

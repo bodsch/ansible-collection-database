@@ -21,7 +21,7 @@
     - not running_in_check_mode
   become: false
   delegate_to: "{{ mariadb_backup_delegate_to }}"
-  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
   ansible.builtin.file:
     path: "{{ mariadb_backup_local_tmp_directory }}"
     state: directory
@@ -32,7 +32,7 @@
     - not running_in_check_mode
   become: false
   delegate_to: "{{ mariadb_backup_delegate_to }}"
-  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
   ansible.builtin.stat:
     path: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.file }}"
   register: stat_mariadb_backup_archive
@@ -41,7 +41,7 @@
   when:
     - not running_in_check_mode
     - stat_mariadb_backup_archive.stat is defined
-    - not stat_mariadb_backup_archive.stat.exists | default('false')
+    - not stat_mariadb_backup_archive.stat.exists | default(false) | bool
   block:
 
     - name: resolve mariadb-backup release
@@ -61,7 +61,7 @@
     - name: download mariadb-backup archive
       become: false
       delegate_to: "{{ mariadb_backup_delegate_to }}"
-      run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+      run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
       ansible.builtin.get_url:
         url: "{{ _release.download_url }}"
         url_username: "{{ lookup('env', 'GH_USER') | default(omit) }}"
@@ -79,7 +79,7 @@
     - name: delete download directory
       become: false
       delegate_to: "{{ mariadb_backup_delegate_to }}"
-      run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+      run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
       ansible.builtin.file:
         path: "{{ mariadb_backup_local_tmp_directory }}"
         state: absent
@@ -93,7 +93,7 @@
     - not running_in_check_mode
   become: false
   delegate_to: "{{ mariadb_backup_delegate_to }}"
-  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
   ansible.builtin.stat:
     path: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.binary }}"
   register: stat_mariadb_backup_binary
@@ -103,10 +103,10 @@
     - not running_in_check_mode
     # - stat_mariadb_backup_downloaded_artefact.stat.mimetype == "application/zip"
     - stat_mariadb_backup_binary.stat is defined
-    - not stat_mariadb_backup_binary.stat.exists | default('false')
+    - not stat_mariadb_backup_binary.stat.exists | default(false) | bool
   become: false
   delegate_to: "{{ mariadb_backup_delegate_to }}"
-  run_once: "{{ 'false' if mariadb_backup_direct_download else 'true' }}"
+  run_once: "{{ ('false' if mariadb_backup_direct_download else 'true') | bool }}"
   ansible.builtin.unarchive:
     src: "{{ mariadb_backup_local_tmp_directory }}/{{ mariadb_backup_release.file }}"
     dest: "{{ mariadb_backup_local_tmp_directory }}/"

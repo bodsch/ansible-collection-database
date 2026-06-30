@@ -29,8 +29,8 @@
     - mysqltuner
   when:
     - mysqltuner_install_path is defined and mysqltuner_install_path | length != 0
-    - _mysqltuner_archive_checksum_local.stat.exists | default('true') and
-      not _mysqltuner_archive_checksum_remote.stat.exists | default('false') or
+    - _mysqltuner_archive_checksum_local.stat.exists | default(true) | bool and
+      not _mysqltuner_archive_checksum_remote.stat.exists | default(false) | bool or
       mysqltuner_mysqltuner_archive_checksum_local != mysqltuner_mysqltuner_archive_checksum_remote
   block:
 

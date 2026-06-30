@@ -18,7 +18,7 @@
     host: "{{ item | default('%') }}"
     password: "{{ mariadb_replication.user.password }}"
     priv: "{{ mariadb_replication.user.priv | default('*.*:REPLICATION SLAVE,REPLICATION CLIENT') }}"
-    encrypted: "{{ mariadb_replication.user.encrypted | default('true') }}"
+    encrypted: "{{ mariadb_replication.user.encrypted | default(true) | bool }}"
     update_password: always
     state: present
     login_user:  "{{ _mariadb_root_system_user.username }}"
@@ -31,7 +31,7 @@
     "{{ list_of_ips }}"
   loop_control:
     label: "{{ mariadb_replication.user.name }}@{{ item | default('%') }},
-        password encypted: {{ mariadb_replication.user.encrypted | default('true') }}"
+        password encypted: {{ mariadb_replication.user.encrypted | default(true) | bool }}"
   # no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
   when:
     - not running_in_check_mode

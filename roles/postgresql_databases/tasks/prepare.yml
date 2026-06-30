@@ -22,7 +22,7 @@
 
 - name: detect if postgresql installed
   ansible.builtin.stat:
-    path: /usr/bin/pg_ctlcluster # */usr/bin/postgres
+    path: /usr/bin/pg_ctl # */usr/bin/postgres
     get_checksum: false
     get_mime: false
   register: postgresql_binary_file
