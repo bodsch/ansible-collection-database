@@ -50,6 +50,8 @@
         group: root
         mode: "0644"
         backup: true
+      notify:
+        - restart mariadb
 
     - name: create configuration files
       ansible.builtin.template:
@@ -60,6 +62,8 @@
         mode: "0644"
         backup: true
       register: _mysql_cnf_changed
+      notify:
+        - restart mariadb
 
     - name: create data directory '{{ mariadb_config_mysqld.datadir }}'
       ansible.builtin.file:
