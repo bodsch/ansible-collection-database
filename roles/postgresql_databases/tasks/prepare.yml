@@ -20,10 +20,9 @@
         - default.yml
       skip: true
 
-# TODO
 - name: detect if postgresql installed
   ansible.builtin.stat:
-    path: /usr/bin/pg_ctl # */usr/bin/postgres
+    path: /usr/bin/psql # */usr/bin/postgres  # /usr/bin/psql
     get_checksum: false
     get_mime: false
   register: postgresql_binary_file

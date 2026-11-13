@@ -1,0 +1,25 @@
+---
+
+- name: Ensure PostgreSQL users privileges.
+  community.postgresql.postgresql_privs:
+    login_db: "{{ item.login_db | default(omit) }}"
+    login_host: "{{ item.login_host | default('localhost') }}"
+    login_port: "{{ item.port | default(omit) }}"
+    login_password: "{{ item.login_password | default(omit) }}"
+    login_user: "{{ item.login_user | default(postgresql_user) }}"
+    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config_connections.socket.directories[0] | default('/run/postgresql')) }}"
+    roles: "{{ item.roles | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+    privs: "{{ item.privs | default(omit) }}"
+    type: "{{ item.type | default(omit) }}"
+    objs: "{{ item.objs | default(omit) }}"
+    schema: "{{ item.schema | default(omit) }}"
+    grant_option: "{{ item.grant_option | default(true) | bool }}"
+  loop: "{{ postgresql_privileges }}"
+  loop_control:
+    label: "{{ item.name }}, state: {{ item.state | default('present') }}"
+  no_log: "{{ postgresql_log_security.suppress_user_log | default(true) | bool }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  environment:
+    PGOPTIONS: "{{ _postgres_databases_password_encryption }}"
