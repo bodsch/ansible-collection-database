@@ -33,13 +33,24 @@ postgresql_users: []
 #   encrypted: # defaults to not set
 #   priv: # defaults to not set
 #   role_attr_flags: # defaults to not set
-#   db: # defaults to not set
+#   login_db: # defaults to not set
 #   login_host: # defaults to 'localhost'
 #   login_password: # defaults to not set
 #   login_user: # defaults to '{{ postgresql_user }}'
 #   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
 #   port: # defaults to not set
 #   state: # defaults to 'present'
+
+postgresql_privileges: []
+#   - name: forgejo
+#     login_db: forgejo
+#     state: present
+#     privs: CREATE,USAGE
+#     type: schema
+#     objs: public
+#     # schema: public
+#     # roles: forgejo,reader
+#     grant_option: true
 
 # Whether to output user data when managing users.
 postgresql_log_security:
