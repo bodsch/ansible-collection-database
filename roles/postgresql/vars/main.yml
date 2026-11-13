@@ -30,7 +30,7 @@ postgresql_defaults_config_connections:
         - /run/postgresql
         # - /run/postgre
       group: ""
-      permissions: "02755"
+      permissions: "0755"
   bonjour:
     enabled: false
     name: ""

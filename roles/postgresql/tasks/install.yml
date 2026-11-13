@@ -35,6 +35,13 @@
         get_mime: false
       register: postgresql_hba_file
 
+    - name: remove account expiration
+      ansible.builtin.command: |
+        sudo chage --expiredate -1 postgres
+      register: postgresql_chage_result
+      changed_when: false
+      failed_when: postgresql_chage_result.rc != 0 and 'unknown user' not in postgresql_chage_result.stderr
+
     - name: init postgresql database for archlinux
       ansible.builtin.command: |
         su --login postgres --command "initdb --locale=C.UTF-8 --encoding=UTF8 --pgdata '{{ postgresql_data_dir }}'"

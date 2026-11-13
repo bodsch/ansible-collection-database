@@ -16,6 +16,7 @@
     postgresql_config_ressources: "{{ postgresql_defaults_config_ressources | combine(postgresql_config_ressources, recursive=True) }}"
     postgresql_config_statistics: "{{ postgresql_defaults_config_statistics | combine(postgresql_config_statistics, recursive=True) }}"
     postgresql_config_write_ahead: "{{ postgresql_defaults_config_write_ahead | combine(postgresql_config_write_ahead, recursive=True) }}"
+  no_log: true
 
 - name: ensure configuration sub directory exists.
   ansible.builtin.file:
@@ -24,6 +25,25 @@
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: "0700"
+
+- name: ensure postgresql unix socket dirs exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: "2755"
+  loop: "{{ postgresql_config_connections.unix.socket.directories }}"
+
+- name: create log directory
+  when:
+    - postgresql_config_reporting.log_directory | default('log') | bodsch.database.is_absolute_path()
+  ansible.builtin.file:
+    state: directory
+    path: "{{ postgresql_config_reporting.log_directory }}"
+    owner: root
+    group: "{{ postgresql_group }}"
+    mode: "2775"
 
 - name: configure host based authentication (if entries are configured)
   ansible.builtin.template:
@@ -36,25 +56,6 @@
   notify: restart postgresql
   when:
     - postgresql_hba_entries | length > 0
-
-- name: ensure postgresql unix socket dirs exist
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ postgresql_user }}"
-    group: "{{ postgresql_group }}"
-    mode: "{{ postgresql_config_connections.unix.socket.permissions }}"
-  loop: "{{ postgresql_config_connections.unix.socket.directories }}"
-
-- name: create log directory
-  when:
-    - postgresql_config_reporting.log_directory | default('log') | bodsch.database.is_absolute_path()
-  ansible.builtin.file:
-    state: directory
-    path: "{{ postgresql_config_reporting.log_directory }}"
-    owner: root
-    group: "{{ postgresql_group }}"
-    mode: "0775"
 
 - name: create postgres splitted config files
   ansible.builtin.template:

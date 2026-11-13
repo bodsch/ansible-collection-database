@@ -6,10 +6,6 @@
     package_name: "{{ postgresql_server }}"
   register: package_version
 
-- name: d
-  debug:
-    msg: "{{ package_version }}"
-
 - name: define postgresql version
   ansible.builtin.set_fact:
     postgresql_version: "{{ package_version.available.full_version }}"
