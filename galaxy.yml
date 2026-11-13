@@ -2,7 +2,7 @@
 namespace: bodsch
 name: database
 
-version: 2.0.2
+version: 2.1.0
 
 readme: README.md
 
@@ -27,7 +27,7 @@ dependencies:
   bodsch.scm: ">=1.11.0"
   bodsch.systemd: ">=1.5.0"
   community.general: "*"
-  community.postgresql: ">=4.2"
+  community.postgresql: ">=5.1"
 
 repository: https://github.com/bodsch/ansible-collection-database
 documentation: https://github.com/bodsch/ansible-collection-database/README.md
